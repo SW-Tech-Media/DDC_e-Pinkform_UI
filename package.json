@@ -1,0 +1,34 @@
+{
+  "name": "ddc-epinkforms-prototype",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Prototype ระบบ DDC e-Pinkforms (Vue 3 + Vuetify 3) และ MCP server เอกสารในโฟลเดอร์ mcp/",
+  "scripts": {
+    "postinstall": "npm --prefix mcp install",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "mcp:dev": "npm --prefix mcp run dev --",
+    "mcp:serve": "npm --prefix mcp run serve --",
+    "mcp:start": "npm --prefix mcp start --",
+    "mcp:test": "npm --prefix mcp test"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^7.2.0",
+    "@fortawesome/free-regular-svg-icons": "^7.2.0",
+    "@fortawesome/free-solid-svg-icons": "^7.2.0",
+    "@fortawesome/vue-fontawesome": "^3.1.3",
+    "@mdi/font": "^7.4.47",
+    "pinia": "^2.1.7",
+    "vue": "^3.4.31",
+    "vue-router": "^4.3.3",
+    "vuetify": "^3.6.11"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.5",
+    "sass": "^1.77.8",
+    "vite": "^5.3.3",
+    "vite-plugin-vuetify": "^2.0.3"
+  }
+}

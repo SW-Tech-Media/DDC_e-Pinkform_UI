@@ -1,0 +1,23 @@
+{
+  "name": "pinkforms-docs-mcp",
+  "version": "1.0.0",
+  "description": "MCP server ให้ AI อ่านรายละเอียดระบบ DDC e-Pinkforms (ระบบ, Flow, หน้าจอ, Design Token) จากไฟล์ markdown",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "pinkforms-docs-mcp": "src/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch-path=src src/index.js --http",
+    "serve": "node src/index.js --http",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=18.11"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "zod": "^3.25.76"
+  }
+}

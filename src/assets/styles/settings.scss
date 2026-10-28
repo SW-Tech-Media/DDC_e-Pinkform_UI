@@ -1,0 +1,25 @@
+// ตั้งค่า Sass ของ Vuetify ให้ใช้ Design Token (CSS variable จาก src/design/install-tokens.js)
+// ไม่ใส่ตัวเลขตรง ๆ ที่นี่ แก้ค่าได้ที่ src/design/tokens.js เท่านั้น
+
+@use "vuetify/settings" with (
+  $body-font-family: var(--pf-font-family),
+  $heading-font-family: var(--pf-font-family),
+  $rounded: (
+    0: 0,
+    "sm": var(--pf-radius-sm),
+    null: var(--pf-radius-md),
+    "lg": var(--pf-radius-lg),
+    "xl": var(--pf-radius-xl),
+    "pill": var(--pf-radius-full),
+    "circle": 50%,
+    "shaped": var(--pf-radius-xl) 0,
+  ),
+  // ปุ่มและแท็บใช้ตัวอักษรปกติ (ภาษาไทยไม่มีตัวพิมพ์ใหญ่ และไม่ต้องเว้นระยะตัวอักษร)
+  $typography: (
+    "button": (
+      "text-transform": none,
+      "letter-spacing": 0,
+      "weight": var(--pf-font-weight-semibold),
+    ),
+  ),
+);
