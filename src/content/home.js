@@ -29,12 +29,6 @@ export const home = {
 
 // หน้าที่ยังไม่ได้จัดทำ แสดงเป็น EmptyState
 export const placeholders = {
-  prototype: {
-    icon: "fas fa-display",
-    tone: "teal",
-    title: "Prototype ระบบ",
-    description: "กำลังจัดทำหน้าจอตาม Figma (D01 – D18) จะเพิ่มทีละหน้าและบันทึกไว้ใน Patch Notes",
-  },
   "design-system": {
     icon: "fas fa-swatchbook",
     tone: "pink",
@@ -42,4 +36,24 @@ export const placeholders = {
     description: "กำลังจัดทำคู่มือ Design Token และ Component ของระบบ",
   },
   backLabel: "กลับหน้าแรก",
+};
+
+// หน้ารวมหน้าจอ Prototype (/prototype)
+export const prototypeText = {
+  home: "หน้าแรก",
+  title: "Prototype ระบบ",
+  description: "หน้าจอทั้งหมดตาม Flow ใน Figma · กดเพื่อเปิดหน้าจอ หรือเริ่มจากหน้าแรกเว็บไซต์แล้วคลิกตาม Flow ได้เลย",
+  startTitle: "เริ่มตาม Flow",
+  startText: "Portal → เข้าสู่ระบบเจ้าหน้าที่ → PIN → หน้าหลัก → คำขอใบรับรองฯ → พิจารณา → Preview & ยืนยัน → ติดตามสถานะ",
+  start: "เริ่มที่หน้าแรกเว็บไซต์",
+  noDesign: "ยังไม่มีใน Figma",
+};
+
+// หน้าที่ยังไม่มีดีไซน์ใน Figma
+export const pendingText = {
+  icon: "fas fa-pen-ruler",
+  tone: "neutral",
+  title: (name) => name,
+  description: "หน้านี้ยังไม่มีดีไซน์ใน Figma จะจัดทำหลังจากได้ดีไซน์",
+  back: "กลับหน้ารวมหน้าจอ",
 };

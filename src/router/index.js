@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "@/views/HomeView.vue";
+import { screens } from "./screens.js";
 
 const APP_TITLE = "DDC e-Pinkforms Prototype";
 
@@ -10,7 +11,7 @@ const router = createRouter({
     {
       path: "/prototype",
       name: "prototype",
-      component: () => import("@/views/PlaceholderView.vue"),
+      component: () => import("@/views/PrototypeView.vue"),
       meta: { title: "Prototype ระบบ" },
     },
     {
@@ -19,9 +20,10 @@ const router = createRouter({
       component: () => import("@/views/PlaceholderView.vue"),
       meta: { title: "คู่มือ Design System" },
     },
+    ...screens.map((x) => ({ path: x.path, name: x.name, component: x.component, meta: { title: x.title, screen: x } })),
     { path: "/:pathMatch(.*)*", redirect: { name: "home" } },
   ],
-  scrollBehavior: () => ({ top: 0 }),
+  scrollBehavior: (to) => (to.hash ? { el: to.hash, behavior: "smooth" } : { top: 0 }),
 });
 
 router.afterEach((to) => {

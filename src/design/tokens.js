@@ -139,6 +139,8 @@ export const size = {
   "portal-header": 80,
   sidebar: 264,
   topbar: 72,
+  "desktop-search": 360,
+  "auth-panel": 640,
 };
 
 // ---------- Motion ----------

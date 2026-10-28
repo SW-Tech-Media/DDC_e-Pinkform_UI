@@ -35,3 +35,11 @@ body,
   outline: none;
   box-shadow: var(--pf-shadow-focus);
 }
+
+.pf-bordered-top {
+  border-top: var(--pf-stroke-default) solid rgb(var(--v-theme-border-default));
+}
+
+.min-w-0 {
+  min-width: 0;
+}

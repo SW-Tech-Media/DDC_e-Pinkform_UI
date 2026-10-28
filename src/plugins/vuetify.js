@@ -6,6 +6,9 @@ import "@mdi/font/css/materialdesignicons.css";
 import "vuetify/styles";
 import { colors } from "@/design/tokens.js";
 
+// ช่องกรอกทุกชนิด: ขอบสี border-strong, โฟกัสสี primary
+const field = { variant: "outlined", density: "default", rounded: "lg", baseColor: "border-strong", color: "primary" };
+
 export default createVuetify({
   theme: {
     defaultTheme: "light",
@@ -27,12 +30,12 @@ export default createVuetify({
   defaults: {
     VBtn: { rounded: "lg" },
     VCard: { rounded: "xl", elevation: 0 },
-    VTextField: { variant: "outlined", density: "default", rounded: "lg" },
-    VSelect: { variant: "outlined", density: "default", rounded: "lg" },
-    VTextarea: { variant: "outlined", density: "default", rounded: "lg" },
-    VAutocomplete: { variant: "outlined", density: "default", rounded: "lg" },
-    VCombobox: { variant: "outlined", density: "default", rounded: "lg" },
-    VFileInput: { variant: "outlined", density: "default", rounded: "lg" },
+    VTextField: field,
+    VSelect: field,
+    VTextarea: field,
+    VAutocomplete: field,
+    VCombobox: field,
+    VFileInput: field,
     VDialog: { scrollable: true },
   },
 });
