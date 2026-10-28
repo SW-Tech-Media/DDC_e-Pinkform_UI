@@ -27,6 +27,10 @@ defineProps({
 .hero-crumbs {
   color: rgb(var(--v-theme-text-on-inverse-muted));
 }
+.hero-crumbs :deep(.v-breadcrumbs-item--disabled) {
+  opacity: 1;
+  color: rgb(var(--v-theme-text-on-inverse));
+}
 .hero-crumbs :deep(a) {
   color: inherit;
 }

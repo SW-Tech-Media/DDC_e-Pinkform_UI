@@ -2,7 +2,7 @@
 // Layout Back Office (Figma: Web/Sidebar + Web/Topbar) — Sidebar 264 / Topbar 72 / body padding 32
 // breadcrumb: [{ title, to? }]
 import { computed } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useDisplay } from "vuetify";
 import AppBrand from "@/components/AppBrand.vue";
 import { adminNav, adminText } from "@/content/navigation.js";
@@ -17,6 +17,12 @@ defineProps({
 
 const session = useSessionStore();
 const router = useRouter();
+const route = useRoute();
+// เมนูยัง active เมื่ออยู่ในหน้าย่อย เช่น /admin/requests/PF… → "คำขอใบรับรองฯ" (ยกเว้นหน้าหลักที่ต้องตรงทุกตัว)
+const isActive = (to) => {
+  const path = router.resolve(to).path;
+  return path === "/admin" ? route.path === path : route.path === path || route.path.startsWith(`${path}/`);
+};
 const { mdAndUp } = useDisplay();
 const drawer = defineModel("drawer", { type: Boolean, default: null });
 const crumbClass = computed(() => "pa-0 pf-type-body-sm-strong");
@@ -45,6 +51,7 @@ const logout = () => router.push({ name: "admin-login" });
             v-for="item in section.items"
             :key="item.title"
             :to="item.to"
+            :active="isActive(item.to)"
             rounded="lg"
             class="sidebar__item mb-1"
             active-class="sidebar__item--active"
@@ -70,9 +77,9 @@ const logout = () => router.push({ name: "admin-login" });
   </v-navigation-drawer>
 
   <v-app-bar :height="size.topbar" flat color="surface" class="pf-bordered-bottom">
-    <div class="d-flex align-center w-100 ga-4 px-4 px-md-8">
+    <div class="d-flex align-center w-100 ga-2 ga-md-4 px-4 px-md-8 min-w-0">
       <v-app-bar-nav-icon v-if="!mdAndUp" icon="fas fa-bars" @click="drawer = !drawer" />
-      <v-breadcrumbs :items="breadcrumb" :class="crumbClass" class="flex-grow-1 text-text-secondary">
+      <v-breadcrumbs :items="breadcrumb" :class="crumbClass" class="topbar__crumbs flex-grow-1 min-w-0 text-text-secondary">
         <template #divider>/</template>
       </v-breadcrumbs>
       <v-text-field
@@ -136,6 +143,14 @@ const logout = () => router.push({ name: "admin-login" });
 }
 .sidebar__item :deep(.v-list-item__overlay) {
   display: none;
+}
+.topbar__crumbs {
+  overflow: hidden;
+  flex-wrap: nowrap;
+}
+.topbar__crumbs :deep(.v-breadcrumbs-item--disabled) {
+  opacity: 1;
+  color: rgb(var(--v-theme-text-primary));
 }
 .topbar__search {
   width: var(--pf-size-desktop-search);

@@ -15,6 +15,8 @@ const props = defineProps({
   showPerPage: { type: Boolean, default: true },
   rowClass: { type: Function, default: null },
   hover: { type: Boolean, default: true },
+  // จำนวนทั้งหมดในระบบ (ถ้ามากกว่ารายการที่โหลดมา เช่น "จาก 1,420 รายการ")
+  total: { type: Number, default: 0 },
 });
 defineEmits(["click:row"]);
 
@@ -52,7 +54,7 @@ const rowProps = ({ item }) => (props.rowClass ? { class: props.rowClass(item) }
       <TablePagination
         v-model:page="page"
         v-model:per-page="itemsPerPage"
-        :total="items.length"
+        :total="Math.max(total, items.length)"
         :show-per-page="showPerPage"
       />
     </div>
@@ -66,9 +68,9 @@ const rowProps = ({ item }) => (props.rowClass ? { class: props.rowClass(item) }
 .pf-table :deep(th) {
   background: rgb(var(--v-theme-bg-surface-muted)) !important;
   color: rgb(var(--v-theme-text-secondary));
-  font-size: var(--pf-type-label-md-size);
-  line-height: var(--pf-type-label-md-line);
-  font-weight: var(--pf-type-label-md-weight) !important;
+  font-size: var(--pf-type-label-sm-size);
+  line-height: var(--pf-type-label-sm-line);
+  font-weight: var(--pf-type-label-sm-weight) !important;
   white-space: nowrap;
 }
 .pf-table :deep(td) {

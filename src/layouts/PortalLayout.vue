@@ -30,9 +30,8 @@ const home = props.portal ? { name: "portal-home" } : { name: "home" };
           :key="item.title"
           :to="item.to"
           variant="text"
-          color="text-secondary"
-          class="pf-type-label-md"
-          active-color="primary"
+          class="pf-type-label-md text-text-secondary"
+          active-class="portal-nav--active"
           exact
         >
           {{ item.title }}
@@ -42,7 +41,7 @@ const home = props.portal ? { name: "portal-home" } : { name: "home" };
         <slot name="actions" />
         <v-btn
           v-if="portal && mdAndUp"
-          color="bg-inverse"
+          class="bg-bg-inverse text-text-on-inverse"
           prepend-icon="fas fa-lock"
           :to="{ name: 'admin-login' }"
         >
@@ -65,3 +64,10 @@ const home = props.portal ? { name: "portal-home" } : { name: "home" };
     <PortalFooter v-if="portal" />
   </v-main>
 </template>
+
+<style scoped>
+.portal-nav--active {
+  color: rgb(var(--v-theme-text-brand)) !important;
+  background: rgb(var(--v-theme-accent-teal-subtle));
+}
+</style>

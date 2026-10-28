@@ -18,7 +18,7 @@ import { authText } from "@/content/auth.js";
           <ul class="features mt-8 d-flex flex-column ga-4">
             <li v-for="f in authText.panel.features" :key="f.text" class="d-flex align-center ga-3">
               <span class="feature-icon d-flex align-center justify-center rounded-lg bg-bg-inverse-active">
-                <v-icon :icon="f.icon" size="small" color="text-on-inverse-accent" />
+                <v-icon :icon="f.icon" size="small" class="text-text-on-inverse-accent" />
               </span>
               <span class="pf-type-body-md text-text-on-inverse">{{ f.text }}</span>
             </li>

@@ -6,6 +6,8 @@
    - สี → ชื่อสีใน `src/design/tokens.js` ผ่าน Vuetify: `color="primary"`, `class="bg-bg-subtle text-text-secondary"`, CSS `rgb(var(--v-theme-border-default))`
    - ระยะ / ขนาด / radius / เงา → `var(--pf-space-16)`, `var(--pf-size-control-md)`, `var(--pf-radius-lg)`, `var(--pf-shadow-card)`
    - ตัวอักษร → class `.pf-type-h2`, `.pf-type-body-sm`, `.pf-type-label-md`, `.pf-type-caption`, `.pf-type-kpi` … (ดู `font.scale` ใน tokens.js)
+   - ⚠️ prop `color` ของ Vuetify **ตัดคำนำหน้า `bg-` / `text-` ออก** ชื่อสีที่ขึ้นต้นด้วย `bg-` หรือ `text-` (เช่น `bg-inverse`, `text-secondary`) จึงใส่ใน `color` ไม่ได้ ให้ใช้ class แทน (`class="bg-bg-inverse text-text-on-inverse"`) หรือเขียนคำนำหน้าซ้ำ (`color="bg-bg-inverse"`, `color="text-text-link"`) — ส่วนสีอื่น (`primary`, `accent-teal-subtle`, `border-strong`, `icon-muted` …) ใส่ใน `color` ได้ตามปกติ
+   - class `rounded-*` ที่มี: `rounded-0`, `rounded-sm`, `rounded` (md), `rounded-lg`, `rounded-xl`, `rounded-pill`, `rounded-circle` — ถ้าต้องการ xs ใช้ `border-radius: var(--pf-radius-xs)`
    - ระยะห่างใช้ utility ของ Vuetify ได้ (`pa-6` = 24px = space-24, `ga-4` = 16px) เพราะฐาน 4 ตรงกับ token
    - ค่าที่ต้องเป็นตัวเลขใน JS (เช่น `:height` ของ v-btn) ใช้ `size[...]` จาก tokens.js
 2. **ใช้ Component เสมอ** — ใช้ของในโฟลเดอร์นี้ก่อน ถ้าไม่มีให้สร้าง component ใหม่ แล้วค่อยใช้ในหน้า
@@ -31,13 +33,14 @@
 | `KpiCard`          | การ์ดตัวเลข (Card/KPI)                     | `icon`, `tone`, `label`, `value`, `caption`, `trend: { direction, value, text }`              |
 | `IconTile`         | กล่องไอคอนพื้นอ่อน                         | `icon`, `tone`: teal · pink · blue · green · amber · red · neutral, `size`: md · lg              |
 | `StatusBadge`      | Badge สถานะ                              | `tone`: success · warning · danger · info · neutral · accent, `dot`                           |
+| `SecondaryButton`  | ปุ่มรอง พื้นขาว ขอบเทา ตัวอักษรเข้ม (Button/Secondary) | `icon`, `height` (ชื่อ size เช่น `control-lg`) · props อื่นส่งต่อให้ v-btn                 |
 | `AlertBox`         | กล่องแจ้งเตือน / ข้อมูล                     | `tone`, `title`, `icon` · slot `aside` (ปุ่ม/ตัวเลขด้านขวา)                                   |
 | `FilterCard`       | แผงตัวกรอง + ปุ่ม ค้นหา / ล้าง               | `showReset` · emit `search`, `reset` · ใส่ `<v-col>` + field ใน slot                           |
 | `FieldLabel`       | ป้ายชื่อเหนือช่องกรอก (Form/Field)          | `label`, `required`, `for`                                                                   |
 | `StatusTabs`       | แท็บพร้อมตัวนับ (Tab/Item)                  | `tabs: [{ value, label, count? }]` · `v-model`                                              |
-| `AppDataTable`     | ตาราง + Pagination (Table, Pagination)    | `headers`, `items`, `itemValue`, `paginate`, `perPage`, `showPerPage`, `rowClass(item)` (`'pf-row-highlight'` = แถวชมพู) · slot `item.<key>`, `no-data` · emit `click:row` |
+| `AppDataTable`     | ตาราง + Pagination (Table, Pagination)    | `headers`, `items`, `itemValue`, `paginate`, `perPage`, `showPerPage`, `total` (จำนวนรวมในระบบ), `rowClass(item)` (`'pf-row-highlight'` = แถวชมพู) · slot `item.<key>`, `no-data` · emit `click:row` |
 | `TablePagination`  | แถบเลื่อนหน้าแยก                           | `total` · `v-model:page`, `v-model:per-page`                                                |
-| `BarChart`         | กราฟแท่ง (Chart/Bar Group)                 | `labels`, `series: [{ name, color: 'chart-series-1', data }]`, `ticks`, `max`, `axisLabel`     |
+| `BarChart`         | กราฟแท่ง (Chart/Bar Group)                 | `labels`, `series: [{ name, color: 'chart-series-1', data }]`, `ticks`, `max`, `axisLabel`, `hideLegend`     |
 | `StepIndicator`    | ขั้นตอนแนวนอน (Stepper)                    | `steps: [{ label, caption? }]`, `current`, `complete`, `compact` (แบบบรรทัดเดียว ใช้หน้า Login)  |
 | `KeyValueList`     | รายการ ชื่อ–ค่า (List/Key Value)            | `items: [{ label, value }]`, `columns` · slot `value`                                         |
 | `EntryCard`        | การ์ดลิงก์ (Card/Quick Link)               | `icon`, `tone`, `title`, `description`, `cta`, `to`                                          |

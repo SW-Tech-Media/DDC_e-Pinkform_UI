@@ -9,7 +9,7 @@ defineProps({
 <template>
   <div class="d-flex align-center ga-3">
     <div class="brand-mark bg-accent d-flex align-center justify-center rounded-lg">
-      <v-icon icon="fas fa-shield-halved" color="text-on-inverse" size="small" />
+      <v-icon icon="fas fa-shield-halved" class="text-text-on-inverse" size="small" />
     </div>
     <div>
       <div class="pf-type-h4" :class="inverse ? 'text-text-on-inverse' : 'text-text-primary'">

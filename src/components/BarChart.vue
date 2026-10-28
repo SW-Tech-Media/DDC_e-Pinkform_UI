@@ -9,6 +9,7 @@ const props = defineProps({
   ticks: { type: Number, default: 4 },
   max: { type: Number, default: 0 },
   axisLabel: { type: String, default: "" },
+  hideLegend: { type: Boolean, default: false },
 });
 
 const top = computed(() => {
@@ -26,9 +27,9 @@ const fmt = (v) => v.toLocaleString("th-TH");
 
 <template>
   <div>
-    <div class="d-flex flex-wrap ga-4 mb-4">
+    <div v-if="!hideLegend" class="d-flex flex-wrap ga-4 mb-4">
       <div v-for="s in series" :key="s.name" class="d-flex align-center ga-2 pf-type-caption text-text-secondary">
-        <span class="legend-dot rounded-xs" :class="`bg-${s.color}`" />
+        <span class="legend-dot" :class="`bg-${s.color}`" />
         {{ s.name }}
       </div>
     </div>
@@ -65,6 +66,7 @@ const fmt = (v) => v.toLocaleString("th-TH");
 .legend-dot {
   width: var(--pf-space-10);
   height: var(--pf-space-10);
+  border-radius: var(--pf-radius-xs);
 }
 .axis {
   min-width: var(--pf-space-32);
