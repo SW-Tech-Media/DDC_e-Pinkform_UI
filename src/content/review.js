@@ -10,7 +10,7 @@ export const reviewText = {
 
   notFound: {
     title: "ไม่พบรายละเอียดคำขอฉบับเต็ม",
-    description: (ref) => `Prototype มีข้อมูลคำขอฉบับเต็มเฉพาะ PF6910260003 (คำขอ ${ref} ยังไม่มีข้อมูลตัวอย่าง)`,
+    description: (ref) => `ไม่พบคำขอเลขที่ ${ref} ในระบบ กรุณาตรวจสอบ Reference No. อีกครั้ง`,
     example: "เปิดคำขอตัวอย่าง",
   },
 

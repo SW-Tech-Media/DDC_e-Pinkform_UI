@@ -1,5 +1,6 @@
 // คำขอใบรับรองฯ ตัวอย่าง (ข้อมูลจาก Figma D07, D09 – D12) — ใช้ร่วมกันหลายหน้าจอ
 // status ใช้ key ใน requestStatuses
+import { operators, operatorTypes } from "./operators.js";
 
 // สถานะคำขอตาม TOR 4.4.2 (8) — tone = สี StatusBadge, step = ลำดับใน Stepper ของหน้าติดตามสถานะ (D12)
 export const requestStatuses = {
@@ -67,8 +68,122 @@ export const requests = [
 // จำนวนตามแท็บสถานะใน D09
 export const requestTabCounts = { all: 132, pending: 12, invalid: 3, approved: 96, rejected: 4, awaitingPayment: 7 };
 
+// สินค้าตัวอย่างของแต่ละบริษัท — ใช้สร้างรายละเอียดคำขอ และตัวอย่างใบรับรองฯ ของรายการที่ไม่มีข้อมูลฉบับเต็ม
+const p = (nameTh, nameEn, hs, source, sourceEn, qty) => ({ nameTh, nameEn, hs, source, sourceEn, qty });
+export const catalogue = {
+  "บริษัท สยามฟรุ๊ต เอ็กซ์ปอร์ต จำกัด": [
+    p("มะม่วงน้ำดอกไม้สด", "Fresh Mango (Nam Dok Mai)", "0804.50.20", "ฉะเชิงเทรา", "Chachoengsao", "1,000 CTN"),
+    p("มังคุดสด", "Fresh Mangosteen", "0804.50.30", "จันทบุรี", "Chanthaburi", "500 CTN"),
+    p("ลำไยอบแห้ง", "Dried Longan", "0813.40.10", "เชียงใหม่", "Chiang Mai", "300 CTN"),
+    p("ส้มโอทองดี", "Fresh Pomelo (Thong Dee)", "0805.40.00", "นครปฐม", "Nakhon Pathom", "450 CTN"),
+    p("ทุเรียนหมอนทองสด", "Fresh Durian (Monthong)", "0810.60.00", "จันทบุรี", "Chanthaburi", "600 CTN"),
+  ],
+  "บริษัท ไทยเฟรช ฟู้ด จำกัด": [
+    p("ทุเรียนหมอนทองสด", "Fresh Durian (Monthong)", "0810.60.00", "จันทบุรี", "Chanthaburi", "900 CTN"),
+    p("มะพร้าวน้ำหอม", "Aromatic Coconut", "0801.19.10", "ราชบุรี", "Ratchaburi", "1,500 CTN"),
+  ],
+  "บริษัท โกลเด้นไรซ์ เทรดดิ้ง จำกัด": [
+    p("ข้าวหอมมะลิ", "Thai Hom Mali Rice", "1006.30.30", "สุรินทร์", "Surin", "2,000 BAG"),
+    p("ข้าวกล้องหอมมะลิ", "Brown Hom Mali Rice", "1006.20.10", "ร้อยเอ็ด", "Roi Et", "800 BAG"),
+    p("ข้าวเหนียวเขี้ยวงู", "Thai Glutinous Rice (Khiao Ngu)", "1006.30.40", "เชียงราย", "Chiang Rai", "600 BAG"),
+    p("ข้าวไรซ์เบอร์รี่", "Riceberry Rice", "1006.30.99", "นครปฐม", "Nakhon Pathom", "400 BAG"),
+    p("ข้าวหอมปทุมธานี", "Pathum Thani Fragrant Rice", "1006.30.30", "ปทุมธานี", "Pathum Thani", "1,000 BAG"),
+    p("ข้าวขาว 100%", "Thai White Rice 100%", "1006.30.99", "ตาก", "Tak", "1,500 BAG"),
+  ],
+  "บริษัท อันดามัน ซีฟู้ด จำกัด": [
+    p("กุ้งขาวแช่แข็ง", "Frozen Vannamei Shrimp", "0306.17.19", "สุราษฎร์ธานี", "Surat Thani", "600 CTN"),
+    p("ปลาหมึกแช่แข็ง", "Frozen Squid", "0307.43.10", "ภูเก็ต", "Phuket", "400 CTN"),
+    p("เนื้อปูม้าพาสเจอร์ไรส์", "Pasteurized Blue Swimming Crab Meat", "1605.10.90", "ระนอง", "Ranong", "200 CTN"),
+  ],
+  "บริษัท เชียงใหม่ ออร์แกนิค จำกัด": [p("ผักสลัดออร์แกนิก", "Organic Lettuce", "0705.11.00", "เชียงใหม่", "Chiang Mai", "250 CTN")],
+  "บริษัท ทรอปิคอล แพค จำกัด": [
+    p("สับปะรดกระป๋อง", "Canned Pineapple", "2008.20.10", "ประจวบคีรีขันธ์", "Prachuap Khiri Khan", "1,200 CTN"),
+    p("ข้าวโพดหวานกระป๋อง", "Canned Sweet Corn", "2005.80.00", "กาญจนบุรี", "Kanchanaburi", "700 CTN"),
+    p("เงาะสอดไส้สับปะรดกระป๋อง", "Canned Rambutan Stuffed with Pineapple", "2008.99.90", "สุราษฎร์ธานี", "Surat Thani", "400 CTN"),
+  ],
+  "ห้างหุ้นส่วนจำกัด ราชบุรี เวจจี้": [
+    p("พริกสด", "Fresh Chili", "0709.60.10", "ราชบุรี", "Ratchaburi", "200 CTN"),
+    p("กะเพราสด", "Fresh Holy Basil", "1211.90.99", "นครปฐม", "Nakhon Pathom", "120 CTN"),
+    p("โหระพาสด", "Fresh Sweet Basil", "1211.90.99", "นครปฐม", "Nakhon Pathom", "120 CTN"),
+    p("มะเขือเปราะ", "Fresh Thai Eggplant", "0709.30.00", "ราชบุรี", "Ratchaburi", "180 CTN"),
+    p("ถั่วฝักยาว", "Fresh Yard-long Bean", "0708.20.00", "ราชบุรี", "Ratchaburi", "160 CTN"),
+    p("ตะไคร้สด", "Fresh Lemongrass", "1211.90.99", "สุพรรณบุรี", "Suphan Buri", "150 CTN"),
+    p("ข่าสด", "Fresh Galangal", "0910.99.00", "ราชบุรี", "Ratchaburi", "140 CTN"),
+    p("ใบมะกรูด", "Fresh Kaffir Lime Leaves", "1211.90.99", "นครปฐม", "Nakhon Pathom", "90 CTN"),
+  ],
+  "บริษัท มหาชัย โฟรเซ่น จำกัด": [
+    p("ปลาทูน่าแช่แข็ง", "Frozen Tuna Loin", "0304.87.00", "สมุทรสาคร", "Samut Sakhon", "500 CTN"),
+    p("กุ้งแวนนาไมนึ่งแช่แข็ง", "Frozen Cooked Vannamei Shrimp", "1605.21.00", "สมุทรสาคร", "Samut Sakhon", "350 CTN"),
+  ],
+};
+
+export const consignees = {
+  ไต้หวัน: ["Formosa Fresh Trading Co., Ltd.", "Taiwan (TW)", "Taiwan", "THLCH แหลมฉบัง → TWKHH Kaohsiung"],
+  ญี่ปุ่น: ["Tokyo Rice Wholesale K.K.", "Japan (JP)", "Japan", "THLCH แหลมฉบัง → JPTYO Tokyo"],
+  ฮ่องกง: ["Ocean Mart (HK) Ltd.", "Hong Kong (HK)", "Hong Kong", "THLCH แหลมฉบัง → HKHKG Hong Kong"],
+  มาเลเซีย: ["KL Organic Hub Sdn. Bhd.", "Malaysia (MY)", "Malaysia", "THSDO สะเดา → MYKUL Kuala Lumpur"],
+  สิงคโปร์: ["Lion City Foods Pte. Ltd.", "Singapore (SG)", "Singapore", "THLCH แหลมฉบัง → SGSIN Singapore"],
+  จีน: ["Shanghai Fresh Import Co., Ltd.", "China (CN)", "China", "THLCH แหลมฉบัง → CNSHA Shanghai"],
+  เวียดนาม: ["Saigon Seafood JSC", "Vietnam (VN)", "Vietnam", "THBKK กรุงเทพ → VNSGN Ho Chi Minh"],
+  เกาหลีใต้: ["Seoul Green Market Co., Ltd.", "South Korea (KR)", "South Korea", "THLCH แหลมฉบัง → KRPUS Busan"],
+};
+
+// แหล่งผลิตในพื้นที่โรคระบาด (ตรงกับ mocks/outbreak-areas.js) — ใช้กับรายการที่ตรวจพบของคำขอที่ flagged
+const outbreakSources = [
+  { source: "ตาก", sourceEn: "Tak", area: "ต.ท่าสายลวด อ.แม่สอด", reportedAt: "2026-10-08", freeAt: "2026-10-29" },
+  { source: "ระนอง", sourceEn: "Ranong", area: "ต.ปากน้ำ อ.เมืองระนอง", reportedAt: "2026-10-21", freeAt: "2026-11-11" },
+];
+const agents = [
+  { name: "บริษัท แหลมฉบัง ชิปปิ้ง จำกัด", taxId: "0205559011223", branch: "00000" },
+  { name: "บริษัท สยาม ชิปปิ้ง เอเจนซี่ จำกัด", taxId: "0105565098812", branch: "00001" },
+];
+const nsps = ["NSP: บริษัท ไทยอีดีไอ เซอร์วิส จำกัด", "NSP 1 · Alpha Network", "NSP 2 · Beta Connect"];
+const operatorByName = Object.fromEntries(operators.map((o) => [o.nameTh, o]));
+const shiftDays = (iso, n) => new Date(new Date(iso).getTime() - n * 86400000).toISOString().slice(0, 10);
+
+// รายละเอียดคำขอที่สร้างจากรายการคำขอ (ไม่มีประวัติสถานะ / Stepper ฉบับเต็ม — หน้า D12 ใช้ประวัติอย่างง่ายแทน)
+function generatedDetail(req, i, flaggedIndex) {
+  const op = operatorByName[req.company];
+  const goods = catalogue[req.company];
+  const [name, country, countryEn, route] = consignees[req.country];
+  const outbreak = req.flagged ? outbreakSources[flaggedIndex % outbreakSources.length] : null;
+  const items = Array.from({ length: req.items }, (_, n) => {
+    const watch = outbreak && n === req.items - 1;
+    return {
+      ...goods[n % goods.length],
+      ...(watch ? { source: outbreak.source, sourceEn: outbreak.sourceEn } : {}),
+      producedAt: shiftDays(req.submittedAt, 3 + (n % 3)),
+      result: watch ? "watch" : "ok",
+    };
+  });
+  return {
+    ref: req.ref,
+    submittedAt: req.submittedAt,
+    via: nsps[i % nsps.length],
+    signatureValid: true,
+    fee: 300,
+    exporter: {
+      nameTh: req.company,
+      nameEn: op.nameEn,
+      taxId: op.taxId,
+      branch: op.branch,
+      businessType: operatorTypes[op.type].label,
+      brand: req.brand,
+      invoice: req.invoice,
+      invoiceDate: shiftDays(req.submittedAt, 2),
+    },
+    agent: agents[i % agents.length],
+    consignee: { name, country, countryEn, route, portOfLoading: route.split(" → ")[0], transport: "ทางเรือ" },
+    autoCheckedAt: req.submittedAt,
+    items,
+    ...(outbreak ? { outbreakNote: { item: items.length, area: outbreak.area, reportedAt: outbreak.reportedAt, freeAt: outbreak.freeAt } } : {}),
+    documents: 3,
+  };
+}
+
 // รายละเอียดคำขอฉบับเต็ม (D10 – D12) — key = Reference No.
-export const requestDetails = {
+// PF6910260003 เขียนไว้ครบตาม Figma (มีประวัติสถานะและ Stepper) ส่วนคำขออื่นสร้างจาก requests
+const figmaDetails = {
   PF6910260003: {
     ref: "PF6910260003",
     submittedAt: "2026-10-26T08:42:00+07:00",
@@ -191,4 +306,10 @@ export const requestDetails = {
     currentStatus: "readyToDeliver",
     issued: { certificate: "DDC-PF 69/012845", receipt: "R69-0104412" },
   },
+};
+
+let flaggedCount = 0;
+export const requestDetails = {
+  ...Object.fromEntries(requests.map((r, i) => [r.ref, generatedDetail(r, i, r.flagged ? flaggedCount++ : 0)])),
+  ...figmaDetails,
 };

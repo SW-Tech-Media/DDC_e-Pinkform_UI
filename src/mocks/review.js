@@ -1,5 +1,5 @@
 // ข้อมูลจำลองของหน้าจอ D10 – D12 (เสริมจาก mocks/requests.js ซึ่งเป็นข้อมูลคำขอหลัก)
-import { requestDetails } from "./requests.js";
+import { requestDetails, requests } from "./requests.js";
 
 // Checklist ก่อนอนุมัติ 6 ข้อ (TOR 4.4.2) — checked = ค่าเริ่มต้นตาม Figma D10 (4 / 6)
 export const checklistItems = [
@@ -35,6 +35,18 @@ export const requestDocuments = {
   ],
 };
 
+// คำขออื่นใช้เอกสารชุดมาตรฐาน 3 ไฟล์ตามเลข Invoice
+const addSeconds = (iso, s) => new Date(new Date(iso).getTime() + s * 1000).toISOString();
+for (const r of requests) {
+  if (requestDocuments[r.ref]) continue;
+  const no = r.invoice.replace("INV-", "");
+  requestDocuments[r.ref] = [
+    { id: "inv", name: `Commercial Invoice ${r.invoice}.pdf`, type: "Invoice", size: "231 KB", icon: "far fa-file-pdf", at: addSeconds(r.submittedAt, -18) },
+    { id: "pkl", name: `Packing List PL-${no}.pdf`, type: "Packing List", size: "174 KB", icon: "far fa-file-pdf", at: addSeconds(r.submittedAt, -15) },
+    { id: "src", name: "หนังสือรับรองแหล่งผลิต (GAP).jpg", type: "หนังสือรับรองแหล่งผลิต", size: "1.1 MB", icon: "far fa-file-image", at: addSeconds(r.submittedAt, -12) },
+  ];
+}
+
 // ประวัติสถานะ ณ ขณะที่คำขอรอพิจารณา (D10) — ใหม่ → เก่า (event = key ใน reviewText.history.events)
 export const reviewHistory = {
   PF6910260003: [
@@ -43,6 +55,22 @@ export const reviewHistory = {
     { status: "received", detail: "รับจาก NSW · ลายมือชื่อดิจิทัลและ XML Schema ถูกต้อง", at: "2026-10-26T08:42:10+07:00", by: "ebXML Gateway" },
   ],
 };
+
+for (const r of requests) {
+  if (reviewHistory[r.ref]) continue;
+  const flagged = requestDetails[r.ref]?.outbreakNote;
+  reviewHistory[r.ref] = [
+    {
+      event: "autoCheck",
+      detail: flagged
+        ? `ตรวจสอบอัตโนมัติ · พบ ${r.flagged} รายการที่ต้องตรวจสอบ (แหล่งผลิตรายการที่ ${flagged.item})`
+        : "ตรวจสอบอัตโนมัติ · ผ่านทุกรายการ",
+      at: addSeconds(r.submittedAt, 14),
+      by: "ระบบ",
+    },
+    { status: "received", detail: "รับจาก NSW · ลายมือชื่อดิจิทัลและ XML Schema ถูกต้อง", at: addSeconds(r.submittedAt, 10), by: "ebXML Gateway" },
+  ];
+}
 
 // ข้อมูลการชำระ / ใบรับรองที่ออกแล้ว (ใช้ในตารางรายการติดตามสถานะ D12)
 export const trackingExtras = {
@@ -61,8 +89,6 @@ export const issuedDocuments = {
 export const undoWindowMinutes = 15;
 
 // ประวัติอย่างง่ายของคำขอที่ไม่มีข้อมูลฉบับเต็ม (สร้างจากสถานะใน requests)
-const addSeconds = (iso, s) => new Date(new Date(iso).getTime() + s * 1000).toISOString();
-
 export function simpleHistory(req) {
   return [
     {

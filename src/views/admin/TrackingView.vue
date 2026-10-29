@@ -95,19 +95,19 @@ const statusOf = (key) => requestStatuses[key];
 const current = computed(() => statusOf(req.value.statusKey));
 
 const steps = computed(() => {
-  if (full.value) return requestSteps.map((label, i) => ({ label, caption: full.value.stepTimes[i] }));
+  if (full.value?.stepTimes) return requestSteps.map((label, i) => ({ label, caption: full.value.stepTimes[i] }));
   const h = simpleHistory(req.value);
   const times = [h[2].at, h[1].at, h[0].at];
   return requestSteps.map((label, i) => ({ label, caption: times[i] ? formatTime(times[i]) : "" }));
 });
 const stepIndex = computed(() => current.value.step ?? 2);
 const currentLabel = computed(() =>
-  !full.value && req.value.statusKey === "pending" ? requestSteps[2] : current.value.label
+  !full.value?.history && req.value.statusKey === "pending" ? requestSteps[2] : current.value.label
 );
 const currentTone = computed(() => (current.value.final ? current.value.tone : "accent"));
 
 const history = computed(() => {
-  if (full.value) return full.value.history;
+  if (full.value?.history) return full.value.history;
   return [...(store.record(req.value.ref)?.events ?? []), ...simpleHistory(req.value)];
 });
 
