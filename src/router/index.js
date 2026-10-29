@@ -17,7 +17,7 @@ const router = createRouter({
     {
       path: "/design-system",
       name: "design-system",
-      component: () => import("@/views/PlaceholderView.vue"),
+      component: () => import("@/views/DesignSystemView.vue"),
       meta: { title: "คู่มือ Design System" },
     },
     ...screens.map((x) => ({ path: x.path, name: x.name, component: x.component, meta: { title: x.title, screen: x } })),

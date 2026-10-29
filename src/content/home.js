@@ -27,17 +27,6 @@ export const home = {
   ],
 };
 
-// หน้าที่ยังไม่ได้จัดทำ แสดงเป็น EmptyState
-export const placeholders = {
-  "design-system": {
-    icon: "fas fa-swatchbook",
-    tone: "pink",
-    title: "คู่มือ Design System",
-    description: "กำลังจัดทำคู่มือ Design Token และ Component ของระบบ",
-  },
-  backLabel: "กลับหน้าแรก",
-};
-
 // หน้ารวมหน้าจอ Prototype (/prototype)
 export const prototypeText = {
   home: "หน้าแรก",

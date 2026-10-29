@@ -18,6 +18,16 @@ export const patchNotesText = {
 
 export const patchNotes = [
   {
+    version: "0.3.1",
+    date: "2026-10-29",
+    title: "คู่มือ Design System",
+    changes: [
+      { type: "added", text: "หน้าคู่มือ Design System (/design-system): หลักการใช้งาน, สีทุก Token พร้อมค่า Contrast, Type Scale, Spacing, Radius, Elevation, ขนาด/Layout, ไอคอน และตัวอย่าง Component จริงทุกตัวพร้อม Props" },
+      { type: "added", text: "คลิกช่องสี / class / ไอคอน เพื่อคัดลอกชื่อ Token · เมนูหัวข้อด้านซ้ายไฮไลต์ตามตำแหน่งที่อ่าน" },
+      { type: "removed", text: "หน้า Placeholder “กำลังจัดทำคู่มือ” ของ Design System" },
+    ],
+  },
+  {
     version: "0.3.0",
     date: "2026-10-29",
     title: "หน้าจอครบตาม Flow และ TOR",

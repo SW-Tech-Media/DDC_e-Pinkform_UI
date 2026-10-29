@@ -58,6 +58,8 @@
 
 > อ่านรายละเอียด props จริงในไฟล์ก่อนใช้ทุกครั้ง · ห้ามสร้างตัวซ้ำของ component ในตารางนี้
 
+> คู่มือแบบดูได้จริง (สี ตัวอักษร ระยะ ไอคอน และตัวอย่าง Component ทุกตัว) อยู่ที่หน้า `/design-system` (`src/views/DesignSystemView.vue`) — เพิ่ม Component ใหม่ในตารางนี้แล้วให้เพิ่มตัวอย่างใน `src/content/design-system.js` ด้วย
+
 Component เฉพาะกลุ่มหน้าจอ ให้สร้างในโฟลเดอร์ย่อย เช่น `components/portal/`, `components/auth/`, `components/requests/`
 
 ## ข้อมูลที่ใช้ร่วมกัน
