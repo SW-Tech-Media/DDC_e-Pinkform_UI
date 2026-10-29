@@ -1,7 +1,7 @@
 <script setup>
 // Dialog ตั้งค่า CPA อย่างง่าย (TOR 4.6.1 (1) — Figma ยังไม่มีหน้า B-23)
 import { computed, ref, watch } from "vue";
-import AppDialog from "@/components/payments/AppDialog.vue";
+import AppDialog from "@/components/AppDialog.vue";
 import FieldLabel from "@/components/FieldLabel.vue";
 import AlertBox from "@/components/AlertBox.vue";
 import { ebxmlText } from "@/content/ebxml.js";

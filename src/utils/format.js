@@ -3,6 +3,7 @@ const thaiShort = new Intl.DateTimeFormat("th-TH", { day: "2-digit", month: "2-d
 const time = new Intl.DateTimeFormat("th-TH", { hour: "2-digit", minute: "2-digit", hour12: false });
 const timeSec = new Intl.DateTimeFormat("th-TH", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
 const thaiShortMonth = new Intl.DateTimeFormat("th-TH", { day: "numeric", month: "short", year: "numeric" });
+const monthYear = new Intl.DateTimeFormat("th-TH", { month: "short", year: "numeric" });
 const weekday = new Intl.DateTimeFormat("th-TH", { weekday: "long" });
 const money = new Intl.NumberFormat("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const number = new Intl.NumberFormat("th-TH");
@@ -13,6 +14,8 @@ const toDate = (v) => (v instanceof Date ? v : new Date(/^\d{4}-\d{2}-\d{2}$/.te
 export const formatThaiDate = (v) => thaiDate.format(toDate(v));
 // → "28 ต.ค. 2569"
 export const formatShortThaiDate = (v) => thaiShortMonth.format(toDate(v));
+// → "ต.ค. 2569"
+export const formatMonthYear = (v) => monthYear.format(toDate(v));
 // → "วันอังคาร"
 export const formatWeekday = (v) => weekday.format(toDate(v));
 // → "28/10/2569"

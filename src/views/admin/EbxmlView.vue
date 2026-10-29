@@ -7,11 +7,11 @@ import KpiCard from "@/components/KpiCard.vue";
 import AppDataTable from "@/components/AppDataTable.vue";
 import StatusBadge from "@/components/StatusBadge.vue";
 import EmptyState from "@/components/EmptyState.vue";
-import OutlineButton from "@/components/payments/OutlineButton.vue";
-import TableIconButton from "@/components/payments/TableIconButton.vue";
-import AppDialog from "@/components/payments/AppDialog.vue";
-import DateField from "@/components/outbreak/DateField.vue";
-import XmlViewer from "@/components/ebxml/XmlViewer.vue";
+import SecondaryButton from "@/components/SecondaryButton.vue";
+import TableIconButton from "@/components/TableIconButton.vue";
+import AppDialog from "@/components/AppDialog.vue";
+import DateField from "@/components/DateField.vue";
+import CodeViewer from "@/components/CodeViewer.vue";
 import RetryHistory from "@/components/ebxml/RetryHistory.vue";
 import CpaDialog from "@/components/ebxml/CpaDialog.vue";
 import { buildHeaderXml, buildPayloadXml, ebxmlText as t } from "@/content/ebxml.js";
@@ -104,10 +104,10 @@ const cpaOpen = ref(false);
   <AdminLayout :breadcrumb="t.breadcrumb">
     <PageHeader :title="t.title" :description="t.description">
       <template #actions>
-        <OutlineButton prepend-icon="fas fa-sliders" @click="cpaOpen = true">{{ t.actions.cpa }}</OutlineButton>
-        <OutlineButton prepend-icon="fas fa-download" @click="notify(t.actions.exported(filtered.length))">
+        <SecondaryButton prepend-icon="fas fa-sliders" @click="cpaOpen = true">{{ t.actions.cpa }}</SecondaryButton>
+        <SecondaryButton prepend-icon="fas fa-download" @click="notify(t.actions.exported(filtered.length))">
           {{ t.actions.exportLog }}
-        </OutlineButton>
+        </SecondaryButton>
       </template>
     </PageHeader>
 
@@ -176,7 +176,7 @@ const cpaOpen = ref(false);
 
       <v-row v-if="selected" no-gutters class="detail">
         <v-col cols="12" lg="7">
-          <XmlViewer
+          <CodeViewer
             :lines="buildHeaderXml(selected)"
             :title="t.detail.header(selected.short)"
             :caption="selected.routeLabel"
@@ -194,9 +194,9 @@ const cpaOpen = ref(false);
             >
               {{ t.detail.resendNow }}
             </v-btn>
-            <OutlineButton prepend-icon="fas fa-code" :height="size['control-md']" @click="openPayload(selected)">
+            <SecondaryButton prepend-icon="fas fa-code" :height="size['control-md']" @click="openPayload(selected)">
               {{ t.detail.viewPayload }}
-            </OutlineButton>
+            </SecondaryButton>
           </div>
         </v-col>
       </v-row>
@@ -210,10 +210,10 @@ const cpaOpen = ref(false);
       wide
     >
       <div class="rounded-lg overflow-hidden">
-        <XmlViewer v-if="payload.msg" :lines="buildPayloadXml(payload.msg)" />
+        <CodeViewer v-if="payload.msg" :lines="buildPayloadXml(payload.msg)" />
       </div>
       <template #actions>
-        <OutlineButton prepend-icon="far fa-copy" :height="size['control-md']" @click="copyPayload">{{ t.payload.copy }}</OutlineButton>
+        <SecondaryButton prepend-icon="far fa-copy" :height="size['control-md']" @click="copyPayload">{{ t.payload.copy }}</SecondaryButton>
         <v-btn color="primary" :height="size['control-md']" @click="payload.open = false">{{ common.actions.close }}</v-btn>
       </template>
     </AppDialog>

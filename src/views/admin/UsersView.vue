@@ -7,10 +7,10 @@ import StatusTabs from "@/components/StatusTabs.vue";
 import AppDataTable from "@/components/AppDataTable.vue";
 import StatusBadge from "@/components/StatusBadge.vue";
 import EmptyState from "@/components/EmptyState.vue";
-import OutlineButton from "@/components/payments/OutlineButton.vue";
-import TableIconButton from "@/components/payments/TableIconButton.vue";
-import AppDialog from "@/components/payments/AppDialog.vue";
-import ConfirmDialog from "@/components/users/ConfirmDialog.vue";
+import SecondaryButton from "@/components/SecondaryButton.vue";
+import TableIconButton from "@/components/TableIconButton.vue";
+import AppDialog from "@/components/AppDialog.vue";
+import ConfirmDialog from "@/components/ConfirmDialog.vue";
 import PermissionMatrix from "@/components/users/PermissionMatrix.vue";
 import UserFormDialog from "@/components/users/UserFormDialog.vue";
 import { usersText as t } from "@/content/users-roles.js";
@@ -142,7 +142,7 @@ const historyOpen = ref(false);
   <AdminLayout :breadcrumb="t.breadcrumb">
     <PageHeader :title="t.title" :description="t.description">
       <template #actions>
-        <OutlineButton prepend-icon="fas fa-list" @click="historyOpen = true">{{ t.actions.history }}</OutlineButton>
+        <SecondaryButton prepend-icon="fas fa-list" @click="historyOpen = true">{{ t.actions.history }}</SecondaryButton>
         <v-btn color="primary" prepend-icon="fas fa-plus" :height="size['control-lg']" @click="openEditor()">
           {{ t.actions.add }}
         </v-btn>
@@ -281,9 +281,9 @@ const historyOpen = ref(false);
             />
             <div class="d-flex flex-wrap align-center justify-end ga-2 mt-4">
               <span v-if="dirty" class="pf-type-caption text-status-warning-fg me-auto">{{ t.permissions.unsaved }}</span>
-              <OutlineButton :height="size['control-md']" :disabled="!dirty" @click="loadDraft">
+              <SecondaryButton :height="size['control-md']" :disabled="!dirty" @click="loadDraft">
                 {{ t.permissions.cancel }}
-              </OutlineButton>
+              </SecondaryButton>
               <v-btn color="primary" :height="size['control-md']" @click="savePermissions">{{ t.permissions.save }}</v-btn>
             </div>
           </div>

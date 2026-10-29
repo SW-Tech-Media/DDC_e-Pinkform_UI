@@ -9,9 +9,9 @@ import AppDataTable from "@/components/AppDataTable.vue";
 import StatusBadge from "@/components/StatusBadge.vue";
 import AlertBox from "@/components/AlertBox.vue";
 import KeyValueList from "@/components/KeyValueList.vue";
-import OutlineButton from "@/components/payments/OutlineButton.vue";
-import TableIconButton from "@/components/payments/TableIconButton.vue";
-import AppDialog from "@/components/payments/AppDialog.vue";
+import SecondaryButton from "@/components/SecondaryButton.vue";
+import TableIconButton from "@/components/TableIconButton.vue";
+import AppDialog from "@/components/AppDialog.vue";
 import AlertSettingsForm from "@/components/pki/AlertSettingsForm.vue";
 import AgentList from "@/components/pki/AgentList.vue";
 import CertImportDialog from "@/components/pki/CertImportDialog.vue";
@@ -121,7 +121,7 @@ const switchEnv = (value) => {
       <template #actions>
         <v-menu>
           <template #activator="{ props }">
-            <OutlineButton v-bind="props" append-icon="fas fa-chevron-down">{{ t.env[env] }}</OutlineButton>
+            <SecondaryButton v-bind="props" append-icon="fas fa-chevron-down">{{ t.env[env] }}</SecondaryButton>
           </template>
           <v-list density="compact">
             <v-list-item
@@ -194,9 +194,9 @@ const switchEnv = (value) => {
         </template>
       </KeyValueList>
       <template #actions>
-        <OutlineButton prepend-icon="fas fa-arrows-rotate" :height="size['control-md']" @click="recheck(detail.cert)">
+        <SecondaryButton prepend-icon="fas fa-arrows-rotate" :height="size['control-md']" @click="recheck(detail.cert)">
           {{ t.recheck }}
-        </OutlineButton>
+        </SecondaryButton>
         <v-btn color="primary" :height="size['control-md']" @click="detail.open = false">{{ common.actions.close }}</v-btn>
       </template>
     </AppDialog>

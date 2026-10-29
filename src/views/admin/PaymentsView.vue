@@ -9,11 +9,11 @@ import FieldLabel from "@/components/FieldLabel.vue";
 import AppDataTable from "@/components/AppDataTable.vue";
 import StatusBadge from "@/components/StatusBadge.vue";
 import EmptyState from "@/components/EmptyState.vue";
-import OutlineButton from "@/components/payments/OutlineButton.vue";
-import TableIconButton from "@/components/payments/TableIconButton.vue";
+import SecondaryButton from "@/components/SecondaryButton.vue";
+import TableIconButton from "@/components/TableIconButton.vue";
 import PaymentDetailDialog from "@/components/payments/PaymentDetailDialog.vue";
-import AppDialog from "@/components/payments/AppDialog.vue";
-import DateField from "@/components/outbreak/DateField.vue";
+import AppDialog from "@/components/AppDialog.vue";
+import DateField from "@/components/DateField.vue";
 import { paymentsText as t } from "@/content/payments.js";
 import { common } from "@/content/common.js";
 import { banks, paymentKpis, paymentStatuses, payments, paymentToday } from "@/mocks/payments.js";
@@ -98,9 +98,9 @@ const downloadReport = () => {
   <AdminLayout :breadcrumb="t.breadcrumb">
     <PageHeader :title="t.title" :description="t.description">
       <template #actions>
-        <OutlineButton prepend-icon="fas fa-arrows-rotate" @click="reconcileOpen = true">
+        <SecondaryButton prepend-icon="fas fa-arrows-rotate" @click="reconcileOpen = true">
           {{ t.actions.reconcile }}
-        </OutlineButton>
+        </SecondaryButton>
         <v-btn color="primary" prepend-icon="fas fa-download" :height="size['control-lg']" @click="reportOpen = true">
           {{ t.actions.dailyReport }}
         </v-btn>

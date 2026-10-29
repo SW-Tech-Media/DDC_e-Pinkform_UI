@@ -49,6 +49,7 @@ const target = (x) => ({ name: x.name, params: x.example ?? {} });
             <template #append>
               <div class="d-flex align-center ga-2">
                 <StatusBadge v-for="f in x.figma" :key="f" tone="info">{{ f }}</StatusBadge>
+                <StatusBadge v-if="x.proposed" tone="accent">{{ t.proposed }}</StatusBadge>
                 <StatusBadge v-if="!x.design" tone="neutral">{{ t.noDesign }}</StatusBadge>
                 <v-icon icon="fas fa-chevron-right" size="x-small" color="icon-muted" class="ms-2" />
               </div>

@@ -28,7 +28,7 @@ export const portalText = {
         title: "ข้อมูล",
         links: [
           { title: "กฎหมายที่เกี่ยวข้อง", to: { name: "portal-laws" } },
-          { title: "คู่มือการใช้งาน", to: { name: "portal-laws" } },
+          { title: "คู่มือการใช้งาน", to: { name: "portal-laws", query: { tab: "manual" } } },
           { title: "แบบสอบถามความพึงพอใจ", to: { name: "portal-survey" } },
         ],
       },
@@ -40,7 +40,7 @@ export const portalText = {
     copyright: "© 2569 กรมควบคุมโรค",
     policies: [
       { title: "นโยบายคุกกี้", to: { name: "portal-cookies" } },
-      { title: "นโยบายความเป็นส่วนตัว", to: { name: "portal-cookies" } },
+      { title: "นโยบายความเป็นส่วนตัว", to: { name: "portal-cookies", query: { tab: "privacy" } } },
     ],
     visitors: (total, today) =>
       `ผู้เข้าชมทั้งหมด ${total.toLocaleString("th-TH")} ครั้ง · วันนี้ ${today.toLocaleString("th-TH")}`,
@@ -73,13 +73,30 @@ export const adminNav = [
       { title: "ข้อมูลหลักอื่น ๆ", icon: "database", to: { name: "admin-master-data" } },
     ],
   },
-  { group: "รายงาน", items: [{ title: "รายงานสรุป", icon: "bar-chart", to: { name: "admin-reports" } }] },
+  {
+    group: "รายงาน",
+    items: [
+      { title: "รายงานสรุป", icon: "bar-chart", to: { name: "admin-reports" } },
+      { title: "รายงานผู้เข้าชม", icon: "eye", to: { name: "admin-visitors" } },
+    ],
+  },
+  // กลุ่มเว็บไซต์ (TOR 4.5 — Figma ยังไม่มี)
+  {
+    group: "เว็บไซต์ประชาสัมพันธ์",
+    items: [
+      { title: "จัดการเนื้อหา", icon: "book", to: { name: "admin-content" } },
+      { title: "แบบสอบถาม", icon: "clipboard-check", to: { name: "admin-surveys" } },
+    ],
+  },
   {
     group: "ผู้ดูแลระบบ",
     items: [
       { title: "ผู้ใช้งานและสิทธิ์", icon: "users", to: { name: "admin-users" } },
       { title: "ติดตาม ebXML", icon: "server", to: { name: "admin-ebxml" } },
       { title: "ใบรับรอง PKI", icon: "key", to: { name: "admin-pki" } },
+      { title: "ตั้งค่า CPA", icon: "settings", to: { name: "admin-cpa" } },
+      { title: "ติดตาม API", icon: "code", to: { name: "admin-api" } },
+      { title: "ส่งข้อมูลระบบงานภายใน", icon: "refresh", to: { name: "admin-backoffice-sync" } },
       { title: "Audit Log", icon: "list", to: { name: "admin-audit-log" } },
     ],
   },

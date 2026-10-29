@@ -1,7 +1,7 @@
 <script setup>
 // Dialog เพิ่ม / แก้ไขผู้ใช้งาน (D15 › ปุ่ม "+ เพิ่มผู้ใช้งาน" และปุ่มแก้ไขในตาราง)
 import { ref, watch } from "vue";
-import AppDialog from "@/components/payments/AppDialog.vue";
+import AppDialog from "@/components/AppDialog.vue";
 import FieldLabel from "@/components/FieldLabel.vue";
 import { usersText } from "@/content/users-roles.js";
 import { common } from "@/content/common.js";

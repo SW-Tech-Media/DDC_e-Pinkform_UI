@@ -4,8 +4,8 @@
 import { computed, ref } from "vue";
 import FieldLabel from "@/components/FieldLabel.vue";
 import AlertBox from "@/components/AlertBox.vue";
-import OutlineButton from "@/components/payments/OutlineButton.vue";
-import DateField from "./DateField.vue";
+import SecondaryButton from "@/components/SecondaryButton.vue";
+import DateField from "@/components/DateField.vue";
 import { outbreakText } from "@/content/outbreak-areas.js";
 import { diseaseFreeDays, geography } from "@/mocks/outbreak-areas.js";
 import { formatDate } from "@/utils/format.js";
@@ -125,7 +125,7 @@ const clear = () => {
         <AlertBox tone="info">{{ t.info(diseaseFreeDays) }}</AlertBox>
         <p class="pf-type-caption text-text-tertiary">{{ recorder }}</p>
         <div class="d-flex ga-3">
-          <OutlineButton class="flex-1-1" @click="clear">{{ editing ? t.cancelEdit : t.clear }}</OutlineButton>
+          <SecondaryButton class="flex-1-1" @click="clear">{{ editing ? t.cancelEdit : t.clear }}</SecondaryButton>
           <v-btn type="submit" color="primary" prepend-icon="fas fa-check" class="flex-1-1" :height="size['control-lg']">
             {{ editing ? t.update : t.save }}
           </v-btn>

@@ -78,7 +78,7 @@ export const homeText = {
   // Quick Links ท้ายหน้า (เดสก์ท็อป)
   quickLinks: [
     { icon: "fas fa-scale-balanced", title: "กฎหมายที่เกี่ยวข้อง", caption: "พ.ร.บ. ประกาศ และระเบียบ", to: { name: "portal-laws" } },
-    { icon: "fas fa-book", title: "คู่มือการใช้งาน", caption: "สำหรับผู้ประกอบการ", to: { name: "portal-laws" } },
+    { icon: "fas fa-book", title: "คู่มือการใช้งาน", caption: "สำหรับผู้ประกอบการ", to: { name: "portal-laws", query: { tab: "manual" } } },
     { icon: "fas fa-clipboard-check", title: "แบบสอบถาม", caption: "ประเมินความพึงพอใจ", to: { name: "portal-survey" } },
     { icon: "fas fa-mobile-screen", title: "ติดต่อเจ้าหน้าที่", caption: "กองโรคติดต่อทั่วไป", to: { name: "portal-laws" } },
   ],

@@ -20,7 +20,13 @@ const svg = computed(() => byName[props.name] ?? "");
 </template>
 
 <style scoped>
+/* ไอคอนจาก Figma มีทั้งขนาด 20 และ 24 — ย่อ/ขยายตามกล่อง โดยคงความหนาเส้น 2 */
+.svg-icon :deep(svg) {
+  width: 100%;
+  height: 100%;
+}
 .svg-icon :deep([stroke]) {
   stroke: currentColor;
+  vector-effect: non-scaling-stroke;
 }
 </style>

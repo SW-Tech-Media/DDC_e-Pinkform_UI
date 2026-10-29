@@ -3,7 +3,7 @@
 import { ref } from "vue";
 import SectionCard from "@/components/SectionCard.vue";
 import FieldLabel from "@/components/FieldLabel.vue";
-import SegmentedControl from "./SegmentedControl.vue";
+import SegmentedControl from "@/components/SegmentedControl.vue";
 import { pkiText } from "@/content/pki.js";
 import { alertSettings } from "@/mocks/pki.js";
 import { size } from "@/design/tokens.js";

@@ -18,6 +18,21 @@ export const patchNotesText = {
 
 export const patchNotes = [
   {
+    version: "0.3.0",
+    date: "2026-10-29",
+    title: "หน้าจอครบตาม Flow และ TOR",
+    changes: [
+      { type: "added", text: "Portal: ข่าวประชาสัมพันธ์ + รายละเอียดข่าว (P-04), กฎหมายและคู่มือ (P-05), แบบสอบถามความพึงพอใจ (P-06), นโยบายคุกกี้ / ความเป็นส่วนตัว (P-07)" },
+      { type: "added", text: "ลืม PIN / ตั้ง PIN ใหม่ผ่านลิงก์อีเมล (B-01.4) เชื่อมจากหน้า PIN และบัญชีถูกล็อก" },
+      { type: "added", text: "พิจารณาอนุมัติ THNSW (B-04), ข้อมูลใบรับรองฯ (B-10), ใบเสร็จรับเงิน (B-12), รายงานสรุป ส่งออก CSV (B-13)" },
+      { type: "added", text: "ข้อมูลหลัก 14 ชุด (B-15), Audit Log พร้อมข้อมูลก่อน–หลังแก้ไข (B-19), รายงานผู้เข้าชมเว็บไซต์ (B-20)" },
+      { type: "added", text: "หน้าที่เสนอเพิ่มตาม TOR: จัดการเนื้อหาเว็บไซต์ (B-21), จัดการแบบสอบถามและผล (B-22), ตั้งค่า CPA (B-23), ติดตาม API (B-24), ส่งข้อมูลระบบงานภายใน DDC (B-25)" },
+      { type: "added", text: "เมนู Sidebar ใหม่: รายงานผู้เข้าชม, กลุ่มเว็บไซต์ประชาสัมพันธ์, ตั้งค่า CPA, ติดตาม API, ส่งข้อมูลระบบงานภายใน (ไอคอนจาก Figma)" },
+      { type: "changed", text: "รวม Component ที่ซ้ำกันเป็นของกลาง: AppDialog, ConfirmDialog, DateField, SegmentedControl, TableIconButton, CodeViewer, SecondaryButton และ utils/csv.js" },
+      { type: "fixed", text: "ข้อมูลจำลองการชำระเงินให้ตรงกับคำขอ ใบเสร็จ และทะเบียนผู้ประกอบการ; ลิงก์คู่มือ / นโยบายความเป็นส่วนตัวเปิดแท็บที่ถูกต้อง" },
+    ],
+  },
+  {
     version: "0.2.1",
     date: "2026-10-29",
     title: "ปรับ Sidebar ให้ตรง Figma",

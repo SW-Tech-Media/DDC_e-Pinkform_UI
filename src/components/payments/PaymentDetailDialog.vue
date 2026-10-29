@@ -1,7 +1,7 @@
 <script setup>
 // Dialog รายละเอียดการชำระเงิน (D13 › ปุ่ม View)
 import { computed } from "vue";
-import AppDialog from "./AppDialog.vue";
+import AppDialog from "@/components/AppDialog.vue";
 import AlertBox from "@/components/AlertBox.vue";
 import KeyValueList from "@/components/KeyValueList.vue";
 import StatusBadge from "@/components/StatusBadge.vue";

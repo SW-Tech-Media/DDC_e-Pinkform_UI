@@ -47,6 +47,7 @@ export const prototypeText = {
   startText: "Portal → เข้าสู่ระบบเจ้าหน้าที่ → PIN → หน้าหลัก → คำขอใบรับรองฯ → พิจารณา → Preview & ยืนยัน → ติดตามสถานะ",
   start: "เริ่มที่หน้าแรกเว็บไซต์",
   noDesign: "ยังไม่มีใน Figma",
+  proposed: "เสนอเพิ่มตาม TOR",
 };
 
 // หน้าที่ยังไม่มีดีไซน์ใน Figma

@@ -4,12 +4,13 @@ import { size } from "@/design/tokens.js";
 
 defineProps({
   icon: { type: String, default: "" },
-  height: { type: String, default: "control-lg" },
+  // ชื่อ size ใน tokens.js (เช่น "control-md") หรือตัวเลขจาก size[...]
+  height: { type: [String, Number], default: "control-lg" },
 });
 </script>
 
 <template>
-  <v-btn variant="outlined" :height="size[height]" class="secondary-btn bg-surface">
+  <v-btn variant="outlined" :height="typeof height === 'number' ? height : size[height]" class="secondary-btn bg-surface">
     <v-icon v-if="icon" :icon="icon" start />
     <slot />
   </v-btn>

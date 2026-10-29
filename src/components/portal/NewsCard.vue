@@ -1,19 +1,23 @@
 <script setup>
 // การ์ดข่าวประชาสัมพันธ์ (Figma D01 › ข่าวประชาสัมพันธ์)
-// item: { category, date, title, icon, cover: 'primary' | 'accent' | 'info' }
+// item: { id, category, date, title, icon, cover: 'primary' | 'accent' | 'info' }
+// ลิงก์: มี item.id → หน้ารายละเอียดข่าว (P-04) · ไม่มี → ใช้ prop to
+import { computed } from "vue";
 import StatusBadge from "@/components/StatusBadge.vue";
-import { formatThaiDate } from "@/utils/format.js";
+import { formatShortThaiDate } from "@/utils/format.js";
 
-defineProps({
+const props = defineProps({
   item: { type: Object, required: true },
   readMore: { type: String, required: true },
-  to: { type: [String, Object], required: true },
+  to: { type: [String, Object], default: undefined },
 });
+
+const link = computed(() => (props.item.id ? { name: "portal-news-detail", params: { id: props.item.id } } : props.to));
 
 </script>
 
 <template>
-  <v-card :to="to" class="news pf-bordered h-100 d-flex flex-column" :ripple="false">
+  <v-card :to="link" class="news pf-bordered h-100 d-flex flex-column" :ripple="false">
     <div class="news__cover position-relative d-flex align-center justify-center" :class="`bg-${item.cover}`">
       <span class="news__circle news__circle--a" />
       <span class="news__circle news__circle--b" />
@@ -22,7 +26,7 @@ defineProps({
     <div class="pa-5 d-flex flex-column flex-grow-1">
       <div class="d-flex align-center justify-space-between ga-2">
         <StatusBadge tone="accent">{{ item.category }}</StatusBadge>
-        <span class="pf-type-caption text-text-tertiary">{{ formatThaiDate(item.date) }}</span>
+        <span class="pf-type-caption text-text-tertiary">{{ formatShortThaiDate(item.date) }}</span>
       </div>
       <h3 class="pf-type-body-md-strong text-text-primary mt-3 flex-grow-1">{{ item.title }}</h3>
       <div class="d-flex align-center ga-2 mt-3 pf-type-label-md text-text-link">

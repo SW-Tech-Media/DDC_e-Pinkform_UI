@@ -1,0 +1,158 @@
+// ข้อมูลจำลองหน้า B-23 · ตั้งค่า CPA / การเชื่อมต่อ ebMS (เสนอเพิ่ม — TOR 4.6.1 (1), 8.6)
+// CPA ID / PartyId สอดคล้องกับ mocks/ebxml.js และใบรับรองใน mocks/pki.js
+
+export const cpaNow = "2026-10-26T11:30:00";
+
+export const cpaStatuses = {
+  active: { label: "ใช้งาน", tone: "success" },
+  testing: { label: "ทดสอบ", tone: "info" },
+  inactive: { label: "ปิดใช้งาน", tone: "neutral" },
+};
+
+export const ownPartyId = "DDC-PINKFORMS";
+
+export const certificateOptions = [
+  "CN=Thailand NSW Gateway",
+  "CN=Bank 006 ePayment",
+  "CN=Bank 014 ePayment",
+  "CN=Customs e-Licensing Gateway",
+  "CN=NSP Alpha Gateway",
+  "CN=NSP Beta Gateway",
+];
+
+const h = (version, at, by, note) => ({ version, at, by, note });
+
+export const cpaList = [
+  {
+    id: "NSW_DDC_CPA_v2",
+    partner: "National Single Window (NSW)",
+    partyId: "THNSW",
+    service: "HealthCertificate",
+    actions: ["Request", "Issue", "Acknowledgment"],
+    version: "2.3",
+    endpoint: "https://gw.nsw.example/ebms",
+    certificate: "CN=Thailand NSW Gateway",
+    status: "active",
+    retries: 5,
+    interval: 60,
+    timeout: 30,
+    signature: true,
+    encryption: true,
+    validTo: "2027-09-30",
+    testResult: "success",
+    history: [
+      h("2.3", "2026-09-12T10:20:00", "ธนกร ศรีสุข", "ปรับ Retry Interval เป็น 60 วินาที ตามข้อตกลง NSW"),
+      h("2.2", "2026-06-03T14:05:00", "ธนกร ศรีสุข", "ต่ออายุใบรับรอง Partner ของ NSW"),
+      h("2.0", "2026-01-15T09:00:00", "ระบบ", "นำเข้า CPA 2.0 ฉบับแรก"),
+    ],
+  },
+  {
+    id: "DDC_BANK006_CPA_v2",
+    partner: "ธนาคาร A (006)",
+    partyId: "BANK-006",
+    service: "PaymentOrder / PaymentResult",
+    actions: ["Submit", "Notify"],
+    version: "2.1",
+    endpoint: "https://ebms.bank-a.example/inbound",
+    certificate: "CN=Bank 006 ePayment",
+    status: "active",
+    retries: 5,
+    interval: 60,
+    timeout: 45,
+    signature: true,
+    encryption: true,
+    validTo: "2027-03-31",
+    testResult: "success",
+    history: [
+      h("2.1", "2026-08-20T11:40:00", "ธนกร ศรีสุข", "เพิ่ม Action Notify สำหรับผลการชำระเงิน"),
+      h("2.0", "2026-02-01T09:00:00", "ระบบ", "นำเข้า CPA 2.0 ฉบับแรก"),
+    ],
+  },
+  {
+    id: "DDC_BANK014_CPA_v2",
+    partner: "ธนาคาร B (014)",
+    partyId: "BANK-014",
+    service: "PaymentOrder / PaymentResult",
+    actions: ["Submit", "Notify"],
+    version: "2.0",
+    endpoint: "https://ebms.bank-b.example/inbound",
+    certificate: "CN=Bank 014 ePayment",
+    status: "active",
+    retries: 5,
+    interval: 60,
+    timeout: 30,
+    signature: true,
+    encryption: true,
+    validTo: "2027-03-31",
+    testResult: "fail",
+    history: [h("2.0", "2026-02-01T09:00:00", "ระบบ", "นำเข้า CPA 2.0 ฉบับแรก")],
+  },
+  {
+    id: "DDC_ELIC_CPA_v1",
+    partner: "กรมศุลกากร (e-Licensing)",
+    partyId: "E-LICENSING",
+    service: "HealthCertificate",
+    actions: ["Issue"],
+    version: "1.4",
+    endpoint: "https://elicensing.example/ebms",
+    certificate: "CN=Customs e-Licensing Gateway",
+    status: "active",
+    retries: 3,
+    interval: 120,
+    timeout: 60,
+    signature: true,
+    encryption: false,
+    validTo: "2026-12-31",
+    testResult: "success",
+    history: [
+      h("1.4", "2026-07-01T15:10:00", "ธนกร ศรีสุข", "เปลี่ยน Endpoint ตามประกาศกรมศุลกากร"),
+      h("1.3", "2026-03-18T10:00:00", "ธนกร ศรีสุข", "ลด Retry สูงสุดเหลือ 3 ครั้ง"),
+    ],
+  },
+  {
+    id: "DDC_NSP01_CPA_v2",
+    partner: "NSP 1 · Alpha Network",
+    partyId: "NSP-ALPHA",
+    service: "HealthCertificate",
+    actions: ["Request", "Acknowledgment"],
+    version: "2.0",
+    endpoint: "https://ebms.nsp-alpha.example/msh",
+    certificate: "CN=NSP Alpha Gateway",
+    status: "active",
+    retries: 5,
+    interval: 60,
+    timeout: 30,
+    signature: true,
+    encryption: true,
+    validTo: "2027-06-30",
+    testResult: "success",
+    history: [h("2.0", "2026-04-10T09:30:00", "ธนกร ศรีสุข", "เริ่มเชื่อมต่อ NSP รายที่ 1")],
+  },
+  {
+    id: "DDC_NSP02_CPA_v2",
+    partner: "NSP 2 · Beta Connect",
+    partyId: "NSP-BETA",
+    service: "HealthCertificate",
+    actions: ["Request", "Acknowledgment"],
+    version: "2.0-rc1",
+    endpoint: "https://uat.nsp-beta.example/ebms",
+    certificate: "CN=NSP Beta Gateway",
+    status: "testing",
+    retries: 5,
+    interval: 90,
+    timeout: 30,
+    signature: true,
+    encryption: true,
+    validTo: "2027-06-30",
+    testResult: "success",
+    history: [h("2.0-rc1", "2026-10-20T13:15:00", "ธนกร ศรีสุข", "ทดสอบเชื่อมต่อ NSP รายที่ 2 (UAT)")],
+  },
+];
+
+// ขั้นตอนทดสอบการเชื่อมต่อ (ebMS Ping) — fail = ขั้นที่ล้มเหลวเมื่อผลเป็น "fail"
+export const connectionSteps = [
+  { key: "dns", label: "DNS / Network", ms: 12 },
+  { key: "tls", label: "TLS Handshake (HTTPS)", ms: 84 },
+  { key: "cert", label: "ตรวจใบรับรอง Partner (OCSP)", ms: 120 },
+  { key: "ping", label: "ebMS Ping → Pong", ms: 236, fail: true },
+];

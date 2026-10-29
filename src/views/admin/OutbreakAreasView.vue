@@ -8,10 +8,10 @@ import StatusTabs from "@/components/StatusTabs.vue";
 import AppDataTable from "@/components/AppDataTable.vue";
 import StatusBadge from "@/components/StatusBadge.vue";
 import EmptyState from "@/components/EmptyState.vue";
-import OutlineButton from "@/components/payments/OutlineButton.vue";
-import TableIconButton from "@/components/payments/TableIconButton.vue";
-import ConfirmDialog from "@/components/users/ConfirmDialog.vue";
-import DateField from "@/components/outbreak/DateField.vue";
+import SecondaryButton from "@/components/SecondaryButton.vue";
+import TableIconButton from "@/components/TableIconButton.vue";
+import ConfirmDialog from "@/components/ConfirmDialog.vue";
+import DateField from "@/components/DateField.vue";
 import OutbreakAreaForm from "@/components/outbreak/OutbreakAreaForm.vue";
 import { addDays, daysBetween } from "@/components/outbreak/outbreak-utils.js";
 import { outbreakText as t } from "@/content/outbreak-areas.js";
@@ -167,7 +167,7 @@ const remove = () => {
   <AdminLayout :breadcrumb="t.breadcrumb">
     <PageHeader :title="t.title" :description="t.description">
       <template #actions>
-        <OutlineButton prepend-icon="fas fa-download" @click="notify(t.exported(visible.length))">{{ t.export }}</OutlineButton>
+        <SecondaryButton prepend-icon="fas fa-download" @click="notify(t.exported(visible.length))">{{ t.export }}</SecondaryButton>
       </template>
     </PageHeader>
 

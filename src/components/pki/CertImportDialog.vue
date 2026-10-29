@@ -1,7 +1,7 @@
 <script setup>
 // Dialog "+ นำเข้า Public Key Certificate" (D17) — อัปโหลดไฟล์ด้วย v-file-input (จำลอง)
 import { ref, watch } from "vue";
-import AppDialog from "@/components/payments/AppDialog.vue";
+import AppDialog from "@/components/AppDialog.vue";
 import FieldLabel from "@/components/FieldLabel.vue";
 import AlertBox from "@/components/AlertBox.vue";
 import { pkiText } from "@/content/pki.js";

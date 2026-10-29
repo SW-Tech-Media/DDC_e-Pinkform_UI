@@ -49,6 +49,14 @@
 | `EmptyState`       | สถานะว่าง (State/Empty & Error)            | `icon`, `tone`, `title`, `description` · slot `actions`                                       |
 | `PatchNotesDialog` | Dialog Patch Notes                       | `v-model`                                                                                    |
 | `PortalFooter`     | Footer ของ Portal (อยู่ใน PortalLayout แล้ว) | —                                                                                            |
+| `AppDialog`        | Dialog มาตรฐาน (Modal/Dialog)             | `title`, `subtitle`, `wide` · `v-model` · slot default, `actions`                            |
+| `ConfirmDialog`    | Dialog ยืนยัน                             | `title`, `message`, `confirmText`, `icon`, `tone`, `danger` · `v-model` · emit `confirm`      |
+| `DateField`        | ช่องเลือกวันที่ / ช่วงวันที่ (ปี พ.ศ.)          | `range`, `placeholder`, `clearable`, `id`, `min` · `v-model` (ISO string หรือ [from, to])     |
+| `SegmentedControl` | ปุ่มเลือกแบบแบ่งช่อง (Segmented/Item)        | `options: [{ value, label }]`, `label` · `v-model`                                          |
+| `CodeViewer`       | แสดงโค้ด XML / JSON พื้นเข้ม (ebXML Header, Payload, CPA, API) | ดู props ในไฟล์ |
+| `TableIconButton`  | ปุ่มไอคอนในตาราง (ดู / แก้ไข / ลบ)          | `icon`, `label` (aria), `tone` (ชื่อสีไอคอน), `disabled` · emit `click`                        |
+
+> อ่านรายละเอียด props จริงในไฟล์ก่อนใช้ทุกครั้ง · ห้ามสร้างตัวซ้ำของ component ในตารางนี้
 
 Component เฉพาะกลุ่มหน้าจอ ให้สร้างในโฟลเดอร์ย่อย เช่น `components/portal/`, `components/auth/`, `components/requests/`
 
@@ -56,5 +64,6 @@ Component เฉพาะกลุ่มหน้าจอ ให้สร้า
 
 - `src/mocks/requests.js` — คำขอ, สถานะคำขอ (`requestStatuses` → label + tone), ขั้นตอน 9 ขั้น, รายละเอียดคำขอ PF6910260003
 - `src/mocks/users.js` — เจ้าหน้าที่ตัวอย่าง, badge sidebar, ตัวนับผู้เข้าชม
+- `src/utils/csv.js` — `downloadCsv(filename, headers, rows)` ส่งออก CSV (UTF-8 + BOM) ใช้ทุกหน้าที่มีปุ่มส่งออก
 - `src/stores/session.js` — ผู้ใช้ที่แสดงบน Topbar (`signInAs('prapaporn')` ฯลฯ)
 - `src/router/screens.js` — ชื่อ route ของทุกหน้าจอ

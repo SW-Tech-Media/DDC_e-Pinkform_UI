@@ -10,6 +10,7 @@ import AlertBox from "@/components/AlertBox.vue";
 import PinCells from "@/components/auth/PinCells.vue";
 import PinKeypad from "@/components/auth/PinKeypad.vue";
 import { authText } from "@/content/auth.js";
+import { forgotPinText } from "@/content/forgot-pin.js";
 import { staff } from "@/mocks/users.js";
 import { size } from "@/design/tokens.js";
 import { PIN_LENGTH, shuffledDigits } from "@/utils/pin.js";
@@ -92,11 +93,14 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
       <span class="pf-type-caption" :class="error || incomplete ? 'text-status-danger-fg' : 'text-text-tertiary'" aria-live="polite">
         {{ message }}
       </span>
-      <a href="#" class="pf-type-label-md text-text-link text-decoration-none" @click.prevent>{{ t.forgot }}</a>
+      <router-link :to="{ name: 'admin-forgot-pin' }" class="pf-type-label-md text-text-link text-decoration-none">{{ t.forgot }}</router-link>
     </div>
 
     <AlertBox v-if="locked" tone="danger" :title="t.lockedTitle" icon="fas fa-lock" class="mb-4">
       {{ t.locked }}
+      <router-link :to="{ name: 'admin-forgot-pin' }" class="d-block mt-2 pf-type-label-md text-text-link">
+        {{ forgotPinText.lockedAction }}
+      </router-link>
     </AlertBox>
 
     <PinKeypad

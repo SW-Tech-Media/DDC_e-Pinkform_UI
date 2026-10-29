@@ -1,6 +1,7 @@
 <script setup>
 // D12 ติดตามสถานะคำขอ — Figma 19:2790
 // ไม่ระบุคำขอ = ตารางรายการติดตามสถานะ (TOR 4.4.2 (8)) · ?ref=<Reference No.> = รายละเอียดคำขอ
+import { downloadCsv } from "@/utils/csv.js";
 import { computed, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import AdminLayout from "@/layouts/AdminLayout.vue";
@@ -122,15 +123,12 @@ const docs = computed(() => issuedDocuments[req.value.ref] ?? []);
 const snack = ref({ show: false, text: "" });
 const notify = (text) => (snack.value = { show: true, text });
 const downloadHistory = () => {
-  const header = Object.values(t.history.headers).join(",");
-  const lines = history.value.map((e) => {
+  const rows = history.value.map((e) => {
     const base = e.event ? reviewText.history.events[e.event] : requestStatuses[e.status];
-    return [e.label ?? base.label, e.detail, formatDateTimeSec(e.at), e.by].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",");
+    return [e.label ?? base.label, e.detail, formatDateTimeSec(e.at), e.by];
   });
-  const url = URL.createObjectURL(new Blob(["﻿" + [header, ...lines].join("\n")], { type: "text/csv" }));
   const name = `${req.value.ref}-history.csv`;
-  Object.assign(document.createElement("a"), { href: url, download: name }).click();
-  URL.revokeObjectURL(url);
+  downloadCsv(name, Object.values(t.history.headers), rows);
   notify(t.downloaded(name));
 };
 
