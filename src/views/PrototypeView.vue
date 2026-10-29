@@ -46,6 +46,7 @@ const target = (x) => ({ name: x.name, params: x.example ?? {} });
             </template>
             <v-list-item-title class="pf-type-body-md-strong text-text-primary">{{ x.title }}</v-list-item-title>
             <v-list-item-subtitle class="pf-type-caption text-text-tertiary">{{ x.path }}</v-list-item-subtitle>
+            <div v-if="x.hint" class="pf-type-caption text-text-secondary mt-1">{{ t.hint }} {{ x.hint }}</div>
             <template #append>
               <div class="d-flex align-center ga-2">
                 <StatusBadge v-for="f in x.figma" :key="f" tone="info">{{ f }}</StatusBadge>

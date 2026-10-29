@@ -1,5 +1,6 @@
 <script setup>
 // B-19 · ประวัติการใช้งาน (Audit Log) — TOR 4.1.15 (Figma ยังไม่มี — ออกแบบตามสไตล์ D15/D16)
+// รายการ = useAuditStore().all (ข้อมูลจำลอง + การอนุมัติ / ไม่อนุมัติ / ยกเลิกการอนุมัติ / แก้ไขคำขอที่บันทึกในรอบนี้)
 import { computed, reactive, ref } from "vue";
 import AdminLayout from "@/layouts/AdminLayout.vue";
 import PageHeader from "@/components/PageHeader.vue";
@@ -16,16 +17,24 @@ import SecondaryButton from "@/components/SecondaryButton.vue";
 import AuditDetailDialog from "@/components/audit-log/AuditDetailDialog.vue";
 import { downloadCsv } from "@/utils/csv.js";
 import { auditText as t } from "@/content/audit-log.js";
-import { auditLogs, auditRetention } from "@/mocks/audit-log.js";
+import { auditRetention } from "@/mocks/audit-log.js";
 import { staff } from "@/mocks/users.js";
 import { formatDate, formatDateTime, formatDateTimeSec, formatTime } from "@/utils/format.js";
 import { useSessionStore } from "@/stores/session.js";
+import { useAuditStore } from "@/stores/audit.js";
 
 useSessionStore().signInAs("thanakorn");
+const audit = useAuditStore();
+const auditLogs = computed(() => audit.all);
+// ผู้ใช้ของ Log — บัญชีที่ไม่อยู่ในรายชื่อตัวอย่าง (staff) ใช้ชื่อที่บันทึกไว้ใน actor
+const userOf = (l) => staff[l.user] ?? l.actor;
 
 // ---------- ตัวกรอง (กดค้นหาจึงมีผล) ----------
 const all = { value: null, title: t.filters.all };
-const userItems = [all, ...[...new Set(auditLogs.map((l) => l.user))].map((k) => ({ value: k, title: staff[k].name }))];
+const userItems = computed(() => [
+  all,
+  ...[...new Map(auditLogs.value.map((l) => [l.user, userOf(l)])).entries()].map(([value, u]) => ({ value, title: u.name })),
+]);
 const actionItems = [all, ...Object.entries(t.actions).map(([value, a]) => ({ value, title: a.label }))];
 const menuItems = [all, ...Object.entries(t.menus).map(([value, title]) => ({ value, title }))];
 
@@ -42,7 +51,7 @@ const day = (iso) => iso.slice(0, 10);
 const rows = computed(() => {
   const f = applied.value;
   const ip = f.ip.trim();
-  return auditLogs.filter(
+  return auditLogs.value.filter(
     (l) =>
       (!f.user || l.user === f.user) &&
       (!f.action || l.action === f.action) &&
@@ -60,7 +69,7 @@ const view = (entry) => Object.assign(detail, { open: true, entry });
 const snack = reactive({ show: false, text: "" });
 const exportCsv = () => {
   const lines = rows.value.flatMap((l) => {
-    const u = staff[l.user];
+    const u = userOf(l);
     const base = [l.id, formatDateTimeSec(l.at), u.name, u.username, l.ip, l.host, l.device, t.menus[l.menu], t.actions[l.action].label, l.target];
     return l.changes.length ? l.changes.map((c) => [...base, c.field, c.before ?? "", c.after ?? ""]) : [[...base, "", "", ""]];
   });
@@ -125,8 +134,8 @@ const exportCsv = () => {
         </template>
         <template #item.user="{ item }">
           <div class="text-no-wrap">
-            <div class="pf-type-body-sm-strong">{{ staff[item.user].name }}</div>
-            <div class="pf-type-caption text-text-tertiary">{{ staff[item.user].username }}</div>
+            <div class="pf-type-body-sm-strong">{{ userOf(item).name }}</div>
+            <div class="pf-type-caption text-text-tertiary">{{ userOf(item).username }}</div>
           </div>
         </template>
         <template #item.ip="{ item }">

@@ -1,6 +1,8 @@
 <script setup>
 // D16 · Admin / ebXML Monitor – Retry Detail (B-17) — Figma node 22:4793
-import { computed, reactive, ref } from "vue";
+// รองรับ query สำหรับลิงก์: ?ref=<Reference No.> (ข้อความทั้งหมดของคำขอ / ทะเบียนนั้น ทุกวันที่) &q= &type=<key ใน messageTypes> &direction= &status= &date=YYYY-MM-DD|all
+import { computed, reactive, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import AdminLayout from "@/layouts/AdminLayout.vue";
 import PageHeader from "@/components/PageHeader.vue";
 import KpiCard from "@/components/KpiCard.vue";
@@ -8,6 +10,7 @@ import AppDataTable from "@/components/AppDataTable.vue";
 import StatusBadge from "@/components/StatusBadge.vue";
 import EmptyState from "@/components/EmptyState.vue";
 import SecondaryButton from "@/components/SecondaryButton.vue";
+import AlertBox from "@/components/AlertBox.vue";
 import TableIconButton from "@/components/TableIconButton.vue";
 import AppDialog from "@/components/AppDialog.vue";
 import DateField from "@/components/DateField.vue";
@@ -16,30 +19,71 @@ import RetryHistory from "@/components/ebxml/RetryHistory.vue";
 import CpaDialog from "@/components/ebxml/CpaDialog.vue";
 import { buildHeaderXml, buildPayloadXml, ebxmlText as t } from "@/content/ebxml.js";
 import { common } from "@/content/common.js";
-import { directions, docTypes, ebxmlNow, ebxmlStats, ebxmlToday, maxRetry, messages } from "@/mocks/ebxml.js";
-import { formatNumber } from "@/utils/format.js";
+import { directions, ebxmlNow, ebxmlToday, maxRetry, messages, messageTypes } from "@/mocks/ebxml.js";
+import { pendingCodeNote } from "@/mocks/message-types.js";
+import { formatDate, formatNumber } from "@/utils/format.js";
 import { size } from "@/design/tokens.js";
 import { useSessionStore } from "@/stores/session.js";
 
-useSessionStore().signInAs("thanakorn");
+const session = useSessionStore();
+session.signInAs("thanakorn");
+const route = useRoute();
+const router = useRouter();
 
 const list = ref(messages.map((m) => ({ ...m, attempts: m.attempts.map((a) => ({ ...a })) })));
 const snack = reactive({ show: false, text: "" });
 const notify = (text) => Object.assign(snack, { show: true, text });
 
-// ---------- KPI (คิว / ผิดพลาด คำนวณจากรายการจริง) ----------
+// ---------- KPI (คำนวณจากรายการจริง — รับ / ส่ง / อัตราสำเร็จ นับเฉพาะวันนี้) ----------
 const count = (status) => list.value.filter((m) => m.status === status).length;
+const todayList = computed(() => list.value.filter((m) => m.date === ebxmlToday));
+const todayCount = (direction) => todayList.value.filter((m) => m.direction === direction).length;
+const successRate = computed(() => {
+  const n = todayList.value.length;
+  const ok = todayList.value.filter((m) => m.status === "success").length;
+  return n ? `${formatNumber(Math.round((ok / n) * 1000) / 10)}%` : "–";
+});
 const kpis = computed(() => [
-  { key: "in", icon: "fas fa-download", tone: "teal", label: t.kpis.received, value: formatNumber(ebxmlStats.received) },
-  { key: "out", icon: "far fa-paper-plane", tone: "pink", label: t.kpis.sent, value: formatNumber(ebxmlStats.sent) },
-  { key: "rate", icon: "fas fa-check", tone: "green", label: t.kpis.successRate, value: ebxmlStats.successRate },
+  { key: "in", icon: "fas fa-download", tone: "teal", label: t.kpis.received, value: formatNumber(todayCount("in")) },
+  { key: "out", icon: "far fa-paper-plane", tone: "pink", label: t.kpis.sent, value: formatNumber(todayCount("out")) },
+  { key: "rate", icon: "fas fa-check", tone: "green", label: t.kpis.successRate, value: successRate.value },
   { key: "queue", icon: "far fa-clock", tone: "blue", label: t.kpis.queue, value: count("retry") + count("waitAck") },
   { key: "err", icon: "fas fa-triangle-exclamation", tone: "red", label: t.kpis.errors, value: `${count("error")} / ${count("retry")}` },
 ]);
 
-// ---------- ตัวกรอง (มีผลทันที) ----------
-const filters = reactive({ q: "", type: null, direction: null, status: null, date: ebxmlToday });
-const typeItems = [{ title: t.filters.allTypes, value: null }, ...docTypes.map((d) => ({ title: d, value: d }))];
+// ---------- ตัวกรอง (มีผลทันที และเก็บใน query string ให้ลิงก์ / รีเฟรชกลับมาที่ผลเดิม) ----------
+const initial = route.query;
+const str = (v) => (typeof v === "string" ? v : "");
+const pick = (v, keys) => (keys.includes(v) ? v : null);
+// ?ref= เปิดดูข้อความของคำขอเดียว — ไม่จำกัดวันที่ (ข้อความของคำขออาจข้ามวัน) เว้นแต่ระบุ date มาเอง
+const requestRef = ref(str(initial.ref).trim());
+const defaultDate = () => (requestRef.value ? null : ebxmlToday);
+const filters = reactive({
+  q: str(initial.q),
+  type: pick(initial.type, Object.keys(messageTypes)),
+  direction: pick(initial.direction, Object.keys(directions)),
+  status: pick(initial.status, Object.keys(t.statusFilter)),
+  date: initial.date === "all" ? null : /^\d{4}-\d{2}-\d{2}$/.test(str(initial.date)) ? initial.date : defaultDate(),
+});
+const syncQuery = () => {
+  const query = {};
+  if (requestRef.value) query.ref = requestRef.value;
+  if (filters.q?.trim()) query.q = filters.q.trim();
+  ["type", "direction", "status"].forEach((k) => filters[k] && (query[k] = filters[k]));
+  if (filters.date !== defaultDate()) query.date = filters.date ?? "all";
+  router.replace({ query });
+};
+watch(filters, syncQuery);
+const clearRequest = () => {
+  requestRef.value = "";
+  filters.date = ebxmlToday;
+  syncQuery();
+};
+const typeLabel = (key) => messageTypes[key].code ?? `${messageTypes[key].label}*`;
+const typeItems = [
+  { title: t.filters.allTypes, value: null },
+  ...Object.keys(messageTypes).map((key) => ({ title: typeLabel(key), value: key })),
+];
 const directionItems = [
   { title: t.filters.allDirections, value: null },
   ...Object.entries(directions).map(([value, d]) => ({ title: d.label, value })),
@@ -49,11 +93,12 @@ const statusItems = [
   ...Object.entries(t.statusFilter).map(([value, title]) => ({ title, value })),
 ];
 const filtered = computed(() => {
-  const q = filters.q.trim().toLowerCase();
+  const q = (filters.q ?? "").trim().toLowerCase();
   return list.value.filter(
     (m) =>
-      (!q || [m.id, m.reference, m.docType].some((v) => v.toLowerCase().includes(q))) &&
-      (!filters.type || m.docType === filters.type) &&
+      (!requestRef.value || m.requestRef === requestRef.value) &&
+      (!q || [m.id, m.reference, m.requestRef, m.docType, m.note].some((v) => v.toLowerCase().includes(q))) &&
+      (!filters.type || m.type === filters.type) &&
       (!filters.direction || m.direction === filters.direction) &&
       (!filters.status || m.status === filters.status) &&
       (!filters.date || m.date === filters.date)
@@ -69,14 +114,18 @@ const statusBadge = (m) =>
   })[m.status];
 
 // ---------- ข้อความที่เลือก ----------
-const selectedId = ref(messages.find((m) => m.status === "retry")?.id);
+// เปิดจากคำขอ = ข้อความล่าสุดของคำขอนั้น · ปกติ = ข้อความที่รอส่งซ้ำ (ตาม Figma)
+const selectedId = ref((requestRef.value ? filtered.value[0] : messages.find((m) => m.status === "retry"))?.id);
+const requestCount = computed(() => list.value.filter((m) => m.requestRef === requestRef.value).length);
+// ลิงก์กลับไปหน้าติดตามสถานะ — เฉพาะคำขอใบรับรองฯ และผู้ใช้ที่มีสิทธิ์เมนูนั้น (backend เป็นผู้ตรวจจริง)
+const canTrack = computed(() => /^PF\d+$/.test(requestRef.value) && session.can("tracking"));
 const selected = computed(() => list.value.find((m) => m.id === selectedId.value));
 const rowClass = (m) => (m.id === selectedId.value ? "pf-row-highlight" : "");
 const select = (m) => (selectedId.value = m.id);
 
 const resend = (m) => {
   const done = m.attempts.filter((a) => a.status !== "scheduled" && a.status !== "waitAck");
-  m.attempts = [...done, { time: ebxmlNow.slice(11), label: t.detail.resendLabel(done.length + 1), status: "success" }];
+  m.attempts = [...done, { time: ebxmlNow.slice(11, 19), label: t.detail.resendLabel(done.length + 1), status: "success" }];
   m.status = "success";
   m.signature = true;
   selectedId.value = m.id;
@@ -115,6 +164,23 @@ const cpaOpen = ref(false);
       <KpiCard v-for="k in kpis" :key="k.key" :icon="k.icon" :tone="k.tone" :label="k.label" :value="k.value" />
     </div>
 
+    <AlertBox v-if="requestRef" tone="info" :title="t.byRequest.title(requestRef)" class="mb-6">
+      {{ t.byRequest.body(requestCount) }}
+      <template #aside>
+        <div class="d-flex flex-wrap justify-end ga-2">
+          <SecondaryButton
+            v-if="canTrack"
+            height="control-md"
+            prepend-icon="fas fa-list-check"
+            :to="{ name: 'admin-tracking', query: { ref: requestRef } }"
+          >
+            {{ t.byRequest.openTracking }}
+          </SecondaryButton>
+          <SecondaryButton height="control-md" prepend-icon="fas fa-xmark" @click="clearRequest">{{ t.byRequest.clear }}</SecondaryButton>
+        </div>
+      </template>
+    </AlertBox>
+
     <v-card class="pf-bordered">
       <v-row dense class="pa-5">
         <v-col cols="12" md="4">
@@ -140,15 +206,35 @@ const cpaOpen = ref(false);
           <DateField v-model="filters.date" :aria-label="t.filters.date" />
         </v-col>
       </v-row>
+      <p class="px-5 pb-4 pf-type-caption text-text-tertiary">{{ t.viaNsw }}</p>
 
       <AppDataTable
         :headers="t.headers"
         :items="filtered"
-        :paginate="false"
         :row-class="rowClass"
         class="ebxml-table"
         @click:row="select"
       >
+        <template #item.time="{ item }">
+          <div>{{ item.time }}</div>
+          <div v-if="!filters.date" class="pf-type-caption text-text-tertiary">{{ formatDate(item.at) }}</div>
+        </template>
+        <template #item.docType="{ item }">
+          <div class="py-2 msg">
+            <div class="pf-type-body-sm-strong">
+              {{ item.step ? `${item.step}. ` : "" }}{{ item.code ?? `${messageTypes[item.type].label}*` }}
+            </div>
+            <div class="pf-type-caption text-text-tertiary">
+              {{ item.code ? messageTypes[item.type].label : pendingCodeNote[item.type] }}{{ item.note ? ` · ${item.note}` : "" }}
+            </div>
+          </div>
+        </template>
+        <template #item.reference="{ item }">
+          <div class="py-2">
+            <div class="pf-type-body-sm">{{ item.reference }}</div>
+            <div v-if="item.reference !== item.requestRef" class="pf-type-caption text-text-tertiary">{{ item.requestRef }}</div>
+          </div>
+        </template>
         <template #item.short="{ item }">
           <span class="pf-type-body-sm">{{ item.short }}</span>
         </template>
@@ -242,6 +328,12 @@ const cpaOpen = ref(false);
 }
 .ebxml-table :deep(tbody tr) {
   cursor: pointer;
+}
+/* ชื่อข้อความ + สถานะที่แจ้ง ตัดบรรทัดได้ ให้ตารางไม่กว้างเกินการ์ด */
+.msg {
+  white-space: normal;
+  min-width: calc(var(--pf-space-120) + var(--pf-space-40));
+  max-width: calc(var(--pf-space-120) + var(--pf-space-64));
 }
 .detail {
   border-top: var(--pf-stroke-default) solid rgb(var(--v-theme-border-default));

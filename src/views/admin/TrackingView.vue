@@ -23,12 +23,15 @@ import { reviewText } from "@/content/review.js";
 import { requestDetails, requestStatuses, requestSteps, requests } from "@/mocks/requests.js";
 import { issuedDocuments, simpleHistory, trackingExtras } from "@/mocks/review.js";
 import { useReviewStore } from "@/stores/review.js";
+import { useSessionStore } from "@/stores/session.js";
 import { formatDate, formatDateTimeSec, formatNumber, formatTime } from "@/utils/format.js";
 import { size } from "@/design/tokens.js";
 
 const route = useRoute();
 const router = useRouter();
 const store = useReviewStore();
+// ปุ่มดูข้อความ ebXML ของคำขอ (B-17 ?ref=) แสดงเฉพาะผู้มีสิทธิ์เมนู ebXML — backend เป็นผู้ตรวจจริง
+const canViewEbxml = computed(() => useSessionStore().can("ebxml"));
 
 const breadcrumb = [{ title: t.breadcrumb.group }, { title: t.breadcrumb.title }];
 
@@ -236,6 +239,15 @@ const open = (item) => router.push({ query: { ref: item.ref } });
             :to="{ name: 'admin-request-review', params: { ref: req.ref } }"
           >
             {{ t.openReview }}
+          </v-btn>
+          <v-btn
+            v-if="canViewEbxml"
+            variant="outlined"
+            color="primary"
+            prepend-icon="fas fa-server"
+            :to="{ name: 'admin-ebxml', query: { ref: req.ref } }"
+          >
+            {{ t.openEbxml }}
           </v-btn>
         </v-col>
       </v-row>

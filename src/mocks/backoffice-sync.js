@@ -1,9 +1,15 @@
 // ข้อมูลจำลองหน้า B-25 · ส่งข้อมูลระบบงานภายใน DDC (Back Office เดิม) — เสนอเพิ่ม (TOR 7.8.38, 8.3)
+// รายการส่งสร้างจากคำขอที่ออกใบรับรองฯ + ใบเสร็จ (ลงนามแล้ว) ใน mocks/requests.js — เลขที่เอกสาร / คำขอ / เลขอ้างอิงชำระมีอยู่จริงทุกรายการ
+// ชั่วคราวจนกว่าจะมี API: backend เป็นผู้ส่งผ่าน Web Service และเก็บผลการส่ง
+import { banks } from "./banks.js";
+import { operators } from "./operators.js";
+import { receiptSigners } from "./receipts.js";
+import { paymentRefOf, requestDetails, requests, serviceFee } from "./requests.js";
+import { staff } from "./users.js";
+import { formatDate, formatMoney } from "@/utils/format.js";
 
 export const syncToday = "2026-10-26";
 export const syncNow = "2026-10-26T11:30:00";
-
-export const syncStats = { sentToday: 186 };
 
 export const syncDocTypes = {
   certificate: { label: "ใบรับรองฯ", tone: "info" },
@@ -26,32 +32,69 @@ export const webService = {
   queue: 3,
 };
 
-const s = (id, time, docType, docNo, reference, status, attempts, message, date = syncToday) => ({
-  id,
-  at: `${date}T${time}`,
-  docType,
-  docNo,
-  reference,
-  status,
-  attempts,
-  message,
+const BKK = 7 * 3600 * 1000;
+const plus = (iso, sec) => `${new Date(new Date(iso).getTime() + sec * 1000 + BKK).toISOString().slice(0, 19)}+07:00`;
+const operatorByName = Object.fromEntries(operators.map((o) => [o.nameTh, o]));
+
+// ผลการส่งที่ไม่ใช่ "สำเร็จ ครั้งแรก" (key = เลขที่เอกสาร) — ตัวอย่างสถานะ ผิดพลาด / รอส่ง / ส่งซ้ำสำเร็จ
+const outcomes = {
+  "DDC-PF 69/012847": { status: "pending", attempts: 0, message: "อยู่ในคิว รอส่งรอบถัดไป 11:30" },
+  "R69-0104414": { status: "pending", attempts: 0, message: "อยู่ในคิว รอส่งรอบถัดไป 11:30" },
+  "DDC-PF 69/012844": { status: "error", attempts: 3, message: "SOAP Fault: ORA-00001 รหัสผู้ประกอบการซ้ำในระบบเดิม" },
+  "DDC-PF 69/012840": { status: "success", attempts: 2, message: "ส่งซ้ำสำเร็จ (ครั้งแรก Timeout)" },
+  "R69-0104407": { status: "error", attempts: 2, message: "Timeout 30 วินาที — Back Office ไม่ตอบกลับ" },
+};
+
+// ค่าที่ส่งไป Back Office (ใช้ใน Dialog ตรวจความถูกต้อง) — ตามรายละเอียดคำขอ / การชำระเงิน
+const certificateValues = (r, d) => {
+  const first = d.items[0];
+  return {
+    operator: r.company,
+    taxId: operatorByName[r.company]?.taxId ?? d.exporter.taxId,
+    product: `${first.hs} · ${first.nameTh}${d.items.length > 1 ? ` และอีก ${d.items.length - 1} รายการ` : ""}`,
+    destination: d.consignee.country,
+    issuedOn: formatDate(d.issued.at),
+    signer: staff.wipawan.name,
+  };
+};
+const receiptValues = (r, d) => ({
+  operator: r.company,
+  taxId: operatorByName[r.company]?.taxId ?? d.exporter.taxId,
+  amount: formatMoney(serviceFee),
+  bank: `${banks[d.payment.bankCode]} (${d.payment.bankCode})`,
+  paidOn: formatDate(d.payment.paidAt),
+  signer: receiptSigners[d.receipt.signer].name,
 });
 
-export const syncItems = [
-  s(1, "11:28:14", "certificate", "DDC-PF 69/012845", "PF6910260031", "success", 1, "บันทึกลงฐานข้อมูล Back Office แล้ว (BO-REF 2569-88412)"),
-  s(2, "11:28:14", "receipt", "R69-0104412", "PAY6910260034", "success", 1, "บันทึกลงฐานข้อมูล Back Office แล้ว (BO-REF 2569-88413)"),
-  s(3, "11:24:52", "certificate", "DDC-PF 69/012844", "PF6910260030", "error", 3, "SOAP Fault: ORA-00001 รหัสผู้ประกอบการซ้ำในระบบเดิม"),
-  s(4, "11:22:05", "receipt", "R69-0104411", "PAY6910260033", "pending", 0, "อยู่ในคิว รอส่งรอบถัดไป 11:30"),
-  s(5, "11:20:40", "certificate", "DDC-PF 69/012843", "PF6910260029", "success", 2, "ส่งซ้ำสำเร็จ (ครั้งแรก Timeout)"),
-  s(6, "11:18:11", "receipt", "R69-0104410", "PAY6910260032", "error", 2, "Timeout 30 วินาที — Back Office ไม่ตอบกลับ"),
-  s(7, "11:15:37", "certificate", "DDC-PF 69/012842", "PF6910260028", "pending", 0, "อยู่ในคิว รอส่งรอบถัดไป 11:30"),
-  s(8, "11:12:09", "certificate", "DDC-PF 69/012841", "PF6910260027", "success", 1, "บันทึกลงฐานข้อมูล Back Office แล้ว (BO-REF 2569-88405)"),
-  s(9, "11:12:09", "receipt", "R69-0104409", "PAY6910260031", "success", 1, "บันทึกลงฐานข้อมูล Back Office แล้ว (BO-REF 2569-88406)"),
-  s(10, "11:05:44", "receipt", "R69-0104408", "PAY6910260030", "pending", 0, "อยู่ในคิว รอส่งรอบถัดไป 11:30"),
-  s(11, "10:58:20", "certificate", "DDC-PF 69/012840", "PF6910260026", "success", 1, "บันทึกลงฐานข้อมูล Back Office แล้ว (BO-REF 2569-88398)"),
-  s(12, "16:42:03", "certificate", "DDC-PF 69/012839", "PF6910250044", "success", 1, "บันทึกลงฐานข้อมูล Back Office แล้ว (BO-REF 2569-88371)", "2026-10-25"),
-  s(13, "16:42:03", "receipt", "R69-0104407", "PAY6910250039", "success", 1, "บันทึกลงฐานข้อมูล Back Office แล้ว (BO-REF 2569-88372)", "2026-10-25"),
-];
+// ใหม่ → เก่า · ส่งหลังออกใบรับรองฯ + ใบเสร็จ ราว 40 วินาที (ใบรับรองฯ ก่อน ใบเสร็จตาม)
+let boRef = 88300;
+export const syncItems = requests
+  .filter((r) => requestDetails[r.ref].issued)
+  .flatMap((r) => {
+    const d = requestDetails[r.ref];
+    const at = plus(d.issued.at, 40);
+    const item = (docType, docNo, reference, values) => {
+      const o = outcomes[docNo] ?? { status: "success", attempts: 1 };
+      boRef += 1;
+      return {
+        id: docNo,
+        at,
+        docType,
+        docNo,
+        reference,
+        requestRef: r.ref,
+        status: o.status,
+        attempts: o.attempts,
+        message: o.message ?? `บันทึกลงฐานข้อมูล Back Office แล้ว (BO-REF 2569-${boRef})`,
+        values,
+      };
+    };
+    return [
+      item("certificate", d.issued.certificate, r.ref, certificateValues(r, d)),
+      item("receipt", d.receipt.no, paymentRefOf(r.ref), receiptValues(r, d)),
+    ];
+  })
+  .sort((a, b) => b.at.localeCompare(a.at) || (a.docType === "certificate" ? -1 : 1));
 
 // ฟิลด์ที่ใช้ตรวจความถูกต้อง เทียบ DDC e-Pinkforms กับ Back Office เดิม
 // ระบุค่า Back Office ที่ไม่ตรง (mismatch) ต่อเลขที่เอกสาร — นอกนั้นถือว่าตรงกัน
@@ -77,19 +120,7 @@ export const checkFields = {
   ],
 };
 
-export const sampleValues = {
-  operator: "บริษัท สยามซีฟู้ด เอ็กซ์ปอร์ต จำกัด",
-  taxId: "0105561234567",
-  product: "0303.89 · ปลาแช่แข็ง",
-  destination: "สาธารณรัฐประชาชนจีน",
-  issuedOn: "26/10/2569",
-  signer: "วิภาวรรณ ทองดี",
-  amount: "1,500.00",
-  bank: "ธนาคาร A (006)",
-  paidOn: "26/10/2569",
-};
-
 export const mismatches = {
-  "DDC-PF 69/012844": { operator: "บจก. สยามซีฟู้ด เอ็กซ์ปอร์ต", taxId: "—" },
-  "R69-0104410": { amount: "—" },
+  "DDC-PF 69/012844": { operator: "บจก. อันดามัน ซีฟู้ด", taxId: "—" },
+  "R69-0104407": { amount: "—" },
 };

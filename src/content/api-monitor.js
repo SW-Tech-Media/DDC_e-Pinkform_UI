@@ -117,21 +117,17 @@ const jsonLines = (obj, indent = 0) => {
   return lines;
 };
 
+// log.ref / log.body มาจาก mocks/api-monitor.js (อ้างเฉพาะเลขที่มีอยู่จริง)
 export const buildApiSample = (log) => {
-  const ref = log.endpoint.match(/PF\d+|R69-\d+|DDC-PF [\d/]+/)?.[0] ?? "PF6910260032";
   const request = {
     method: log.method,
     url: `https://api.ddc-pinkforms.example${log.endpoint}`,
     headers: { Authorization: "Bearer eyJhbGciOi…", "Content-Type": "application/json", "X-Request-Id": `req-${log.id}0a7f` },
-    ...(log.method !== "GET" && {
-      body: log.endpoint.includes("payments")
-        ? { paymentRef: "PAY6910260040", amount: 1500.0, currency: "THB", status: "PAID" }
-        : { requestNo: ref, applicantTaxId: "0105561234567", productCode: "0303.89", destination: "CN" },
-    }),
+    ...(log.body && { body: log.body }),
   };
   const ok = log.status < 400;
   const response = ok
-    ? { success: true, data: { reference: ref, status: log.status === 201 ? "RECEIVED" : "OK" }, timestamp: log.at }
+    ? { success: true, data: { ...(log.ref && { reference: log.ref }), status: log.status === 201 ? "RECEIVED" : "OK" }, timestamp: log.at }
     : { success: false, error: { code: log.errorCode.split(" · ")[0], message: log.errorCode.split(" · ")[1] }, timestamp: log.at };
   return { request: jsonLines(request), response: jsonLines(response) };
 };

@@ -1,6 +1,10 @@
 <script setup>
 // D13 · Admin / Payments – List (B-11) — Figma node 19:3539
+// รายการ = usePaymentsStore().all (ข้อมูลจำลอง + คำสั่งชำระที่เกิดจากการอนุมัติ / ยกเลิกการอนุมัติในรอบนี้)
+// รองรับ query สำหรับลิงก์ / รีเฟรช: ?reference= &ref1= &company= &status=<key ใน paymentStatuses> &bank= &date=YYYY-MM-DD
+// ตัวกรองวันที่เริ่มต้น = ทุกวัน เพื่อให้คำสั่งชำระที่ค้างจากวันก่อนยังเห็นได้ (การ์ดสรุป / รายงานประจำวันยังนับตามวัน)
 import { computed, reactive, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import AdminLayout from "@/layouts/AdminLayout.vue";
 import PageHeader from "@/components/PageHeader.vue";
 import KpiCard from "@/components/KpiCard.vue";
@@ -16,32 +20,44 @@ import AppDialog from "@/components/AppDialog.vue";
 import DateField from "@/components/DateField.vue";
 import { paymentsText as t } from "@/content/payments.js";
 import { common } from "@/content/common.js";
-import { banks, paymentDayOf, paymentStatuses, payments, paymentToday } from "@/mocks/payments.js";
+import { banks, paymentDayOf, paymentStatuses, paymentToday } from "@/mocks/payments.js";
 import { receipts } from "@/mocks/receipts.js";
 import { formatDate, formatMoney, formatNumber, formatThaiDate, formatTime } from "@/utils/format.js";
 import { size } from "@/design/tokens.js";
 import { useSessionStore } from "@/stores/session.js";
+import { usePaymentsStore } from "@/stores/payments.js";
 
-useSessionStore().signInAs("prapaporn");
+const session = useSessionStore();
+session.signInAs("prapaporn");
+const store = usePaymentsStore();
+const route = useRoute();
+const router = useRouter();
+// กระทบยอด = ยืนยันผลกับธนาคาร ใช้สิทธิ์ "อนุมัติ" ของเมนูการชำระเงิน (TOR 4.4.7) — backend เป็นผู้ตรวจจริง
+const canReconcile = computed(() => session.can("payments", "approve"));
+const payments = computed(() => store.all);
 
 // ----- การ์ดสรุป: นับจากรายการชำระ / ใบเสร็จ (ไม่ใช่ตัวเลขคงที่) -----
 // รายการประจำวัน = รายการที่เกิดผลในวันนั้น (paymentDayOf) · รอชำระ = คำสั่งชำระที่ยังค้างทั้งหมด
 const sum = (list) => list.reduce((a, p) => a + p.amount, 0);
-const today = payments.filter((p) => paymentDayOf(p) === paymentToday);
+const today = computed(() => payments.value.filter((p) => paymentDayOf(p) === paymentToday));
 const byStatus = (list, status) => list.filter((p) => p.status === status);
 const receiptsToday = receipts.filter((r) => r.issuedAt.startsWith(paymentToday));
 const k = t.kpis;
-const kpis = [
-  { key: "received", ...k.received, value: formatMoney(sum(byStatus(today, "paid"))), caption: k.received.caption(byStatus(today, "paid").length) },
-  { key: "pending", ...k.pending, value: formatNumber(byStatus(payments, "pending").length), caption: k.pending.caption(formatMoney(sum(byStatus(payments, "pending")))) },
-  { key: "failed", ...k.failed, value: formatNumber(byStatus(today, "failed").length) },
-  {
-    key: "receipts",
-    ...k.receipts,
-    value: formatNumber(receiptsToday.length),
-    caption: k.receipts.caption(receiptsToday.filter((r) => r.status === "signed").length, receiptsToday.length),
-  },
-];
+const kpis = computed(() => {
+  const paid = byStatus(today.value, "paid");
+  const pending = byStatus(payments.value, "pending");
+  return [
+    { key: "received", ...k.received, value: formatMoney(sum(paid)), caption: k.received.caption(paid.length) },
+    { key: "pending", ...k.pending, value: formatNumber(pending.length), caption: k.pending.caption(formatMoney(sum(pending))) },
+    { key: "failed", ...k.failed, value: formatNumber(byStatus(today.value, "failed").length) },
+    {
+      key: "receipts",
+      ...k.receipts,
+      value: formatNumber(receiptsToday.length),
+      caption: k.receipts.caption(receiptsToday.filter((r) => r.status === "signed").length, receiptsToday.length),
+    },
+  ];
+});
 
 const statusOptions = [
   { title: t.filters.all, value: null },
@@ -52,14 +68,23 @@ const bankOptions = [
   ...Object.entries(banks).map(([value, name]) => ({ title: `${value} · ${name}`, value })),
 ];
 
-const blank = () => ({ reference: "", ref1: "", company: "", status: null, bank: null, date: paymentToday });
-const draft = reactive(blank());
-const applied = ref(blank());
+const TEXT_KEYS = ["reference", "ref1", "company"];
+const blank = () => ({ reference: "", ref1: "", company: "", status: null, bank: null, date: null });
+const fromQuery = (q) => {
+  const f = blank();
+  TEXT_KEYS.forEach((key) => typeof q[key] === "string" && (f[key] = q[key]));
+  if (paymentStatuses[q.status]) f.status = q.status;
+  if (banks[q.bank]) f.bank = q.bank;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(q.date ?? "")) f.date = q.date;
+  return f;
+};
+const draft = reactive(fromQuery(route.query));
+const applied = ref({ ...draft });
 
 const has = (value, q) => !q || value.toLowerCase().includes(q.trim().toLowerCase());
 const filtered = computed(() => {
   const f = applied.value;
-  return payments.filter(
+  return payments.value.filter(
     (p) =>
       (has(p.id, f.reference) || has(p.requestNo, f.reference)) &&
       has(p.ref1, f.ref1) &&
@@ -69,13 +94,24 @@ const filtered = computed(() => {
       (!f.date || p.sentAt.startsWith(f.date))
   );
 });
-const search = () => (applied.value = { ...draft });
+const syncQuery = () => {
+  const f = applied.value;
+  const query = {};
+  TEXT_KEYS.forEach((key) => f[key].trim() && (query[key] = f[key].trim()));
+  ["status", "bank", "date"].forEach((key) => f[key] && (query[key] = f[key]));
+  router.replace({ query });
+};
+const search = () => {
+  applied.value = { ...draft };
+  syncQuery();
+};
 const reset = () => {
   Object.assign(draft, blank());
   search();
 };
 
 const rowClass = (item) => (item.status === "failed" ? "pf-row-highlight" : "");
+const dateLabel = computed(() => (applied.value.date ? formatThaiDate(applied.value.date) : t.filters.allDates));
 
 // Dialog รายละเอียด / กระทบยอด / รายงานประจำวัน
 const detail = reactive({ open: false, payment: null });
@@ -87,7 +123,7 @@ const notify = (text) => Object.assign(snack, { show: true, text });
 const reconcileOpen = ref(false);
 const reconcileRows = computed(() =>
   Object.entries(banks).map(([code, name]) => {
-    const paid = byStatus(today, "paid").filter((p) => p.bankCode === code);
+    const paid = byStatus(today.value, "paid").filter((p) => p.bankCode === code);
     const sum = paid.reduce((a, p) => a + p.amount, 0);
     return { bank: `${code} · ${name}`, count: paid.length, system: sum, bankAmount: sum };
   })
@@ -100,7 +136,7 @@ const confirmReconcile = () => {
 const reportOpen = ref(false);
 const reportRows = computed(() => {
   const rows = Object.keys(paymentStatuses).map((status) => {
-    const list = byStatus(today, status);
+    const list = byStatus(today.value, status);
     return { key: status, label: t.report.rows[status], count: list.length, sum: list.reduce((a, p) => a + p.amount, 0) };
   });
   const total = rows.reduce((a, r) => ({ count: a.count + r.count, sum: a.sum + r.sum }), { count: 0, sum: 0 });
@@ -116,7 +152,7 @@ const downloadReport = () => {
   <AdminLayout :breadcrumb="t.breadcrumb">
     <PageHeader :title="t.title" :description="t.description">
       <template #actions>
-        <SecondaryButton prepend-icon="fas fa-arrows-rotate" @click="reconcileOpen = true">
+        <SecondaryButton v-if="canReconcile" prepend-icon="fas fa-arrows-rotate" @click="reconcileOpen = true">
           {{ t.actions.reconcile }}
         </SecondaryButton>
         <v-btn color="primary" prepend-icon="fas fa-download" :height="size['control-lg']" @click="reportOpen = true">
@@ -154,11 +190,14 @@ const downloadReport = () => {
       </v-col>
       <v-col cols="12" sm="6" md="2">
         <FieldLabel :label="t.filters.date" for="pay-date" />
-        <DateField id="pay-date" v-model="draft.date" />
+        <DateField id="pay-date" v-model="draft.date" clearable :placeholder="t.filters.allDates" />
       </v-col>
     </FilterCard>
 
     <v-card class="pf-bordered">
+      <div class="d-flex flex-wrap align-center ga-2 px-4 py-3 pf-bordered-bottom">
+        <span class="pf-type-body-sm-strong text-text-secondary">{{ t.resultCount(filtered.length, dateLabel) }}</span>
+      </div>
       <AppDataTable
         :headers="t.headers"
         :items="filtered"

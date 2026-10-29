@@ -52,6 +52,7 @@ export const auditText = {
     delete: { label: "ลบ", tone: "danger" },
     approve: { label: "อนุมัติ", tone: "success" },
     reject: { label: "ไม่อนุมัติ", tone: "danger" },
+    undoApprove: { label: "ยกเลิกการอนุมัติ", tone: "warning" },
     sign: { label: "ลงนาม", tone: "accent" },
     resend: { label: "ส่งข้อความซ้ำ", tone: "info" },
     resetPin: { label: "รีเซ็ต PIN", tone: "warning" },

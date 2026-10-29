@@ -37,6 +37,7 @@ export const prototypeText = {
   start: "เริ่มที่หน้าแรกเว็บไซต์",
   noDesign: "ยังไม่มีใน Figma",
   proposed: "เสนอเพิ่มตาม TOR",
+  hint: "สาธิต:",
 };
 
 // หน้าที่ยังไม่มีดีไซน์ใน Figma

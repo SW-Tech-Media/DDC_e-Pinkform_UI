@@ -2,6 +2,8 @@
 // figma = รหัสหน้าจอใน Figma · code = รหัสในรายการหน้าจอ (md/system-overview.md)
 // design: false = หน้าที่ยังไม่มีใน Figma (แสดงเป็นหน้ากำลังจัดทำ)
 // permission = key เมนูในตารางสิทธิ์ (router/index.js อ่านจาก adminNav ให้อัตโนมัติ ระบุเองเฉพาะหน้าย่อยที่ไม่อยู่ใน Sidebar)
+// hint = วิธีสาธิตกรณียกเว้น (ค่าตัวอย่าง / query string) แสดงใต้ชื่อหน้าจอในหน้ารวมหน้าจอ
+import { authText } from "@/content/auth.js";
 
 export const screenGroups = [
   { key: "portal", title: "เว็บไซต์ประชาสัมพันธ์ (Portal)", icon: "fas fa-globe", tone: "teal" },
@@ -32,6 +34,7 @@ const view = {
   survey: () => import("@/views/portal/SurveyView.vue"),
   policy: () => import("@/views/portal/PolicyView.vue"),
   forgotPin: () => import("@/views/auth/ForgotPinView.vue"),
+  forgotPassword: () => import("@/views/auth/ForgotPasswordView.vue"),
   thnsw: () => import("@/views/admin/ThnswView.vue"),
   certificates: () => import("@/views/admin/CertificatesView.vue"),
   receipts: () => import("@/views/admin/ReceiptsView.vue"),
@@ -71,10 +74,18 @@ export const screens = [
   s("portal", "portal-survey", "/portal/survey", view.survey, "แบบสอบถามความพึงพอใจ", [], "P-06"),
   s("portal", "portal-cookies", "/portal/cookies", view.policy, "นโยบายคุกกี้ / ความเป็นส่วนตัว", [], "P-07"),
 
-  s("auth", "admin-login", "/admin/login", view.login, "เข้าสู่ระบบ (Username / Password)", ["D04"], "B-01"),
+  s("auth", "admin-login", "/admin/login", view.login, "เข้าสู่ระบบ (Username / Password)", ["D04"], "B-01", {
+    hint: authText.demoHints.login,
+  }),
   s("auth", "admin-pin", "/admin/login/pin", view.pin, "เข้าสู่ระบบ (PIN 6 หลัก)", ["D05"], "B-01.2"),
   s("auth", "admin-forgot-pin", "/admin/forgot-pin", view.forgotPin, "ลืม PIN / ตั้ง PIN ใหม่", [], "B-01.4"),
-  s("auth", "admin-set-pin", "/admin/set-pin", view.setPin, "ยืนยันอีเมลและตั้ง PIN", ["D06"], "B-01.3"),
+  s("auth", "admin-forgot-password", "/admin/forgot-password", view.forgotPassword, "ลืมรหัสผ่าน / ตั้งรหัสผ่านใหม่", [], "B-01.5", {
+    proposed: true,
+    hint: authText.demoHints.forgotPassword,
+  }),
+  s("auth", "admin-set-pin", "/admin/set-pin", view.setPin, "ยืนยันอีเมล ตั้งรหัสผ่านและ PIN", ["D06"], "B-01.3", {
+    hint: authText.demoHints.setPin,
+  }),
 
   s("admin", "admin-home", "/admin", view.adminHome, "หน้าหลักเจ้าหน้าที่", ["D07"], "B-02"),
   s("admin", "admin-operators", "/admin/operators", view.operators, "ทะเบียนผู้ประกอบการ", ["D08"], "B-03"),

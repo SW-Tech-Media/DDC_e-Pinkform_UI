@@ -1,5 +1,5 @@
 <script setup>
-// Checklist เงื่อนไข PIN แบบ real-time (Figma: D06 Validation)
+// Checklist เงื่อนไข PIN / นโยบายรหัสผ่าน แบบ real-time (Figma: D06 Validation)
 // rules: [{ label, state: 'pass' | 'fail' | 'pending' }]
 defineProps({
   rules: { type: Array, required: true },

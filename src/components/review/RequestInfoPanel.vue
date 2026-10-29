@@ -12,6 +12,7 @@ const props = defineProps({
   detail: { type: Object, required: true },
   locked: { type: Boolean, default: false },
   lastEdit: { type: String, default: "" },
+  lockedText: { type: String, default: "" }, // เหตุผลที่แก้ไขไม่ได้ (ค่าเริ่มต้น = บันทึกผลแล้ว) เช่น ไม่มีสิทธิ์แก้ไข
 });
 const emit = defineEmits(["save"]);
 const t = reviewText.info;
@@ -91,7 +92,7 @@ const save = () => {
       <v-col v-if="locked || lastEdit" cols="12" class="pt-0">
         <span class="pf-type-caption text-text-tertiary">
           <v-icon :icon="locked ? 'fas fa-lock' : 'fas fa-clock-rotate-left'" size="x-small" class="me-1" />
-          {{ locked ? t.locked : lastEdit }}
+          {{ locked ? lockedText || t.locked : lastEdit }}
         </span>
       </v-col>
     </v-row>

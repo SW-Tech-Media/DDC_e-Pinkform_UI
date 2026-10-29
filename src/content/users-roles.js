@@ -78,6 +78,7 @@ export const usersText = {
     email: "อีเมล (ใช้ยืนยันตัวตนและตั้ง PIN)",
     group: "กลุ่มงาน",
     role: "บทบาท",
+    roleRestricted: "กำหนดบทบาท Super Admin ได้เฉพาะผู้ดูแลระบบสูงสุด (Super Admin)",
     active: "เปิดใช้งานบัญชี",
     required: "กรุณากรอกข้อมูล",
     save: "บันทึก",

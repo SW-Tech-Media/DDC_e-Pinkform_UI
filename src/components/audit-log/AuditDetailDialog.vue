@@ -23,7 +23,7 @@ const f = t.detail.fields;
 const items = computed(() => {
   const e = props.entry;
   if (!e) return [];
-  const u = staff[e.user];
+  const u = staff[e.user] ?? e.actor; // actor = บัญชีที่ไม่อยู่ใน staff (Log ที่บันทึกในรอบนี้)
   return [
     { label: f.at, value: `${formatDateTimeSec(e.at)} ${t.timeSuffix}` },
     { label: f.user, value: `${u.name} (${u.username})` },

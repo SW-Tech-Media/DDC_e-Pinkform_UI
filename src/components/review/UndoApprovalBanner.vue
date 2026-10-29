@@ -1,5 +1,6 @@
 <script setup>
 // แถบแจ้งผลอนุมัติ + ยกเลิกการอนุมัติภายใน 15 นาที (TOR 4.4.2 (3)) — ต้องกรอกเหตุผลก่อนยกเลิก
+// canUndo = มีสิทธิ์อนุมัติในเมนูคำขอ (session.can("requests", "approve")) — ไม่มีสิทธิ์จะเห็นเวลาที่เหลือแต่ไม่มีปุ่มยกเลิก
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import AlertBox from "@/components/AlertBox.vue";
 import FieldLabel from "@/components/FieldLabel.vue";
@@ -9,8 +10,9 @@ import { formatDateTime } from "@/utils/format.js";
 import { size } from "@/design/tokens.js";
 
 const props = defineProps({
-  decision: { type: Object, required: true }, // { at, by }
+  decision: { type: Object, required: true }, // { at, by, paymentId? }
   deadline: { type: Number, required: true }, // ms
+  canUndo: { type: Boolean, default: true },
 });
 const emit = defineEmits(["undo"]);
 const t = reviewText.decided;
@@ -46,14 +48,15 @@ const submit = async () => {
 
 <template>
   <AlertBox tone="success" :title="t.approved(formatDateTime(decision.at), decision.by)" class="mb-6">
-    {{ t.approvedNote }}
+    {{ t.approvedNote(decision.paymentId) }}
     <template #aside>
       <div v-if="left > 0" class="d-flex flex-wrap align-center justify-end ga-3">
         <div class="text-end">
           <div class="pf-type-caption text-text-secondary">{{ t.undoLeft }}</div>
           <div class="pf-type-h4 text-status-danger-fg" role="timer">{{ countdown }}</div>
         </div>
-        <v-btn variant="outlined" color="error" prepend-icon="fas fa-rotate-left" @click="openDialog">{{ t.undo }}</v-btn>
+        <v-btn v-if="canUndo" variant="outlined" color="error" prepend-icon="fas fa-rotate-left" @click="openDialog">{{ t.undo }}</v-btn>
+        <span v-else class="pf-type-caption text-text-tertiary">{{ t.undoNoPermission }}</span>
       </div>
       <span v-else class="pf-type-caption text-text-tertiary">{{ t.undoExpired }}</span>
     </template>

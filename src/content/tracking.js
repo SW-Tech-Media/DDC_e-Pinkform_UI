@@ -6,6 +6,7 @@ export const trackingText = {
   description: "ค้นหาและติดตามขั้นตอนของคำขอใบรับรองฯ ตั้งแต่รับคำขอจนเสร็จสมบูรณ์",
   backToList: "กลับไปรายการ",
   openReview: "เปิดหน้าพิจารณาคำขอ",
+  openEbxml: "ดูข้อความ ebXML ของคำขอนี้",
 
   filters: {
     query: "ค้นหา (Reference No. / เลขที่ใบรับรอง / Invoice No.)",

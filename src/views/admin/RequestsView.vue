@@ -18,11 +18,14 @@ import { common } from "@/content/common.js";
 import { requestDetails, requests } from "@/mocks/requests.js";
 import { operators } from "@/mocks/operators.js";
 import { useReviewStore } from "@/stores/review.js";
+import { useSessionStore } from "@/stores/session.js";
 import { formatDate } from "@/utils/format.js";
 
 const route = useRoute();
 const router = useRouter();
 const store = useReviewStore();
+// แสดงเวลาที่ยังยกเลิกการอนุมัติได้เฉพาะผู้มีสิทธิ์อนุมัติ (TOR 4.4.7) — backend เป็นผู้ตรวจจริง
+const canDecide = computed(() => useSessionStore().can("requests", "approve"));
 
 // ช่วงวันที่เริ่มต้นตาม Figma (01/10/2569 – 26/10/2569)
 const DEFAULT_RANGE = ["2026-10-01", "2026-10-26"];
@@ -89,7 +92,7 @@ const current = computed(() =>
   searchable.map((r) => {
     const deadline = store.undoDeadline(r.ref);
     const status = store.statusOf(r.ref);
-    return { ...r, status, statusAt: statusAtOf(r, status), undoUntil: deadline > now.value ? deadline : null };
+    return { ...r, status, statusAt: statusAtOf(r, status), undoUntil: canDecide.value && deadline > now.value ? deadline : null };
   })
 );
 

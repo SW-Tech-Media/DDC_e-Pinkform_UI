@@ -45,6 +45,9 @@ export const autoCheck = {
 // ชั่วคราวจนกว่าจะมี API — อัตราจริงรอยืนยัน (Q-17: คงที่ต่อคำขอ หรือคิดตามจำนวนรายการ) และควรตั้งค่าได้ (G-16)
 export const serviceFee = 300;
 
+// เลขที่อ้างอิงการชำระในข้อมูลจำลอง = PAY + เลขหลัง PF ของคำขอ (ตรงกับ mocks/payments.js) — ใช้กับหน้า ebXML / Back Office / API
+export const paymentRefOf = (ref) => `PAY${ref.slice(2)}`;
+
 // when = "HH:mm" (วันที่ 26/10/2569) หรือ "YYYY-MM-DD HH:mm"
 // outcome = ผลของคำขอที่พ้นขั้นรอพิจารณาแล้ว (เวลาเป็น "YYYY-MM-DD HH:mm:ss") — ใช้สร้างประวัติสถานะ การชำระเงิน
 // ใบเสร็จ และใบรับรองฯ ใน decidedDetail (mocks/payments.js, receipts.js, certificates.js อ่านจากผลนี้ทั้งหมด)

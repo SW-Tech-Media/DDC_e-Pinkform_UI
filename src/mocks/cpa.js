@@ -1,5 +1,7 @@
 // ข้อมูลจำลองหน้า B-23 · ตั้งค่า CPA / การเชื่อมต่อ ebMS (เสนอเพิ่ม — TOR 4.6.1 (1), 8.6)
 // CPA ID / PartyId สอดคล้องกับ mocks/ebxml.js และใบรับรองใน mocks/pki.js
+// ตาม Flow 3 / 10 / 11 ข้อความทั้งหมดรับ-ส่งผ่าน NSW (B-17 ใช้ NSW_DDC_CPA_v2) — CPA ของธนาคาร / e-Licensing / NSP คงไว้สำหรับกรณีเชื่อมตรง
+// ชั่วคราวจนกว่าจะมี API: รอยืนยันว่าต้องมี CPA ตรงกับคู่ค้าเหล่านี้หรือไม่ (Q-10)
 
 export const cpaNow = "2026-10-26T11:30:00";
 
@@ -27,8 +29,9 @@ export const cpaList = [
     id: "NSW_DDC_CPA_v2",
     partner: "National Single Window (NSW)",
     partyId: "THNSW",
-    service: "HealthCertificate",
-    actions: ["Request", "Issue", "Acknowledgment"],
+    service: "HealthCertificate / BillPayment / Registration",
+    // eb:Action ตามชื่อข้อความ Flow 10 / 11 ชุดเดียวกับ B-17 (mocks/message-types.js) — รอยืนยัน Q-10
+    actions: ["DDCPFREQ", "DDCPFREQ_ACCEPT", "DDCPINKFORM", "DDCRECEIPT", "PaymentOrder", "PaymentResult", "Register", "RegisterResult", "Acknowledgment"],
     version: "2.3",
     endpoint: "https://gw.nsw.example/ebms",
     certificate: "CN=Thailand NSW Gateway",

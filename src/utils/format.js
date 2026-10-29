@@ -30,3 +30,7 @@ export const formatDateTimeSec = (v) => `${formatDate(v)} ${timeSec.format(toDat
 export const formatMoney = (v) => money.format(v);
 // 1420 → "1,420"
 export const formatNumber = (v) => number.format(v);
+
+// เวลาปัจจุบันเป็นเวลาไทยรูปแบบเดียวกับข้อมูลจำลอง "2026-10-28T08:42:10+07:00" — slice(0, 10) จึงได้วันที่ตามเวลาไทย (ใช้กรองตามวัน)
+// ชั่วคราวจนกว่าจะมี API: เวลาของการบันทึกจริงมาจาก server
+export const nowThaiIso = (ms = Date.now()) => `${new Date(ms + 7 * 3600 * 1000).toISOString().slice(0, 19)}+07:00`;

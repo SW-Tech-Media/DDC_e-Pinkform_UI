@@ -62,6 +62,8 @@
 
 Component เฉพาะกลุ่มหน้าจอ ให้สร้างในโฟลเดอร์ย่อย เช่น `components/portal/`, `components/auth/`, `components/requests/`
 
+- `components/auth/` — `PinCells` (ช่อง PIN 6 หลัก), `PinKeypad` (แป้นสุ่ม), `PinRuleList` (checklist เงื่อนไข `rules: [{ label, state }]` ใช้กับนโยบายรหัสผ่านด้วย), `PasswordField` (ช่องรหัสผ่าน + ปุ่มแสดง/ซ่อน · `v-model`, `icon` · props อื่นส่งต่อ v-text-field)
+
 ## ข้อมูลที่ใช้ร่วมกัน
 
 - `src/mocks/requests.js` — คำขอ, สถานะคำขอ (`requestStatuses` → label + tone), ขั้นตอน 9 ขั้น, ค่าบริการ (`serviceFee`), รายละเอียดคำขอทุกรายการ (`requestDetails` — PF6910260003 เขียนครบตาม Figma D10 ส่วนรายการอื่นสร้างจาก `requests` — คำขอที่มี `outcome` ได้ประวัติสถานะ / Stepper / ผลการพิจารณา และ `payment` / `receipt` / `issued` ตามขั้นที่ไปถึง) · สถานะปัจจุบันของคำขออ่านจาก `useReviewStore().statusOf(ref)`
@@ -70,5 +72,9 @@ Component เฉพาะกลุ่มหน้าจอ ให้สร้า
 - `src/utils/csv.js` — `downloadCsv(filename, headers, rows)` ส่งออก CSV (UTF-8 + BOM) ใช้ทุกหน้าที่มีปุ่มส่งออก
 - `src/stores/session.js` — ผู้ใช้ที่แสดงบน Topbar ตาม Figma (`signInAs('prapaporn')` — ไม่มีผลเมื่อเลือกบัญชีแล้ว) และบัญชีที่ใช้ตรวจสิทธิ์ (`useAccount(username)` / `resetAccount()`) · `session.can(menuKey, action = 'view')` ใช้ซ่อนเมนู/ปุ่มตามสิทธิ์ (backend ตรวจจริง)
 - `src/stores/users.js` — รายชื่อผู้ใช้งานและสิทธิ์ (B-16) แก้สิทธิ์แล้วมีผลกับ Sidebar ของบัญชีนั้นทันที
+- `src/stores/review.js` — ผลพิจารณาคำขอ (B-06/B-07) · `statusOf(ref)` (อนุมัติในรอบนี้ = `awaitingPayment` ทันที) · `approve` / `reject` / `undoApproval` ตรวจเงื่อนไขซ้ำ (Checklist ครบ, ประเภทข้อความตอบกลับ, ภายใน 15 นาที) แล้วส่งต่อไป `payments` + `audit` · `setReplyType` กรองข้อความตอบกลับตามประเภท approve / reject
+- `src/stores/payments.js` — คำสั่งชำระของ B-11 (`all` = ข้อมูลจำลอง + ที่เกิดจากการอนุมัติในรอบนี้, แถวสร้างด้วย `paymentRow()` ใน `mocks/payments.js` รูปเดียวกับ `decidedDetail().payment`) · ยกเลิกการอนุมัติ → สถานะ `cancelled`
+- `src/stores/audit.js` — Audit Log ของ B-19 (`all` = ข้อมูลจำลอง + `record(menu, action, target, changes)` ที่บันทึกในรอบนี้) · backend เป็นผู้บันทึกจริง
 - สิทธิ์รายเมนู — `key` ของ `adminNav` (`content/navigation.js`) = แถวในตารางสิทธิ์ (`permissionMenus` ใน `mocks/users-roles.js`) = `meta.permission` ของ route · route ที่ไม่มีสิทธิ์ไปหน้า `admin-forbidden` · สลับบทบาทสาธิตได้จากเมนูผู้ใช้บน Topbar หรือ `?as=<username>`
-- `src/router/screens.js` — ชื่อ route ของทุกหน้าจอ
+- `src/api/auth.js` — ชั้น API การยืนยันตัวตน (เข้าสู่ระบบขั้นที่ 1, ยืนยันอีเมล + ตั้งรหัสผ่าน/PIN, ลืมรหัสผ่าน) คืน Promise / throw `AuthApiError { status, code, data }` · `VITE_API_MODE=mock` (ค่าเริ่มต้น) ใช้ `mocks/auth.js` · `http` เรียก endpoint ที่เสนอ · นโยบายรหัสผ่านอยู่ที่ `utils/password.js` (สมมติฐานรอ Q-20)
+- `src/router/screens.js` — ชื่อ route ของทุกหน้าจอ · `hint` = วิธีสาธิตกรณียกเว้นที่แสดงในหน้า /prototype

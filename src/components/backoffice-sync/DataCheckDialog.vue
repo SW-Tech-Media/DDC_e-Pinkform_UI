@@ -7,7 +7,7 @@ import AlertBox from "@/components/AlertBox.vue";
 import StatusBadge from "@/components/StatusBadge.vue";
 import { backofficeSyncText } from "@/content/backoffice-sync.js";
 import { common } from "@/content/common.js";
-import { checkFields, mismatches, sampleValues, syncDocTypes } from "@/mocks/backoffice-sync.js";
+import { checkFields, mismatches, syncDocTypes } from "@/mocks/backoffice-sync.js";
 import { size } from "@/design/tokens.js";
 
 const props = defineProps({
@@ -24,7 +24,8 @@ const rows = computed(() => {
   // ค่าไม่ตรงกันจะมีเฉพาะรายการที่ส่งผิดพลาด — ส่งซ้ำสำเร็จแล้วถือว่าข้อมูลถูกปรับปรุง
   const diff = it.status === "error" ? (mismatches[it.docNo] ?? {}) : {};
   return checkFields[it.docType].map((f) => {
-    const ddc = f.key === "docNo" || f.key === "reference" ? it[f.key] : sampleValues[f.key];
+    // ค่าฝั่ง DDC = ข้อมูลของเอกสารนั้น (it.values สร้างจากรายละเอียดคำขอ / การชำระเงิน)
+    const ddc = f.key === "docNo" || f.key === "reference" ? it[f.key] : (it.values?.[f.key] ?? "—");
     const bo = notSent.value ? "—" : (diff[f.key] ?? ddc);
     return { ...f, ddc, bo, match: !notSent.value && bo === ddc };
   });

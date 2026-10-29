@@ -1,4 +1,6 @@
 // ข้อมูลตัวอย่างของ Component ในหน้าคู่มือ Design System
+// เลขคำขอ / สถานะในตัวอย่างอ้างคำขอจริงใน mocks/requests.js ให้ตรงกับหน้าจออื่น
+import { requests } from "./requests.js";
 
 export const demoBadges = [
   { tone: "success", label: "อนุมัติ" },
@@ -11,7 +13,7 @@ export const demoBadges = [
 
 export const demoAlerts = [
   { tone: "info", title: "ข้อมูล", body: "ระบบจะส่งอีเมลแจ้งผลให้ผู้ประกอบการโดยอัตโนมัติ" },
-  { tone: "success", title: "บันทึกสำเร็จ", body: "อนุมัติคำขอ PF6910260003 เรียบร้อยแล้ว" },
+  { tone: "success", title: "บันทึกสำเร็จ", body: "อนุมัติคำขอ PF6910260027 เรียบร้อยแล้ว" },
   { tone: "warning", title: "ตรวจพบความไม่สอดคล้อง", body: "ประเทศปลายทางไม่ตรงกับข้อมูลใน Invoice" },
   { tone: "danger", title: "ส่งข้อมูลไม่สำเร็จ", body: "ไม่สามารถเชื่อมต่อ NSW ได้ กรุณาลองใหม่อีกครั้ง" },
 ];
@@ -59,11 +61,11 @@ export const demoTable = {
     { title: "สถานะ", key: "status", width: 160 },
     { title: "จัดการ", key: "actions", align: "end", sortable: false, width: 120 },
   ],
-  items: [
-    { ref: "PF6910260003", company: "บริษัท สยามฟรุ๊ต เอ็กซ์ปอร์ต จำกัด", status: "pending", flagged: true },
-    { ref: "PF6910260006", company: "บริษัท ไทยเฟรช ฟู้ด จำกัด", status: "approved" },
-    { ref: "PF6910260009", company: "บริษัท โกลเด้นไรซ์ เทรดดิ้ง จำกัด", status: "rejected" },
-  ],
+  // รอพิจารณา (ตรวจพบ) / เสร็จสมบูรณ์ / ไม่อนุมัติ
+  items: ["PF6910260003", "PF6910260012", "PF6910250151"].map((ref) => {
+    const r = requests.find((x) => x.ref === ref);
+    return { ref, company: r.company, status: r.status, flagged: r.flagged > 0 };
+  }),
 };
 
 export const demoChart = {
@@ -95,9 +97,9 @@ export const demoCode = {
   caption: "MessageHeader",
   lines: [
     { text: "<eb:MessageHeader>", accent: true },
-    { text: "<eb:From>DDC</eb:From>", indent: 1 },
-    { text: "<eb:To>NSW</eb:To>", indent: 1 },
-    { text: "<eb:Action>CertificateResponse</eb:Action>", indent: 1 },
+    { text: "<eb:From>DDC-PINKFORMS</eb:From>", indent: 1 },
+    { text: "<eb:To>THNSW</eb:To>", indent: 1 },
+    { text: "<eb:Action>DDCPINKFORM</eb:Action>", indent: 1 },
     { text: "</eb:MessageHeader>", accent: true },
   ],
 };

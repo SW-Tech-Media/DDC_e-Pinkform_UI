@@ -27,6 +27,7 @@ export const paymentsText = {
     status: "สถานะ",
     bank: "รหัสธนาคาร",
     date: "วันที่ส่งข้อมูล",
+    allDates: "ทุกวัน",
     numberPlaceholder: "ระบุเลขที่",
     textPlaceholder: "ระบุ",
     all: "ทั้งหมด",
@@ -44,6 +45,7 @@ export const paymentsText = {
     { title: "View", key: "actions", align: "center", sortable: false },
   ],
   timeSuffix: "น.",
+  resultCount: (n, date) => `พบ ${n} รายการ · ${date}`,
   viewLabel: "ดูรายละเอียดการชำระเงิน",
   noData: "ไม่พบรายการชำระเงินที่ตรงกับเงื่อนไข",
   detail: {
@@ -67,6 +69,8 @@ export const paymentsText = {
     },
     failedNote: "ธนาคารแจ้งผลการชำระไม่สำเร็จ ระบบแจ้งผู้ประกอบการผ่าน NSW ให้ชำระใหม่แล้ว",
     pendingNote: "รอผลการชำระเงินจากธนาคารผ่านระบบ NSW",
+    cancelledTitle: "ยกเลิกคำสั่งชำระเงินแล้ว",
+    cancelledNote: (at, reason) => `เจ้าหน้าที่ยกเลิกการอนุมัติคำขอเมื่อ ${at} · เหตุผล: ${reason} · แจ้งยกเลิกคำสั่งชำระไปยังธนาคารผ่าน NSW แล้ว`,
     empty: "–",
   },
   reconcile: {
@@ -90,6 +94,7 @@ export const paymentsText = {
       paid: "ชำระแล้ว",
       pending: "รอการชำระเงิน",
       failed: "ไม่สำเร็จ",
+      cancelled: "ยกเลิกคำสั่งชำระ",
       total: "รวมทั้งหมด",
     },
     count: (n) => `${n} รายการ`,

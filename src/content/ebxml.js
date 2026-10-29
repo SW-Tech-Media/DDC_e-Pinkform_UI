@@ -17,8 +17,8 @@ export const ebxmlText = {
     errors: "ผิดพลาด / Retry",
   },
   filters: {
-    search: "Message ID / Conversation ID / Reference...",
-    allTypes: "ทุกประเภทเอกสาร",
+    search: "Message ID / Reference / ชื่อข้อความ...",
+    allTypes: "ทุกข้อความ",
     allDirections: "ทุกทิศทาง",
     allStatuses: "ทุกสถานะ",
     date: "วันที่",
@@ -32,7 +32,8 @@ export const ebxmlText = {
   headers: [
     { title: "เวลา", key: "time" },
     { title: "Message ID", key: "short" },
-    { title: "ประเภทเอกสาร", key: "docType" },
+    { title: "ข้อความ (Flow 10)", key: "docType" },
+    { title: "Reference", key: "reference" },
     { title: "ทิศทาง", key: "direction" },
     { title: "ต้นทาง → ปลายทาง", key: "route" },
     { title: "Signature", key: "signature" },
@@ -49,6 +50,14 @@ export const ebxmlText = {
   viewPayload: "ดู Payload",
   resend: "ส่งใหม่",
   noData: "ไม่พบข้อความที่ตรงกับเงื่อนไข",
+  // ?ref=<Reference No.> จากหน้าติดตามสถานะคำขอ (B-09) — แสดงข้อความทั้งหมดของคำขอนั้นทุกวันที่
+  byRequest: {
+    title: (ref) => `ข้อความ ebXML ของคำขอ ${ref}`,
+    body: (n) => `${n} ข้อความ ตั้งแต่รับคำขอจนถึงขั้นล่าสุด (รวมคำสั่งชำระ / ผลชำระที่อ้างอิงคำขอนี้)`,
+    clear: "แสดงทุกข้อความ",
+    openTracking: "ดูสถานะคำขอ",
+  },
+  viaNsw: "ทุกข้อความรับ-ส่งผ่าน NSW (Flow 3 / 10) · * ชื่อข้อความฝั่งธนาคารกำหนดภายหลัง (TOR 10.2)",
   detail: {
     header: (id) => `ebXML Header · ${id}`,
     history: "ประวัติการส่ง (Queue / Retry)",
@@ -90,6 +99,7 @@ export const buildHeaderXml = (msg) => [
   { text: `<eb:From><eb:PartyId>${msg.header.from}</eb:PartyId></eb:From>`, indent: 1 },
   { text: `<eb:To><eb:PartyId>${msg.header.to}</eb:PartyId></eb:To>`, indent: 1 },
   { text: `<eb:CPAId>${msg.header.cpaId}</eb:CPAId>`, indent: 1 },
+  { text: `<eb:ConversationId>${msg.header.conversationId}</eb:ConversationId>`, indent: 1 },
   { text: `<eb:Service>${msg.header.service}</eb:Service><eb:Action>${msg.header.action}</eb:Action>`, indent: 1 },
   { text: `<eb:MessageData><eb:MessageId>${shortId(msg.id)}</eb:MessageId>`, indent: 1 },
   { text: `<eb:Timestamp>${msg.date}T${msg.time}+07:00</eb:Timestamp></eb:MessageData>`, indent: 2 },
@@ -103,9 +113,12 @@ export const buildPayloadXml = (msg) => [
   { text: "<SOAP:Body>", indent: 1, accent: true },
   { text: `<ddc:Document type="${msg.header.service}" action="${msg.header.action}">`, indent: 2 },
   { text: `<ddc:Reference>${msg.reference}</ddc:Reference>`, indent: 3 },
+  ...(msg.reference !== msg.requestRef ? [{ text: `<ddc:RequestReference>${msg.requestRef}</ddc:RequestReference>`, indent: 3 }] : []),
   { text: `<ddc:DocumentType>${msg.docType}</ddc:DocumentType>`, indent: 3 },
-  { text: `<ddc:Sender>${msg.header.from}</ddc:Sender>`, indent: 3 },
-  { text: `<ddc:Receiver>${msg.header.to}</ddc:Receiver>`, indent: 3 },
+  ...(msg.note ? [{ text: `<ddc:Status>${msg.note}</ddc:Status>`, indent: 3 }] : []),
+  // ผู้ส่ง / ผู้รับปลายทาง — ebXML Header เป็น DDC ↔ NSW เสมอ (NSW ส่งต่อให้ธนาคาร / e-Licensing / NSP)
+  { text: `<ddc:Sender>${msg.parties.sender}</ddc:Sender>`, indent: 3 },
+  { text: `<ddc:Receiver>${msg.parties.receiver}</ddc:Receiver>`, indent: 3 },
   { text: `<ddc:IssueDateTime>${msg.date}T${msg.time}+07:00</ddc:IssueDateTime>`, indent: 3 },
   { text: '<ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#">…</ds:Signature>', indent: 3 },
   { text: "</ddc:Document>", indent: 2 },

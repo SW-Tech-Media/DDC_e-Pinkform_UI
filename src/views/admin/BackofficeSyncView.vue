@@ -17,7 +17,7 @@ import SecondaryButton from "@/components/SecondaryButton.vue";
 import TableIconButton from "@/components/TableIconButton.vue";
 import DataCheckDialog from "@/components/backoffice-sync/DataCheckDialog.vue";
 import { backofficeSyncText as t } from "@/content/backoffice-sync.js";
-import { syncDocTypes, syncItems, syncNow, syncStats, syncStatuses, syncToday, webService } from "@/mocks/backoffice-sync.js";
+import { syncDocTypes, syncItems, syncNow, syncStatuses, syncToday, webService } from "@/mocks/backoffice-sync.js";
 import { formatDate, formatDateTimeSec, formatNumber, formatTime } from "@/utils/format.js";
 import { size } from "@/design/tokens.js";
 import { useSessionStore } from "@/stores/session.js";
@@ -29,11 +29,18 @@ const list = ref(syncItems.map((s) => ({ ...s })));
 const snack = reactive({ show: false, text: "" });
 const notify = (text) => Object.assign(snack, { show: true, text });
 
-// ---------- KPI ----------
+// ---------- KPI (คำนวณจากรายการจริง — ส่งวันนี้ = รายการวันนี้ที่ส่งแล้ว ไม่นับที่รอส่ง) ----------
 const count = (status) => list.value.filter((s) => s.status === status).length;
+const sentToday = computed(() => list.value.filter((s) => s.at.slice(0, 10) === syncToday && s.status !== "pending"));
 const kpis = computed(() => [
-  { key: "sent", icon: "far fa-paper-plane", tone: "teal", label: t.kpis.sent, value: formatNumber(syncStats.sentToday) },
-  { key: "ok", icon: "fas fa-check", tone: "green", label: t.kpis.success, value: formatNumber(syncStats.sentToday - count("error")) },
+  { key: "sent", icon: "far fa-paper-plane", tone: "teal", label: t.kpis.sent, value: formatNumber(sentToday.value.length) },
+  {
+    key: "ok",
+    icon: "fas fa-check",
+    tone: "green",
+    label: t.kpis.success,
+    value: formatNumber(sentToday.value.filter((s) => s.status === "success").length),
+  },
   { key: "pending", icon: "far fa-clock", tone: "blue", label: t.kpis.pending, value: count("pending") },
   { key: "error", icon: "fas fa-triangle-exclamation", tone: "red", label: t.kpis.error, value: count("error") },
 ]);

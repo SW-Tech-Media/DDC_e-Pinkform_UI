@@ -20,7 +20,7 @@ export const certificatesText = {
     taxId: { label: "เลขประจำตัวผู้เสียภาษี", placeholder: "เลข 13 หลัก" },
     company: { label: "ชื่อบริษัท (ไทย / Eng)", placeholder: "ระบุชื่อบริษัท" },
     ref: { label: "Reference No.", placeholder: "เช่น PF6910260003" },
-    certNo: { label: "เลขที่ใบรับรอง", placeholder: "เช่น DDC-PF 69/012845" },
+    certNo: { label: "เลขที่ใบรับรอง", placeholder: "เช่น DDC-PF 69/012847" },
     date: { label: "วันที่ส่งข้อมูล", placeholder: "เลือกช่วงวันที่" },
     invoice: { label: "Invoice No.", placeholder: "เช่น INV-6910-1024" },
   },

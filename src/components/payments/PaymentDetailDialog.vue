@@ -72,6 +72,9 @@ const sections = computed(() => {
         {{ t.failedNote }}
       </AlertBox>
       <AlertBox v-else-if="payment.status === 'pending'" tone="warning" class="mt-6">{{ t.pendingNote }}</AlertBox>
+      <AlertBox v-else-if="payment.status === 'cancelled'" tone="neutral" :title="t.cancelledTitle" class="mt-6">
+        {{ t.cancelledNote(formatDateTime(payment.cancelledAt), payment.cancelReason) }}
+      </AlertBox>
     </template>
     <template #actions>
       <v-btn variant="outlined" color="secondary" @click="open = false">{{ common.actions.close }}</v-btn>

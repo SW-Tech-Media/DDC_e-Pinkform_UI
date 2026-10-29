@@ -1,6 +1,8 @@
 <script setup>
-// D11 Preview ใบรับรองฯ และยืนยันผลการพิจารณา (Modal)
-// ยืนยันอนุมัติได้เมื่อ Checklist ครบเท่านั้น (แก้ข้อมูลขัดกันใน Figma — ถ้ายังไม่ครบ ปุ่ม disabled พร้อมเหตุผล)
+// D11 Preview ใบรับรองฯ และยืนยันผลการพิจารณา (Modal) — ทั้งอนุมัติและไม่อนุมัติต้องผ่าน Preview นี้ก่อนยืนยันทุกครั้ง (TOR 4.4.2 (5)(7))
+// mode: approve = ยืนยันอนุมัติ (Checklist ต้องครบ — แก้ข้อมูลขัดกันใน Figma) · reject = ยืนยันไม่อนุมัติ (ต้องมีข้อความตอบกลับประเภทไม่อนุมัติ)
+//       view = ดู Preview อย่างเดียว (บันทึกผลแล้ว / ไม่มีสิทธิ์)
+// blocked = เหตุผลที่ยังยืนยันไม่ได้นอกจาก Checklist (เช่น ข้อความตอบกลับผิดประเภท) — ปุ่มยืนยัน disabled พร้อมแสดงเหตุผล
 import { computed, ref } from "vue";
 import { useDisplay } from "vuetify";
 import AlertBox from "@/components/AlertBox.vue";
@@ -17,16 +19,24 @@ const props = defineProps({
   detail: { type: Object, required: true },
   checked: { type: Number, required: true },
   total: { type: Number, required: true },
-  decided: { type: Boolean, default: false }, // บันทึกผลแล้ว → ดู Preview อย่างเดียว
+  mode: { type: String, default: "approve" }, // approve | reject | view
+  reply: { type: Object, default: null }, // ข้อความตอบกลับที่เลือก { code, text, type }
+  note: { type: String, default: "" },
+  blocked: { type: String, default: "" },
 });
 const open = defineModel({ type: Boolean, default: false });
 const emit = defineEmits(["confirm"]);
 const t = reviewText.preview;
+const r = reviewText.rejectDialog;
 const { smAndDown } = useDisplay();
 
 const variants = Object.keys(t.tabs);
 const variant = ref("cert");
 const complete = computed(() => props.checked === props.total);
+const isReject = computed(() => props.mode === "reject");
+const canConfirm = computed(() =>
+  isReject.value ? props.reply?.type === "reject" : props.mode === "approve" && complete.value && !props.blocked
+);
 
 const summary = computed(() => [
   { label: t.summary.exporter, value: props.detail.exporter.nameTh },
@@ -37,10 +47,11 @@ const summary = computed(() => [
     value: complete.value ? t.checklistDone(props.checked, props.total) : t.checklistPartial(props.checked, props.total),
     warn: !complete.value,
   },
-  { label: t.summary.fee, value: t.fee(formatMoney(props.detail.fee)) },
+  ...(isReject.value ? [] : [{ label: t.summary.fee, value: t.fee(formatMoney(props.detail.fee)) }]),
 ]);
 
 const confirm = () => {
+  if (!canConfirm.value) return;
   emit("confirm");
   open.value = false;
 };
@@ -82,9 +93,9 @@ const confirm = () => {
 
           <!-- ขวา: สรุป + ยืนยัน -->
           <aside class="d-flex flex-column pa-6" :class="smAndDown ? 'pf-bordered-top' : 'confirm'">
-            <IconTile icon="fas fa-file-circle-check" tone="green" size="lg" />
-            <h3 class="pf-type-h3 text-text-primary mt-4">{{ decided ? t.viewTitle : t.confirmTitle }}</h3>
-            <p class="pf-type-body-sm text-text-secondary mt-2 mb-4">{{ t.confirmDescription }}</p>
+            <IconTile :icon="isReject ? 'fas fa-file-circle-xmark' : 'fas fa-file-circle-check'" :tone="isReject ? 'red' : 'green'" size="lg" />
+            <h3 class="pf-type-h3 text-text-primary mt-4">{{ mode === "view" ? t.viewTitle : isReject ? r.title : t.confirmTitle }}</h3>
+            <p class="pf-type-body-sm text-text-secondary mt-2 mb-4">{{ isReject ? r.description : t.confirmDescription }}</p>
 
             <div class="bg-bg-surface-muted rounded-lg pa-4 mb-4">
               <KeyValueRows :items="summary" dense>
@@ -94,10 +105,18 @@ const confirm = () => {
               </KeyValueRows>
             </div>
 
-            <div class="d-flex flex-column ga-3">
-              <AlertBox v-if="!complete && !decided" tone="danger" :title="t.blockedTitle">
+            <div v-if="isReject" class="d-flex flex-column ga-3">
+              <div class="pf-type-label-md text-text-primary">{{ r.reply }}</div>
+              <AlertBox v-if="reply?.type === 'reject'" tone="danger" :title="reviewText.reply.item(reply)" icon="far fa-message">
+                {{ note || r.empty }}
+              </AlertBox>
+              <AlertBox v-else tone="warning">{{ r.noReply }}</AlertBox>
+            </div>
+            <div v-else class="d-flex flex-column ga-3">
+              <AlertBox v-if="mode === 'approve' && !complete" tone="danger" :title="t.blockedTitle">
                 {{ t.blocked(checked, total) }}
               </AlertBox>
+              <AlertBox v-else-if="mode === 'approve' && blocked" tone="danger">{{ blocked }}</AlertBox>
               <AlertBox tone="warning" icon="far fa-clock">{{ t.undoNote }}</AlertBox>
               <AlertBox tone="info" icon="far fa-paper-plane">{{ t.billNote }}</AlertBox>
             </div>
@@ -108,18 +127,18 @@ const confirm = () => {
                 class="flex-1-1"
                 @click="open = false"
               >
-                {{ decided ? t.close : t.cancel }}
+                {{ mode === "view" ? t.close : t.cancel }}
               </SecondaryButton>
               <v-btn
-                v-if="!decided"
-                color="success"
+                v-if="mode !== 'view'"
+                :color="isReject ? 'error' : 'success'"
                 class="flex-1-1"
-                prepend-icon="fas fa-check"
+                :prepend-icon="isReject ? 'fas fa-xmark' : 'fas fa-check'"
                 :height="size['control-lg']"
-                :disabled="!complete"
+                :disabled="!canConfirm"
                 @click="confirm"
               >
-                {{ t.confirm }}
+                {{ isReject ? r.confirm : t.confirm }}
               </v-btn>
             </div>
           </aside>

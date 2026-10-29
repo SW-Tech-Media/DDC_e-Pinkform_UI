@@ -1,25 +1,24 @@
-// ข้อมูลจำลองหน้า D16 · ติดตามการรับ-ส่งข้อความ ebXML (ตาม Figma node 22:4793)
+// ข้อมูลจำลองหน้า D16 · ติดตามการรับ-ส่งข้อความ ebXML (B-17 — ตาม Figma node 22:4793)
+// Transaction Log สร้างจากคำขอใน mocks/requests.js (ประวัติสถานะ / คำสั่งชำระ / ใบรับรองฯ) และคำขอขึ้นทะเบียนใน mocks/thnsw.js
+// จึงอ้างเฉพาะคำขอ / เลขที่อ้างอิงการชำระ / ทะเบียนที่มีอยู่จริง และมีข้อความเท่าที่คำขอนั้นไปถึง (คำขอรอพิจารณาไม่มีคำสั่งชำระ / ใบรับรองฯ)
+// ชื่อข้อความตาม Flow 10 / 11 (mocks/message-types.js) · ทุกข้อความรับ-ส่งผ่าน NSW ด้วย CPA เดียว (Flow 3 / 10 / 11)
+//   รวมคำสั่งชำระ (3.1) และผลชำระ (4.1) ที่ส่งผ่าน NSW ไปธนาคาร ไม่ส่งตรง — รอยืนยัน Q-10 (ชื่อข้อความฝั่งธนาคารตาม TOR 10.2)
+// ชั่วคราวจนกว่าจะมี API: backend อ่าน Transaction Log จาก ebXML Gateway
+import { banks } from "./banks.js";
+import { messageTypes } from "./message-types.js";
+import { paymentRefOf, requestDetails, requests } from "./requests.js";
+import { thnswDecided, thnswRequests } from "./thnsw.js";
+
+export { messageTypes };
 
 export const ebxmlToday = "2026-10-26";
-export const ebxmlNow = "2026-10-26T11:24:30";
+export const ebxmlNow = "2026-10-26T11:24:30+07:00";
 export const maxRetry = 5;
-
-export const ebxmlStats = { received: 312, sent: 298, successRate: "99.6%" };
 
 export const directions = {
   in: { label: "รับ", tone: "info" },
   out: { label: "ส่ง", tone: "accent" },
 };
-
-export const docTypes = [
-  "คำขอใบรับรองฯ",
-  "ACK (Acknowledgment)",
-  "คำสั่งชำระเงิน",
-  "ผลการชำระเงิน",
-  "ใบรับรองฯ",
-  "ใบรับรองฯ + ใบเสร็จรับเงิน",
-  "ขอขึ้นทะเบียนผู้ใช้บริการ",
-];
 
 // สถานะของแต่ละครั้งที่ส่ง (ประวัติ Queue / Retry)
 export const attemptStatuses = {
@@ -30,132 +29,202 @@ export const attemptStatuses = {
   rejected: { label: "Signature ไม่ผ่าน", tone: "danger" },
 };
 
-const m = (o) => ({ date: ebxmlToday, ...o });
+// PartyId ของ DDC และ NSW ใน ebXML Header — ปลายทางจริง (ธนาคาร / e-Licensing / NSP) อยู่ใน Payload
+const DDC = "DDC-PINKFORMS";
+const NSW = "THNSW";
+const NSW_CPA = "NSW_DDC_CPA_v2";
 
-export const messages = [
-  m({
-    id: "a91f2c7e-4b1d-4e0a-9c55-7d2e8f1a03bd",
-    short: "a91f2c7e...03bd",
-    time: "11:24:08",
-    docType: "คำขอใบรับรองฯ",
-    direction: "in",
-    route: "NSW → DDC",
-    routeLabel: "คำขอใบรับรองฯ จาก NSW",
-    reference: "PF6910260031",
-    signature: true,
-    status: "success",
-    header: { from: "THNSW", to: "DDC-PINKFORMS", cpaId: "NSW_DDC_CPA_v2", service: "HealthCertificate", action: "Request" },
-    attempts: [{ time: "11:24:08", label: "รับข้อความ", status: "success" }],
-  }),
-  m({
-    id: "77c0e1aa-02f3-4d8b-b6a1-5c9e3d7b9f12",
-    short: "77c0e1aa...9f12",
-    time: "11:23:51",
-    docType: "ACK (Acknowledgment)",
-    direction: "out",
-    route: "DDC → NSW",
-    routeLabel: "ACK → NSW",
-    reference: "PF6910260030",
-    signature: true,
-    status: "success",
-    header: { from: "DDC-PINKFORMS", to: "THNSW", cpaId: "NSW_DDC_CPA_v2", service: "urn:oasis:names:tc:ebxml-msg:service", action: "Acknowledgment" },
-    attempts: [{ time: "11:23:51", label: "ส่งครั้งที่ 1", status: "success" }],
-  }),
-  m({
-    id: "5b3d8e90-7a2c-4f61-8e0d-91b4c6a2c4a1",
-    short: "5b3d8e90...c4a1",
-    time: "11:22:30",
-    docType: "คำสั่งชำระเงิน",
-    direction: "out",
-    route: "DDC → ธนาคาร B (014)",
-    routeLabel: "คำสั่งชำระเงิน → ธนาคาร B",
-    reference: "PAY6910260040",
-    signature: true,
-    status: "retry",
-    retry: 2,
-    header: { from: "DDC-PINKFORMS", to: "BANK-014", cpaId: "DDC_BANK014_CPA_v2", service: "PaymentOrder", action: "Submit" },
-    attempts: [
-      { time: "11:22:30", label: "ส่งครั้งที่ 1", status: "timeout" },
-      { time: "11:23:30", label: "ส่งครั้งที่ 2", status: "timeout" },
-      { time: "11:25:30", label: "ส่งครั้งที่ 3 (กำหนดการ)", status: "scheduled" },
-    ],
-  }),
-  m({
-    id: "e04b6d21-5f8a-4c37-a2e9-3b7d1c0e7a88",
-    short: "e04b6d21...7a88",
-    time: "11:20:14",
-    docType: "ผลการชำระเงิน",
-    direction: "in",
-    route: "ธนาคาร A (006) → DDC",
-    routeLabel: "ผลการชำระเงิน จากธนาคาร A",
-    reference: "PAY6910260034",
-    signature: true,
-    status: "success",
-    header: { from: "BANK-006", to: "DDC-PINKFORMS", cpaId: "DDC_BANK006_CPA_v2", service: "PaymentResult", action: "Notify" },
-    attempts: [{ time: "11:20:14", label: "รับข้อความ", status: "success" }],
-  }),
-  m({
-    id: "c3a9f0b4-1d6e-4a92-8f3c-6e2b5a8d1e5d",
-    short: "c3a9f0b4...1e5d",
-    time: "11:20:02",
-    docType: "ใบรับรองฯ",
-    direction: "out",
-    route: "DDC → e-Licensing",
-    routeLabel: "ใบรับรองฯ → e-Licensing",
-    reference: "PF6910260018",
-    signature: true,
-    status: "waitAck",
-    header: { from: "DDC-PINKFORMS", to: "E-LICENSING", cpaId: "DDC_ELIC_CPA_v1", service: "HealthCertificate", action: "Issue" },
-    attempts: [
-      { time: "11:20:02", label: "ส่งครั้งที่ 1", status: "success" },
-      { time: "11:20:02", label: "รอการตอบรับ (ACK)", status: "waitAck" },
-    ],
-  }),
-  m({
-    id: "0f81a2c6-9b4e-4d05-a7f1-2c8e6d3fb930",
-    short: "0f81a2c6...b930",
-    time: "11:19:47",
-    docType: "ใบรับรองฯ + ใบเสร็จรับเงิน",
-    direction: "out",
-    route: "DDC → NSW → NSP",
-    routeLabel: "ใบรับรองฯ + ใบเสร็จ → NSW",
-    reference: "PF6910260012",
-    signature: true,
-    status: "success",
-    header: { from: "DDC-PINKFORMS", to: "THNSW", cpaId: "NSW_DDC_CPA_v2", service: "HealthCertificate", action: "IssueWithReceipt" },
-    attempts: [{ time: "11:19:47", label: "ส่งครั้งที่ 1", status: "success" }],
-  }),
-  m({
-    id: "9d2e7b14-6c0a-4f83-b5d2-8a1e4c9f6f07",
-    short: "9d2e7b14...6f07",
-    time: "11:18:33",
-    docType: "คำขอใบรับรองฯ",
-    direction: "in",
-    route: "NSW → DDC",
-    routeLabel: "คำขอใบรับรองฯ จาก NSW",
-    reference: "PF6910260029",
-    signature: false,
-    status: "error",
-    header: { from: "THNSW", to: "DDC-PINKFORMS", cpaId: "NSW_DDC_CPA_v2", service: "HealthCertificate", action: "Request" },
-    attempts: [{ time: "11:18:33", label: "รับข้อความ", status: "rejected" }],
-  }),
-  m({
-    id: "2a6c4f88-3e7b-4d19-9a0c-5f2d8b1ed215",
-    short: "2a6c4f88...d215",
-    time: "11:17:09",
-    docType: "ขอขึ้นทะเบียนผู้ใช้บริการ",
-    direction: "in",
-    route: "NSW → DDC",
-    routeLabel: "ขอขึ้นทะเบียน จาก NSW",
-    reference: "REG6910260007",
-    signature: true,
-    status: "success",
-    header: { from: "THNSW", to: "DDC-PINKFORMS", cpaId: "NSW_DDC_CPA_v2", service: "Registration", action: "Register" },
-    attempts: [{ time: "11:17:09", label: "รับข้อความ", status: "success" }],
-  }),
-];
+const BKK = 7 * 3600 * 1000;
+const plus = (iso, s) => `${new Date(new Date(iso).getTime() + s * 1000 + BKK).toISOString().slice(0, 19)}+07:00`;
+const clock = (iso) => iso.slice(11, 19);
+
+// Message ID (UUID) แบบคงที่ต่อข้อความ — สร้างจาก seed เพื่อให้ข้อมูลจำลองเหมือนเดิมทุกครั้งที่โหลด
+const hex = (seed) => {
+  let h = 2166136261;
+  let out = "";
+  for (let round = 0; out.length < 32; round++) {
+    for (const ch of `${seed}#${round}`) h = Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0;
+    out += h.toString(16).padStart(8, "0");
+  }
+  return out;
+};
+const uuid = (seed) => {
+  const x = hex(seed);
+  return `${x.slice(0, 8)}-${x.slice(8, 12)}-4${x.slice(13, 16)}-a${x.slice(17, 20)}-${x.slice(20, 32)}`;
+};
+
+// ประวัติการส่ง — in = รับข้อความ (ตอบ ebMS ACK) · out = ส่งครั้งที่ 1 · waitAck = ส่งแล้วรอ ACK · retry = Timeout แล้วรอส่งซ้ำ
+const attemptsOf = (kind, at, signature) => {
+  const t = clock(at);
+  if (kind === "in") return [{ time: t, label: "รับข้อความ", status: signature ? "success" : "rejected" }];
+  if (kind === "waitAck")
+    return [
+      { time: t, label: "ส่งครั้งที่ 1", status: "success" },
+      { time: t, label: "รอการตอบรับ (ACK)", status: "waitAck" },
+    ];
+  if (kind === "retry")
+    return [
+      { time: t, label: "ส่งครั้งที่ 1", status: "timeout" },
+      { time: clock(plus(at, 60)), label: "ส่งครั้งที่ 2", status: "timeout" },
+      { time: clock(plus(at, 180)), label: "ส่งครั้งที่ 3", status: "timeout" },
+      { time: clock(plus(at, 420)), label: "ส่งครั้งที่ 4 (กำหนดการ)", status: "scheduled" },
+    ];
+  return [{ time: t, label: "ส่งครั้งที่ 1", status: "success" }];
+};
+const statusOf = { in: "success", out: "success", waitAck: "waitAck", retry: "retry" };
+
+// สร้างข้อความ 1 รายการ
+// o: { requestRef, reference, at, kind, step?, note?, route, sender, receiver, signature? }
+const msg = (typeKey, o) => {
+  const type = messageTypes[typeKey];
+  const direction = o.kind === "in" ? "in" : "out";
+  const signature = o.signature ?? true;
+  const id = uuid(`${o.reference}-${typeKey}-${o.step ?? ""}-${o.at}`);
+  return {
+    id,
+    short: `${id.slice(0, 8)}...${id.slice(-4)}`,
+    at: o.at,
+    date: o.at.slice(0, 10),
+    time: clock(o.at),
+    type: typeKey,
+    code: type.code,
+    docType: type.code ?? type.label,
+    step: o.step ?? type.step ?? "",
+    note: o.note ?? "",
+    direction,
+    route: o.route,
+    routeLabel: `${o.step ? `${o.step}. ` : ""}${type.code ?? type.label} · ${o.route}`,
+    requestRef: o.requestRef,
+    reference: o.reference,
+    signature,
+    status: signature ? statusOf[o.kind] : "error",
+    ...(o.kind === "retry" ? { retry: 3 } : {}),
+    header: {
+      from: direction === "in" ? NSW : DDC,
+      to: direction === "in" ? DDC : NSW,
+      cpaId: NSW_CPA,
+      conversationId: o.requestRef,
+      service: type.service,
+      action: type.action,
+    },
+    parties: { sender: o.sender, receiver: o.receiver },
+    attempts: attemptsOf(o.kind, o.at, signature),
+  };
+};
+
+// ---------- ข้อความของคำขอใบรับรองฯ (Flow 10 ข้อ 1 – 10 + กรณีไม่ผ่าน) ----------
+const NSP = "NSP";
+const fromNsp = "NSP → NSW → DDC";
+const toNsp = "DDC → NSW → NSP";
+const accept = (req, at, step, note) =>
+  msg("DDCPFREQ_ACCEPT", { requestRef: req.ref, reference: req.ref, at, kind: "out", step, note, route: toNsp, sender: DDC, receiver: NSP });
+
+function requestMessages(req) {
+  const d = requestDetails[req.ref];
+  const out = [];
+  const receivedAt = plus(req.submittedAt, 10);
+  out.push(
+    msg("DDCPFREQ", {
+      requestRef: req.ref,
+      reference: req.ref,
+      at: receivedAt,
+      kind: "in",
+      step: "1",
+      route: fromNsp,
+      sender: NSP,
+      receiver: DDC,
+      signature: d.signatureValid,
+    })
+  );
+  // ข้อมูลไม่ถูกต้อง (ลายมือชื่อ / XML Schema) — แจ้งกลับแล้วสิ้นสุด
+  if (req.status === "invalid") {
+    out.push(accept(req, plus(d.decision.at, 5), "", "ข้อมูลไม่ถูกต้อง"));
+    return out;
+  }
+  out.push(accept(req, plus(req.submittedAt, 20), "2", "อยู่ระหว่างดำเนินการ"));
+  if (!d.decision) return out;
+  if (d.decision.type === "rejected") {
+    out.push(accept(req, plus(d.decision.at, 5), "", `เจ้าหน้าที่ไม่อนุมัติ · ${d.decision.replyCode}`));
+    return out;
+  }
+  out.push(accept(req, plus(d.decision.at, 5), "3", "เจ้าหน้าที่อนุมัติ"));
+
+  // คำสั่งชำระ / ผลชำระ ผ่าน NSW (Flow 10 ข้อ 3.1 / 4.1)
+  const p = d.payment;
+  const bank = `${banks[p.bankCode]} (${p.bankCode})`;
+  const bankParty = `BANK-${p.bankCode}`;
+  const payRef = paymentRefOf(req.ref);
+  const pay = (typeKey, at, kind, note) =>
+    msg(typeKey, {
+      requestRef: req.ref,
+      reference: payRef,
+      at,
+      kind,
+      note,
+      route: kind === "in" ? `${bank} → NSW → DDC` : `DDC → NSW → ${bank}`,
+      sender: kind === "in" ? bankParty : DDC,
+      receiver: kind === "in" ? DDC : bankParty,
+    });
+  out.push(pay("paymentOrder", p.orderedAt, "out"));
+  out.push(accept(req, plus(p.orderedAt, 20), "4", "รอการชำระเงิน BILLPAYMENT"));
+  if (p.status === "failed") {
+    out.push(pay("paymentResult", p.failedAt, "in", "ชำระไม่สำเร็จ"));
+    out.push(accept(req, plus(p.failedAt, 5), "", "ชำระเงินไม่สำเร็จ"));
+    return out;
+  }
+  if (p.status !== "paid") return out;
+  out.push(pay("paymentResult", p.paidAt, "in", "ชำระสำเร็จ"));
+  out.push(accept(req, plus(p.paidAt, 5), "5", "ได้รับการชำระ BILLPAYMENT เรียบร้อยแล้ว"));
+
+  // ใบรับรองฯ → e-Licensing ผ่าน NSW (ข้อ 6) — สถานะตามผลส่ง e-Licensing ในรายละเอียดคำขอ
+  const i = d.issued;
+  if (!i) return out;
+  const certRef = (step, at, kind, route, receiver) =>
+    msg("DDCPINKFORM", { requestRef: req.ref, reference: req.ref, at, kind, step, note: i.certificate, route, sender: DDC, receiver });
+  const eLicKind = { sent: "out", pending: "waitAck", failed: "retry" }[i.eLicensing];
+  out.push(certRef("6", plus(i.at, 12), eLicKind, "DDC → NSW → e-Licensing", "E-LICENSING"));
+
+  // ใบเสร็จ + ใบรับรองฯ ให้ผู้ประกอบการ (ข้อ 7 – 8) และแจ้งปิดคำขอ (ข้อ 9 – 10)
+  if (!["readyToDeliver", "completed"].includes(req.status)) return out;
+  const deliveredAt = plus(p.paidAt, 30);
+  out.push(
+    msg("DDCRECEIPT", { requestRef: req.ref, reference: req.ref, at: deliveredAt, kind: "out", note: i.receipt, route: toNsp, sender: DDC, receiver: NSP })
+  );
+  out.push(certRef("8", plus(deliveredAt, 1), "out", toNsp, NSP));
+  out.push(accept(req, plus(p.paidAt, 35), "9", "พร้อมจ่าย"));
+  if (req.status === "completed") out.push(accept(req, d.history[0].at, "10", "เสร็จสมบูรณ์"));
+  return out;
+}
+
+// ---------- ข้อความขึ้นทะเบียนผู้ใช้บริการ (Flow 6 ข้อ 2 / 7) ----------
+function registerMessages(r) {
+  const base = { requestRef: r.nswId, reference: r.nswId };
+  const out = [
+    msg("register", { ...base, at: r.receivedAt, kind: "in", route: "NSW → DDC", sender: NSW, receiver: DDC, signature: r.checks.signature.pass }),
+  ];
+  if (r.decision) {
+    out.push(
+      msg("registerResult", {
+        ...base,
+        at: plus(r.decidedAt, 5),
+        kind: "out",
+        note: r.decision === "approved" ? "อนุมัติ" : "ไม่อนุมัติ",
+        route: "DDC → NSW",
+        sender: DDC,
+        receiver: NSW,
+      })
+    );
+  }
+  return out;
+}
+
+// ใหม่ → เก่า · ไม่มีข้อความหลังเวลาปัจจุบันของหน้า
+export const messages = [...requests.flatMap(requestMessages), ...[...thnswRequests, ...thnswDecided].flatMap(registerMessages)]
+  .filter((m) => m.at <= ebxmlNow)
+  .sort((a, b) => b.at.localeCompare(a.at));
 
 // ข้อมูล CPA (Collaboration Protocol Agreement) สำหรับ Dialog ตั้งค่า CPA (TOR 4.6.1 (1))
+// ข้อความใน B-17 ใช้ NSW_DDC_CPA_v2 ทั้งหมด (ผ่าน NSW ตาม Flow 3 / 10) — CPA ของธนาคาร / e-Licensing คงไว้สำหรับกรณีเชื่อมตรง รอยืนยัน Q-10
 export const cpas = [
   { id: "NSW_DDC_CPA_v2", partner: "THNSW", endpoint: "https://gw.nsw.example/ebms", retries: 5, interval: 60, signature: true, encryption: true },
   { id: "DDC_BANK014_CPA_v2", partner: "BANK-014", endpoint: "https://ebms.bank-b.example/inbound", retries: 5, interval: 60, signature: true, encryption: true },

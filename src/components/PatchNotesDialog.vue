@@ -38,12 +38,22 @@ const expanded = ref([patchNotes[0]?.version]);
               </div>
             </v-expansion-panel-title>
             <v-expansion-panel-text>
-              <ul class="change-list d-flex flex-column ga-3">
-                <li v-for="(c, j) in note.changes" :key="j" class="d-flex align-start ga-3">
-                  <StatusBadge :tone="changeTypes[c.type].tone">{{ changeTypes[c.type].label }}</StatusBadge>
-                  <span class="pf-type-body-md text-text-primary">{{ c.text }}</span>
-                </li>
-              </ul>
+              <v-table density="comfortable" class="change-table bg-transparent pf-bordered">
+                <thead>
+                  <tr>
+                    <th class="col-type pf-type-label-sm text-text-secondary">{{ patchNotesText.columns.type }}</th>
+                    <th class="pf-type-label-sm text-text-secondary">{{ patchNotesText.columns.detail }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(c, j) in note.changes" :key="j">
+                    <td class="col-type py-3">
+                      <StatusBadge :tone="changeTypes[c.type].tone">{{ changeTypes[c.type].label }}</StatusBadge>
+                    </td>
+                    <td class="py-3 pf-type-body-sm text-text-primary">{{ c.text }}</td>
+                  </tr>
+                </tbody>
+              </v-table>
             </v-expansion-panel-text>
           </v-expansion-panel>
         </v-expansion-panels>
@@ -61,7 +71,23 @@ const expanded = ref([patchNotes[0]?.version]);
 .patch-notes :deep(.v-overlay__content) {
   width: min(var(--pf-size-dialog-md), calc(100% - 2 * var(--pf-space-16)));
 }
-.change-list {
-  list-style: none;
+.change-table {
+  border-radius: var(--pf-radius-md);
+  overflow: hidden;
+}
+.change-table th {
+  background: rgb(var(--v-theme-bg-surface-muted)) !important;
+  white-space: nowrap;
+}
+/* คอลัมน์ประเภทกว้างเท่า chip ที่ยาวที่สุด — chip ทุกแถวเริ่มตรงกัน และรายละเอียดเริ่มที่แนวเดียวกัน */
+.change-table .col-type {
+  width: 1%;
+  white-space: nowrap;
+}
+.change-table th {
+  vertical-align: middle;
+}
+.change-table td {
+  vertical-align: top;
 }
 </style>

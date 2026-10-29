@@ -1,6 +1,7 @@
 // ข้อมูลจำลองหน้า B-04 · พิจารณาอนุมัติ THNSW (เสริมจาก thnswPending ใน mocks/operators.js — ห้ามแก้ไฟล์นั้น)
 // รายการรอพิจารณามาจาก operators.js แล้วเติมรายละเอียดคำขอขึ้นทะเบียนจาก NSW (บริษัท / NSP / ผลตรวจ ebXML)
 import { thnswPending } from "./operators.js";
+import { messageTypes, nspServiceCodes } from "./message-types.js";
 
 export const thnswToday = "2026-10-26";
 export const thnswNow = "2026-10-26T14:20:00+07:00";
@@ -13,13 +14,15 @@ export const nspProviders = {
   cat: { name: "บริษัท โทรคมนาคมแห่งชาติ จำกัด (มหาชน)", code: "NSP-NT" },
 };
 
-// บริการ (ข้อความ ebXML) ที่ขอใช้ผ่าน NSP
-export const nspServices = {
+// บริการ (ข้อความ ebXML) ที่ขอใช้ผ่าน NSP — key = ชื่อข้อความตาม Flow 10 / 11 ชุดเดียวกับหน้า B-17 (mocks/message-types.js)
+// ชั่วคราวจนกว่าจะมี API: ชื่อข้อความที่ใช้จริงกับ NSW รอยืนยัน (Q-10)
+const serviceLabels = {
   DDCPFREQ: "ยื่นคำขอใบรับรองฯ",
-  DDCPFRES: "รับผลการพิจารณา",
-  DDCPFPAY: "รับข้อมูลการชำระเงิน",
-  DDCPFCER: "รับใบรับรองฯ อิเล็กทรอนิกส์",
+  DDCPFREQ_ACCEPT: "รับสถานะคำขอ (ผลพิจารณา / แจ้งชำระ / ปิดคำขอ)",
+  DDCRECEIPT: "รับใบเสร็จรับเงิน",
+  DDCPINKFORM: "รับใบรับรองฯ อิเล็กทรอนิกส์",
 };
+export const nspServices = Object.fromEntries(nspServiceCodes.map((code) => [messageTypes[code].code, serviceLabels[code]]));
 
 const check = (signature, schema, extra = {}) => ({
   signature: {
@@ -40,7 +43,7 @@ const details = {
     capital: "5,000,000",
     address: "99/12 ถนนพระราม 2 แขวงแสมดำ เขตบางขุนเทียน กรุงเทพมหานคร 10150",
     contact: { name: "นางสาวพิมพ์ชนก วงศ์ไทย", email: "export@bkkfruity.co.th", phone: "02-415-7788" },
-    nsp: [{ provider: "netbay", services: ["DDCPFREQ", "DDCPFRES", "DDCPFPAY", "DDCPFCER"], since: "2026-10-25" }],
+    nsp: [{ provider: "netbay", services: ["DDCPFREQ", "DDCPFREQ_ACCEPT", "DDCRECEIPT", "DDCPINKFORM"], since: "2026-10-25" }],
     checks: check(true, true, { messageId: "NSW-REG-20261026-0911-6611" }),
   },
   NSW6406627: {
@@ -48,7 +51,7 @@ const details = {
     capital: "10,000,000",
     address: "45 หมู่ 3 ตำบลเนินพระ อำเภอเมืองระยอง จังหวัดระยอง 21000",
     contact: { name: "นายวีระพงษ์ ทะเลงาม", email: "admin@rayongseafood.co.th", phone: "038-611-245" },
-    nsp: [{ provider: "tradesiam", services: ["DDCPFREQ", "DDCPFRES", "DDCPFPAY"], since: "2026-10-24" }],
+    nsp: [{ provider: "tradesiam", services: ["DDCPFREQ", "DDCPFREQ_ACCEPT", "DDCRECEIPT"], since: "2026-10-24" }],
     checks: check(true, true, { serial: "3A:88:01:B2:5D:90", messageId: "NSW-REG-20261026-0947-6627" }),
   },
   NSW6406634: {
@@ -57,8 +60,8 @@ const details = {
     address: "1/88 ถนนเจริญกรุง แขวงยานนาวา เขตสาทร กรุงเทพมหานคร 10120",
     contact: { name: "นายธีรวัฒน์ แสงทอง", email: "customs@siamshipping.co.th", phone: "02-676-3400" },
     nsp: [
-      { provider: "netbay", services: ["DDCPFREQ", "DDCPFRES"], since: "2026-10-20" },
-      { provider: "inet", services: ["DDCPFPAY", "DDCPFCER"], since: "2026-10-22" },
+      { provider: "netbay", services: ["DDCPFREQ", "DDCPFREQ_ACCEPT"], since: "2026-10-20" },
+      { provider: "inet", services: ["DDCRECEIPT", "DDCPINKFORM"], since: "2026-10-22" },
     ],
     checks: check(true, true, { serial: "7C:02:E4:19:AB:61", messageId: "NSW-REG-20261026-1004-6634" }),
   },
@@ -67,7 +70,7 @@ const details = {
     capital: "1,000,000",
     address: "212 หมู่ 5 ตำบลแม่เหียะ อำเภอเมืองเชียงใหม่ จังหวัดเชียงใหม่ 50100",
     contact: { name: "นางอรวรรณ คำแสน", email: "lannafarm.export@gmail.com", phone: "053-121-998" },
-    nsp: [{ provider: "cat", services: ["DDCPFREQ", "DDCPFRES", "DDCPFPAY", "DDCPFCER"], since: "2026-10-26" }],
+    nsp: [{ provider: "cat", services: ["DDCPFREQ", "DDCPFREQ_ACCEPT", "DDCRECEIPT", "DDCPINKFORM"], since: "2026-10-26" }],
     checks: check(true, true, {
       serial: "1B:6F:3C:D0:22:7A",
       validTo: "2026-12-15",
@@ -80,7 +83,7 @@ const details = {
     capital: "3,000,000",
     address: "77/5 ถนนวิภาวดีรังสิต แขวงจตุจักร เขตจตุจักร กรุงเทพมหานคร 10900",
     contact: { name: "นายณัฐพล ศรีอ่อน", email: "ops@easycounter.co.th", phone: "02-019-5566" },
-    nsp: [{ provider: "inet", services: ["DDCPFREQ", "DDCPFRES"], since: "2026-10-26" }],
+    nsp: [{ provider: "inet", services: ["DDCPFREQ", "DDCPFREQ_ACCEPT"], since: "2026-10-26" }],
     checks: check(true, false, {
       serial: "62:D9:0E:41:F3:08",
       schemaNote: "ไม่พบ element <ContactEmail> ในส่วน Registrant (บรรทัด 48)",
@@ -120,7 +123,7 @@ export const thnswDecided = [
       capital: "4,000,000",
       address: "18 หมู่ 7 ตำบลราชาเทวะ อำเภอบางพลี จังหวัดสมุทรปราการ 10540",
       contact: { name: "นางสาวสุภาวดี ทองคำ", email: "export@svborchid.co.th", phone: "02-134-2290" },
-      nsp: [{ provider: "netbay", services: ["DDCPFREQ", "DDCPFRES", "DDCPFPAY", "DDCPFCER"], since: "2026-10-24" }],
+      nsp: [{ provider: "netbay", services: ["DDCPFREQ", "DDCPFREQ_ACCEPT", "DDCRECEIPT", "DDCPINKFORM"], since: "2026-10-24" }],
       checks: check(true, true, { serial: "0D:44:A7:31:9E:02", messageId: "NSW-REG-20261025-1521-6588" }),
     }),
     "approved",
@@ -134,7 +137,7 @@ export const thnswDecided = [
       capital: "8,000,000",
       address: "55/9 หมู่ 2 ตำบลท่าทราย อำเภอเมืองสมุทรสาคร จังหวัดสมุทรสาคร 74000",
       contact: { name: "นายสมบัติ ปลาทอง", email: "info@mhcseafood.co.th", phone: "034-810-772" },
-      nsp: [{ provider: "tradesiam", services: ["DDCPFREQ", "DDCPFRES", "DDCPFPAY"], since: "2026-10-23" }],
+      nsp: [{ provider: "tradesiam", services: ["DDCPFREQ", "DDCPFREQ_ACCEPT", "DDCRECEIPT"], since: "2026-10-23" }],
       checks: check(true, true, { serial: "5E:19:B3:70:C4:2F", messageId: "NSW-REG-20261025-1609-6595" }),
     }),
     "approved",
@@ -148,7 +151,7 @@ export const thnswDecided = [
       capital: "6,000,000",
       address: "300/12 หมู่ 3 ตำบลทุ่งสุขลา อำเภอศรีราชา จังหวัดชลบุรี 20230",
       contact: { name: "นางสาวกมลชนก ศรีวงศ์", email: "broker@lcblogistics.co.th", phone: "038-490-115" },
-      nsp: [{ provider: "netbay", services: ["DDCPFREQ", "DDCPFRES"], since: "2026-10-21" }],
+      nsp: [{ provider: "netbay", services: ["DDCPFREQ", "DDCPFREQ_ACCEPT"], since: "2026-10-21" }],
       checks: check(true, true, { serial: "29:7B:EE:04:16:D8", messageId: "NSW-REG-20261024-1139-6561" }),
     }),
     "approved",
@@ -162,7 +165,7 @@ export const thnswDecided = [
       capital: "12,000,000",
       address: "141 ถนนกาญจนวนิช ตำบลคอหงส์ อำเภอหาดใหญ่ จังหวัดสงขลา 90110",
       contact: { name: "นายอับดุลเลาะ หมัดสะและ", email: "export@hyrf.co.th", phone: "074-212-860" },
-      nsp: [{ provider: "cat", services: ["DDCPFREQ", "DDCPFRES", "DDCPFPAY", "DDCPFCER"], since: "2026-10-20" }],
+      nsp: [{ provider: "cat", services: ["DDCPFREQ", "DDCPFREQ_ACCEPT", "DDCRECEIPT", "DDCPINKFORM"], since: "2026-10-20" }],
       checks: check(true, true, { serial: "48:C2:5A:9F:01:E3", messageId: "NSW-REG-20261023-0854-6540" }),
     }),
     "approved",
@@ -195,7 +198,7 @@ export const thnswDecided = [
       capital: "3,500,000",
       address: "9 หมู่ 1 ตำบลตะพง อำเภอเมืองระยอง จังหวัดระยอง 21000",
       contact: { name: "นางมาลัย สวนผล", email: "fruitland.ry@gmail.com", phone: "038-655-101" },
-      nsp: [{ provider: "tradesiam", services: ["DDCPFREQ", "DDCPFRES", "DDCPFPAY"], since: "2026-10-22" }],
+      nsp: [{ provider: "tradesiam", services: ["DDCPFREQ", "DDCPFREQ_ACCEPT", "DDCRECEIPT"], since: "2026-10-22" }],
       checks: check(true, true, { serial: "6A:3E:10:BC:57:94", messageId: "NSW-REG-20261024-1404-6577" }),
     }),
     "rejected",

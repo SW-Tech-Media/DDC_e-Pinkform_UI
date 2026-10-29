@@ -12,7 +12,7 @@ export const requestsText = {
     invoice: { label: "Invoice No.", placeholder: "ระบุเลขที่" },
     dateRange: { label: "วันที่ส่งข้อมูล", placeholder: "เลือกช่วงวันที่" },
     // เพิ่มตาม TOR 4.4.2 (9), 7.8.28
-    certificate: { label: "เลขที่ใบรับรอง / เลขที่ใบสีชมพู", placeholder: "เช่น DDC-PF 69/012845" },
+    certificate: { label: "เลขที่ใบรับรอง / เลขที่ใบสีชมพู", placeholder: "เช่น DDC-PF 69/012847" },
   },
 
   // แท็บสถานะ — statuses = สถานะใน requestStatuses ที่นับรวม
@@ -23,10 +23,10 @@ export const requestsText = {
     // คิวพิจารณา: ยื่นก่อนอยู่บน เพื่อไม่ให้ผู้ประกอบการรอนาน
     { value: "pending", label: "รอพิจารณา", statuses: ["received", "checking", "pending"], sort: "submittedAsc" },
     { value: "invalid", label: "ข้อมูลไม่ถูกต้อง", statuses: ["invalid"], sort: "updatedDesc" },
-    // อัปเดตล่าสุดอยู่บน — คำขอที่เพิ่งอนุมัติ (ยกเลิกได้ภายใน 15 นาที) จึงอยู่ด้านบน
+    // อัปเดตล่าสุดอยู่บน (คำขอที่อนุมัติในรอบนี้ไปอยู่แท็บ "รอการชำระเงิน" ทันทีเพราะสร้างคำสั่งชำระแล้ว)
     { value: "approved", label: "อนุมัติแล้ว", statuses: ["approved", "paid", "issued", "readyToDeliver", "completed"], sort: "updatedDesc" },
     { value: "rejected", label: "ไม่อนุมัติ", statuses: ["rejected"], sort: "updatedDesc" },
-    // ชำระไม่สำเร็จต้องติดตามผู้ประกอบการ จึงอยู่บนสุด
+    // ชำระไม่สำเร็จต้องติดตามผู้ประกอบการ จึงอยู่บนสุด · คำขอที่เพิ่งอนุมัติ (ยกเลิกได้ภายใน 15 นาที) อยู่ถัดไปตามเวลาอัปเดต
     { value: "awaitingPayment", label: "รอการชำระเงิน", statuses: ["awaitingPayment", "paymentFailed"], sort: "updatedDesc", pin: ["paymentFailed"] },
   ],
 
@@ -59,7 +59,7 @@ export const requestsText = {
   statusAt: (at) => `อัปเดต ${at} น.`,
   // Snackbar หลังบันทึกผลการพิจารณาแล้วกลับมาหน้ารายการ
   decided: {
-    approved: (ref) => `อนุมัติคำขอ ${ref} แล้ว · ยกเลิกการอนุมัติได้ภายใน 15 นาที`,
+    approved: (ref) => `อนุมัติคำขอ ${ref} แล้ว · สร้างคำสั่งชำระเงินแล้ว (รอการชำระเงิน) · ยกเลิกการอนุมัติได้ภายใน 15 นาที`,
     rejected: (ref) => `ไม่อนุมัติคำขอ ${ref} แล้ว · ส่งข้อความตอบกลับผู้ประกอบการผ่าน NSW`,
     open: "เปิดคำขอ",
   },
