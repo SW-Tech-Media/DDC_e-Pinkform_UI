@@ -162,7 +162,7 @@ const openHistory = (c) => Object.assign(history, { open: true, cpa: c });
         </template>
         <template #item.actions="{ item }">
           <div class="d-flex justify-center ga-2">
-            <TableIconButton icon="fas fa-pen" :label="t.edit" @click="openEditor(item)" />
+            <TableIconButton icon="far fa-pen-to-square" :label="t.edit" @click="openEditor(item)" />
             <TableIconButton icon="fas fa-plug" :label="t.test" @click="openTest(item)" />
             <TableIconButton icon="fas fa-code" :label="t.viewXml" @click="openXml(item)" />
             <TableIconButton icon="fas fa-clock-rotate-left" :label="t.history" @click="openHistory(item)" />

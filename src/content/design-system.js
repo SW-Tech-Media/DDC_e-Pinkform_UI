@@ -102,7 +102,7 @@ export const designSystemText = {
     description: "ขนาด Control ไอคอน และโครง Layout ใช้ var(--pf-size-<name>) ใน CSS หรือ size[...] จาก tokens.js เมื่อต้องเป็นตัวเลข (เช่น :height ของ v-btn)",
     groups: [
       { title: "Control", keys: ["control-sm", "control-md", "control-lg"] },
-      { title: "Icon", keys: ["icon-sm", "icon-md", "icon-lg", "icon-tile-md", "icon-tile-lg", "avatar-md"] },
+      { title: "Icon", keys: ["icon-xs", "icon-sm", "icon-md", "icon-lg", "icon-tile-md", "icon-tile-lg", "avatar-md"] },
       { title: "Layout", keys: ["container", "dialog-md", "portal-header", "sidebar", "sidebar-item", "topbar", "desktop-search", "auth-panel"] },
     ],
     motionTitle: "Motion",

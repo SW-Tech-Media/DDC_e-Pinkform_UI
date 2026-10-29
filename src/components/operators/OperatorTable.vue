@@ -2,11 +2,11 @@
 // ตารางผู้ประกอบการ (Figma D08: Table) — ปุ่มจัดการ ดู / แก้ไข / ลบ → emit view, edit, remove
 import AppDataTable from "@/components/AppDataTable.vue";
 import StatusBadge from "@/components/StatusBadge.vue";
+import TableIconButton from "@/components/TableIconButton.vue";
 import { operatorsText as t } from "@/content/operators.js";
 import { common } from "@/content/common.js";
 import { operatorAccess, operatorServices, operatorTypes } from "@/mocks/operators.js";
 import { formatDate } from "@/utils/format.js";
-import { size } from "@/design/tokens.js";
 
 defineProps({
   items: { type: Array, required: true },
@@ -26,9 +26,9 @@ const headers = [
 ];
 
 const actions = [
-  { key: "view", icon: "far fa-eye", label: common.actions.view },
-  { key: "edit", icon: "fas fa-pen", label: common.actions.edit },
-  { key: "remove", icon: "far fa-trash-can", label: common.actions.delete },
+  { key: "view", icon: "far fa-eye", label: common.actions.view, tone: "icon-default" },
+  { key: "edit", icon: "far fa-pen-to-square", label: common.actions.edit, tone: "icon-default" },
+  { key: "remove", icon: "far fa-trash-can", label: common.actions.delete, tone: "status-danger-fg" },
 ];
 </script>
 
@@ -60,19 +60,14 @@ const actions = [
     </template>
     <template #item.actions="{ item }">
       <div class="d-flex justify-center ga-2 flex-nowrap">
-        <v-btn
+        <TableIconButton
           v-for="a in actions"
           :key="a.key"
-          icon
-          variant="outlined"
-          color="border-default"
-          :width="size['control-sm']"
-          :height="size['control-sm']"
-          :aria-label="`${a.label} ${item.nameTh}`"
+          :icon="a.icon"
+          :label="`${a.label} ${item.nameTh}`"
+          :tone="a.tone"
           @click="emit(a.key, item)"
-        >
-          <v-icon :icon="a.icon" color="icon-default" size="small" />
-        </v-btn>
+        />
       </div>
     </template>
     <template #no-data>

@@ -17,6 +17,7 @@ import StatusHistoryTable from "@/components/tracking/StatusHistoryTable.vue";
 import ApplicantCard from "@/components/tracking/ApplicantCard.vue";
 import IssuedDocuments from "@/components/tracking/IssuedDocuments.vue";
 import SecondaryButton from "@/components/SecondaryButton.vue";
+import TableIconButton from "@/components/TableIconButton.vue";
 import { trackingText as t } from "@/content/tracking.js";
 import { reviewText } from "@/content/review.js";
 import { requestDetails, requestStatuses, requestSteps, requests } from "@/mocks/requests.js";
@@ -261,7 +262,7 @@ const open = (item) => router.push({ query: { ref: item.ref } });
           <StatusBadge :tone="statusOf(item.statusKey).tone" dot>{{ statusOf(item.statusKey).label }}</StatusBadge>
         </template>
         <template #item.view="{ item }">
-          <v-btn icon="far fa-eye" variant="text" color="primary" size="small" :aria-label="h.view" @click.stop="open(item)" />
+          <TableIconButton icon="far fa-eye" :label="h.view" @click="open(item)" />
         </template>
         <template #no-data>
           <EmptyState icon="fas fa-magnifying-glass" tone="amber" :title="t.list.noResult.title" :description="t.list.noResult.description" />

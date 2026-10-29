@@ -254,8 +254,8 @@ const remove = () => {
             </template>
             <template #item.actions="{ item }">
               <div class="d-flex justify-center ga-2">
-                <TableIconButton icon="fas fa-pen" :label="t.edit" @click="edit(item)" />
-                <TableIconButton icon="far fa-trash-can" :label="t.remove" @click="askRemove(item)" />
+                <TableIconButton icon="far fa-pen-to-square" :label="t.edit" @click="edit(item)" />
+                <TableIconButton icon="far fa-trash-can" :label="t.remove" tone="status-danger-fg" @click="askRemove(item)" />
               </div>
             </template>
             <template #no-data>
@@ -293,6 +293,10 @@ const remove = () => {
 .outbreak-table :deep(th:first-child),
 .outbreak-table :deep(td:first-child) {
   padding-inline-start: var(--pf-space-12) !important;
+}
+/* หัวคอลัมน์พื้นที่ยาว ให้ตัดบรรทัดได้ ตารางจะได้ไม่ล้นการ์ด */
+.outbreak-table :deep(th:first-child) {
+  white-space: normal !important;
 }
 .area {
   white-space: normal;

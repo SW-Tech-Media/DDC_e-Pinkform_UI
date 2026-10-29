@@ -236,7 +236,7 @@ const previewForm = () => window.open(router.resolve({ name: "portal-survey" }).
         <template #item.actions="{ item }">
           <div class="d-flex justify-center ga-2">
             <TableIconButton icon="fas fa-arrow-up" :label="t.questions.moveUp" :disabled="item.order === 1" @click="moveUp(item)" />
-            <TableIconButton icon="fas fa-pen" :label="t.questions.edit" @click="openEditor(questions.find((q) => q.id === item.id))" />
+            <TableIconButton icon="far fa-pen-to-square" :label="t.questions.edit" @click="openEditor(questions.find((q) => q.id === item.id))" />
             <TableIconButton icon="far fa-trash-can" :label="t.questions.remove" tone="status-danger-fg" @click="askRemove(item)" />
           </div>
         </template>

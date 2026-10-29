@@ -3,6 +3,7 @@
 // headers: ตาม v-data-table — { title, key, align?, width?, sortable? }
 // ปรับแต่ง cell ผ่าน slot แบบ v-data-table เช่น <template #item.status="{ item }">
 // rowClass(item) → class ของแถว เช่น 'pf-row-highlight'
+// คอลัมน์ปุ่ม (key "actions" / "view") ติดขอบขวาเสมอ ไม่ถูกตัดเมื่อตารางกว้างเกินการ์ด
 import { computed, ref, useSlots } from "vue";
 import TablePagination from "./TablePagination.vue";
 
@@ -26,6 +27,12 @@ const cellSlots = computed(() => Object.keys(slots).filter((n) => n.startsWith("
 const page = ref(1);
 const itemsPerPage = ref(props.perPage);
 const rowProps = ({ item }) => (props.rowClass ? { class: props.rowClass(item) } : {});
+
+const ACTION_KEYS = ["actions", "view"];
+const sticky = { class: "pf-col-actions" };
+const tableHeaders = computed(() =>
+  props.headers.map((h) => (ACTION_KEYS.includes(h.key) ? { ...h, nowrap: true, headerProps: sticky, cellProps: sticky } : h))
+);
 </script>
 
 <template>
@@ -33,7 +40,7 @@ const rowProps = ({ item }) => (props.rowClass ? { class: props.rowClass(item) }
     <v-data-table
       v-model:page="page"
       v-model:items-per-page="itemsPerPage"
-      :headers="headers"
+      :headers="tableHeaders"
       :items="items"
       :item-value="itemValue"
       :items-per-page="paginate ? itemsPerPage : -1"
@@ -87,6 +94,19 @@ const rowProps = ({ item }) => (props.rowClass ? { class: props.rowClass(item) }
   padding-inline-end: var(--pf-space-24);
 }
 .pf-table :deep(tr.pf-row-highlight > td) {
+  background: rgb(var(--v-theme-bg-row-highlight));
+}
+.pf-table :deep(td.pf-col-actions),
+.pf-table :deep(th.pf-col-actions) {
+  position: sticky !important; /* ชนะ position: relative ของ hover ใน v-table */
+  right: 0;
+  z-index: 1;
+  width: 1%;
+}
+.pf-table :deep(td.pf-col-actions) {
+  background: rgb(var(--v-theme-surface));
+}
+.pf-table :deep(tr.pf-row-highlight > td.pf-col-actions) {
   background: rgb(var(--v-theme-bg-row-highlight));
 }
 </style>

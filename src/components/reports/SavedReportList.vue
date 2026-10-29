@@ -31,7 +31,7 @@ const types = reportsText.types;
         <span class="d-block pf-type-caption text-text-tertiary">{{ t.updated(formatDateTime(r.updatedAt)) }}</span>
       </button>
       <div class="d-flex ga-2 flex-shrink-0">
-        <TableIconButton icon="fas fa-pen" :label="`${t.edit} ${r.name}`" @click="$emit('edit', r)" />
+        <TableIconButton icon="far fa-pen-to-square" :label="`${t.edit} ${r.name}`" @click="$emit('edit', r)" />
         <TableIconButton icon="far fa-trash-can" :label="`${t.delete} ${r.name}`" tone="status-danger-fg" @click="$emit('delete', r)" />
       </div>
     </li>

@@ -128,6 +128,7 @@ export const size = {
   "control-sm": 32,
   "control-md": 40,
   "control-lg": 48,
+  "icon-xs": 14,
   "icon-sm": 16,
   "icon-md": 20,
   "icon-lg": 24,

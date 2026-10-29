@@ -3,6 +3,7 @@
 // highlight = Reference No. ของแถวที่ต้องไฮไลต์ (คำขอที่ยื่นก่อนสุด) · slot "empty" = Empty state
 import AppDataTable from "@/components/AppDataTable.vue";
 import StatusBadge from "@/components/StatusBadge.vue";
+import TableIconButton from "@/components/TableIconButton.vue";
 import { requestsText as t } from "@/content/requests.js";
 import { autoCheck, requestStatuses } from "@/mocks/requests.js";
 import { formatDate, formatNumber, formatTime } from "@/utils/format.js";
@@ -67,16 +68,7 @@ const check = (item) => (item.flagged ? autoCheck.flagged(item.flagged) : autoCh
       <StatusBadge :tone="requestStatuses[item.status].tone" dot>{{ requestStatuses[item.status].label }}</StatusBadge>
     </template>
     <template #item.view="{ item }">
-      <v-btn
-        icon
-        variant="outlined"
-        color="border-default"
-        size="small"
-        :aria-label="t.viewAria(item.ref)"
-        @click.stop="emit('open', item)"
-      >
-        <v-icon icon="far fa-eye" color="icon-default" size="small" />
-      </v-btn>
+      <TableIconButton icon="far fa-eye" :label="t.viewAria(item.ref)" @click="emit('open', item)" />
     </template>
     <template #no-data>
       <slot name="empty" />

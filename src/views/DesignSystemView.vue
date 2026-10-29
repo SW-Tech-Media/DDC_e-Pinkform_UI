@@ -410,7 +410,7 @@ function go(id) {
                   <template #item.actions>
                     <div class="d-flex justify-end ga-2">
                       <TableIconButton icon="far fa-eye" :label="common.actions.view" tone="icon-brand" />
-                      <TableIconButton icon="fas fa-pen" :label="common.actions.edit" />
+                      <TableIconButton icon="far fa-pen-to-square" :label="common.actions.edit" />
                       <TableIconButton icon="far fa-trash-can" :label="common.actions.delete" tone="status-danger-fg" />
                     </div>
                   </template>

@@ -42,7 +42,7 @@ const formatted = computed(() => props.dataset.columns.filter((c) => c.format ||
     </template>
     <template #item.actions="{ item }">
       <div class="d-flex justify-center ga-2">
-        <TableIconButton icon="fas fa-pen" :label="t.edit" @click="emit('edit', item)" />
+        <TableIconButton icon="far fa-pen-to-square" :label="t.edit" @click="emit('edit', item)" />
         <TableIconButton
           icon="far fa-trash-can"
           :label="t.remove"

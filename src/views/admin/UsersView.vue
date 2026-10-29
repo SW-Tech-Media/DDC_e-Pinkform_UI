@@ -216,7 +216,7 @@ const historyOpen = ref(false);
               </template>
               <template #item.actions="{ item }">
                 <div class="d-flex justify-center ga-2">
-                  <TableIconButton icon="fas fa-pen" :label="t.edit" @click="openEditor(item)" />
+                  <TableIconButton icon="far fa-pen-to-square" :label="t.edit" @click="openEditor(item)" />
                   <TableIconButton icon="fas fa-key" :label="t.resetPin" @click="askReset(item)" />
                 </div>
               </template>

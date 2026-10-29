@@ -144,7 +144,7 @@ const remove = () => {
         <template #item.actions="{ item }">
           <div class="d-flex justify-center ga-2">
             <TableIconButton icon="far fa-eye" :label="t.preview" @click="preview(item)" />
-            <TableIconButton icon="fas fa-pen" :label="t.edit" @click="openEditor(item)" />
+            <TableIconButton icon="far fa-pen-to-square" :label="t.edit" @click="openEditor(item)" />
             <TableIconButton icon="far fa-trash-can" :label="t.remove" tone="status-danger-fg" @click="askRemove(item)" />
           </div>
         </template>

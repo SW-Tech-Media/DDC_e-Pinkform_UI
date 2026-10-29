@@ -1,6 +1,6 @@
 <script setup>
 // ปุ่มไอคอนสี่เหลี่ยมขอบเทาในคอลัมน์ "จัดการ" ของตาราง (Figma: Button/Icon · outline)
-// ใช้ร่วมกันในหน้า D13 – D17
+// ปุ่ม control-sm มุม md ไอคอน icon-xs — ใช้ร่วมกันทุกตารางในหน้า Back Office
 import { size } from "@/design/tokens.js";
 
 defineProps({
@@ -14,18 +14,27 @@ defineEmits(["click"]);
 
 <template>
   <v-btn
-    icon
     variant="outlined"
-    color="border-default"
-    rounded="lg"
+    rounded="md"
     :width="size['control-sm']"
     :height="size['control-sm']"
     :aria-label="label"
     :title="label"
     :disabled="disabled"
-    class="bg-surface"
+    class="table-icon-btn bg-surface"
     @click.stop="$emit('click')"
   >
-    <v-icon :icon="icon" :color="tone" size="x-small" />
+    <v-icon :icon="icon" :color="tone" :size="size['icon-xs']" />
   </v-btn>
 </template>
+
+<style scoped>
+.table-icon-btn {
+  min-width: 0;
+  padding: 0;
+  border-color: rgb(var(--v-theme-border-default));
+}
+.table-icon-btn:hover {
+  border-color: rgb(var(--v-theme-border-strong));
+}
+</style>
