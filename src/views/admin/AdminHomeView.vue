@@ -17,16 +17,16 @@ import { adminHomeText as t } from "@/content/admin-home.js";
 import { common } from "@/content/common.js";
 import {
   dailyChart,
-  kpis,
   longWaitMinutes,
   now,
   overviewDate,
   pkiExpiring,
   systemLinks,
-  todayStatus,
+  todayStatusGroups,
 } from "@/mocks/admin-home.js";
 import { requests } from "@/mocks/requests.js";
-import { formatNumber, formatThaiDate, formatTime } from "@/utils/format.js";
+import { certificates } from "@/mocks/certificates.js";
+import { formatMonthYear, formatNumber, formatThaiDate, formatTime } from "@/utils/format.js";
 import { size } from "@/design/tokens.js";
 import { useSessionStore } from "@/stores/session.js";
 import { useReviewStore } from "@/stores/review.js";
@@ -41,19 +41,57 @@ const firstName = computed(() => session.user.name.split(" ")[0]);
 const weekday = new Intl.DateTimeFormat("th-TH", { weekday: "long" }).format(new Date(`${overviewDate}T00:00:00`));
 const description = t.description(weekday, formatThaiDate(overviewDate));
 
-const kpiCards = [
-  { key: "newToday", trend: { ...kpis.newToday.trend, text: t.kpi.newToday.trendText } },
-  { key: "pending", caption: t.kpi.pending.caption(kpis.pending.oldestWait.hours, kpis.pending.oldestWait.minutes) },
-  { key: "awaitingPayment", caption: t.kpi.awaitingPayment.caption },
-  { key: "issuedMonth", trend: { ...kpis.issuedMonth.trend, text: t.kpi.issuedMonth.trendText } },
-].map((k) => ({ ...t.kpi[k.key], ...k, value: formatNumber(kpis[k.key].value) }));
+// ----- ตัวเลขสรุป: นับจากรายการคำขอ (สถานะจาก store รวมผลที่บันทึกในรอบนี้) และใบรับรองฯ -----
+const BKK = 7 * 3600 * 1000;
+const dayOf = (iso) => new Date(Date.parse(iso) + BKK).toISOString().slice(0, 10); // วันที่ตามเวลาไทย
+const yesterday = new Date(Date.parse(`${overviewDate}T00:00:00Z`) - 86400000).toISOString().slice(0, 10);
+const submittedOn = (day) => requests.filter((r) => dayOf(r.submittedAt) === day);
+const withStatus = computed(() => requests.map((r) => ({ ...r, status: review.statusOf(r.ref) })));
+const ofStatus = (status) => withStatus.value.filter((r) => r.status === status);
+const issuedMonth = certificates.filter((c) => c.sentAt.startsWith(overviewDate.slice(0, 7))).length;
 
+// คำขอใหม่วันนี้เทียบเมื่อวาน (%)
+const newTrend = () => {
+  const today = submittedOn(overviewDate).length;
+  const prev = submittedOn(yesterday).length;
+  if (!prev) return null;
+  const pct = Math.round(((today - prev) / prev) * 100);
+  return { direction: pct < 0 ? "down" : "up", value: `${Math.abs(pct)}%`, text: t.kpi.newToday.trendText };
+};
+
+const kpiCards = computed(() => {
+  const pendingList = ofStatus("pending");
+  const oldest = pendingList.reduce((min, r) => Math.min(min, Date.parse(r.submittedAt)), Infinity);
+  const waited = Math.max(0, Math.floor((Date.parse(now) - oldest) / 60000));
+  return [
+    { key: "newToday", value: submittedOn(overviewDate).length, trend: newTrend() },
+    {
+      key: "pending",
+      value: pendingList.length,
+      caption: pendingList.length ? t.kpi.pending.caption(Math.floor(waited / 60), waited % 60) : t.kpi.pending.none,
+    },
+    { key: "awaitingPayment", value: ofStatus("awaitingPayment").length, caption: t.kpi.awaitingPayment.caption },
+    { key: "issuedMonth", value: issuedMonth, caption: t.kpi.issuedMonth.caption(formatMonthYear(overviewDate)) },
+  ].map((k) => ({ ...t.kpi[k.key], ...k, value: formatNumber(k.value) }));
+});
+
+// กราฟ: วันล่าสุดใช้จำนวนที่นับจากรายการ (วันก่อนหน้าเป็นยอดสรุปย้อนหลังใน mocks/admin-home.js)
+const issuedToday = certificates.filter((c) => c.sentAt.startsWith(overviewDate)).length;
 const series = [
-  { name: t.chart.requests, color: "chart-series-1", data: dailyChart.requests },
-  { name: t.chart.issued, color: "chart-series-2", data: dailyChart.issued },
+  { name: t.chart.requests, color: "chart-series-1", data: [...dailyChart.requests.slice(0, -1), submittedOn(overviewDate).length] },
+  { name: t.chart.issued, color: "chart-series-2", data: [...dailyChart.issued.slice(0, -1), issuedToday] },
 ];
 
-const statusItems = todayStatus.map((s) => ({ ...s, label: t.todayStatus.labels[s.key] }));
+// สถานะคำขอวันนี้ — นับเฉพาะคำขอที่ยื่นวันนี้ตามสถานะปัจจุบัน
+const statusItems = computed(() => {
+  const today = withStatus.value.filter((r) => dayOf(r.submittedAt) === overviewDate);
+  return todayStatusGroups.map((g) => ({
+    key: g.key,
+    color: g.color,
+    label: t.todayStatus.labels[g.key],
+    count: g.statuses ? today.filter((r) => g.statuses.includes(r.status)).length : today.length,
+  }));
+});
 const systemItems = systemLinks.map((s) => ({ ...s, ...t.systems.states[s.state] }));
 
 const h = t.pendingTable.headers;

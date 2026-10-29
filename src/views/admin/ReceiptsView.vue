@@ -17,15 +17,26 @@ import SecondaryButton from "@/components/SecondaryButton.vue";
 import ReceiptPreview from "@/components/receipts/ReceiptPreview.vue";
 import { receiptsText as t } from "@/content/receipts.js";
 import { common } from "@/content/common.js";
-import { banks } from "@/mocks/payments.js";
-import { receiptKpis, receiptSigners, receiptStatuses, receipts } from "@/mocks/receipts.js";
-import { formatDate, formatMoney, formatNumber, formatTime } from "@/utils/format.js";
+import { banks, paymentDayOf, payments } from "@/mocks/payments.js";
+import { receiptSigners, receiptStatuses, receipts, receiptToday } from "@/mocks/receipts.js";
+import { formatDate, formatMoney, formatMonthYear, formatNumber, formatTime } from "@/utils/format.js";
 import { size } from "@/design/tokens.js";
 import { useSessionStore } from "@/stores/session.js";
 
 useSessionStore().signInAs("prapaporn");
 
-const kpis = receiptKpis.map((k) => ({ ...k, value: k.money !== undefined ? formatMoney(k.money) : formatNumber(k.value) }));
+// ----- การ์ดสรุป: นับจากรายการใบเสร็จ และเทียบยอดกับการรับชำระวันเดียวกัน -----
+const sum = (list) => list.reduce((a, r) => a + r.amount, 0);
+const today = receipts.filter((r) => r.issuedAt.startsWith(receiptToday));
+const month = receipts.filter((r) => r.issuedAt.startsWith(receiptToday.slice(0, 7)));
+const paidToday = sum(payments.filter((p) => p.status === "paid" && paymentDayOf(p) === receiptToday));
+const k = t.kpis;
+const kpis = [
+  { key: "today", ...k.today, value: formatNumber(today.length), caption: k.today.caption(today.filter((r) => r.status === "signed").length) },
+  { key: "amount", ...k.amount, value: formatMoney(sum(today)), caption: k.amount.caption(sum(today) === paidToday, formatMoney(paidToday)) },
+  { key: "month", ...k.month, label: k.month.label(formatMonthYear(receiptToday)), value: formatNumber(month.length), caption: k.month.caption(formatMoney(sum(month))) },
+  { key: "pending", ...k.pending, value: formatNumber(receipts.filter((r) => r.status === "pending").length) },
+];
 
 const statusOptions = [
   { title: t.filters.all, value: null },

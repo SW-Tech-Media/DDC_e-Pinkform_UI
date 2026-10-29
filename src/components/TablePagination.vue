@@ -5,7 +5,8 @@ import { common } from "@/content/common.js";
 
 const props = defineProps({
   total: { type: Number, required: true },
-  perPageOptions: { type: Array, default: () => [10, 20, 50] },
+  // TOR 7.8.26 สูงสุด 20 รายการต่อหน้า
+  perPageOptions: { type: Array, default: () => [10, 20] },
   showPerPage: { type: Boolean, default: true },
 });
 const page = defineModel("page", { type: Number, default: 1 });

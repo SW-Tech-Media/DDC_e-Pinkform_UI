@@ -33,7 +33,8 @@ const store = useReviewStore();
 const breadcrumb = [{ title: t.breadcrumb.group }, { title: t.breadcrumb.title }];
 
 // ----- ข้อมูลรายการ -----
-const statusKeyOf = (r) => requestDetails[r.ref]?.currentStatus ?? store.statusOf(r.ref);
+// สถานะจาก store เท่านั้น (ผลที่บันทึกในรอบนี้ → สถานะในข้อมูลจำลอง) ให้ตรงกับหน้ารายการคำขอ / การชำระเงิน / ใบรับรองฯ
+const statusKeyOf = (r) => store.statusOf(r.ref);
 const rows = computed(() =>
   requests.map((r) => ({
     ...r,

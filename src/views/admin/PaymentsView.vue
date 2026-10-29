@@ -16,14 +16,32 @@ import AppDialog from "@/components/AppDialog.vue";
 import DateField from "@/components/DateField.vue";
 import { paymentsText as t } from "@/content/payments.js";
 import { common } from "@/content/common.js";
-import { banks, paymentKpis, paymentStatuses, payments, paymentToday } from "@/mocks/payments.js";
-import { formatDate, formatMoney, formatThaiDate, formatTime } from "@/utils/format.js";
+import { banks, paymentDayOf, paymentStatuses, payments, paymentToday } from "@/mocks/payments.js";
+import { receipts } from "@/mocks/receipts.js";
+import { formatDate, formatMoney, formatNumber, formatThaiDate, formatTime } from "@/utils/format.js";
 import { size } from "@/design/tokens.js";
 import { useSessionStore } from "@/stores/session.js";
 
 useSessionStore().signInAs("prapaporn");
 
-const kpis = paymentKpis.map((k) => ({ ...k, value: k.money !== undefined ? formatMoney(k.money) : k.value }));
+// ----- การ์ดสรุป: นับจากรายการชำระ / ใบเสร็จ (ไม่ใช่ตัวเลขคงที่) -----
+// รายการประจำวัน = รายการที่เกิดผลในวันนั้น (paymentDayOf) · รอชำระ = คำสั่งชำระที่ยังค้างทั้งหมด
+const sum = (list) => list.reduce((a, p) => a + p.amount, 0);
+const today = payments.filter((p) => paymentDayOf(p) === paymentToday);
+const byStatus = (list, status) => list.filter((p) => p.status === status);
+const receiptsToday = receipts.filter((r) => r.issuedAt.startsWith(paymentToday));
+const k = t.kpis;
+const kpis = [
+  { key: "received", ...k.received, value: formatMoney(sum(byStatus(today, "paid"))), caption: k.received.caption(byStatus(today, "paid").length) },
+  { key: "pending", ...k.pending, value: formatNumber(byStatus(payments, "pending").length), caption: k.pending.caption(formatMoney(sum(byStatus(payments, "pending")))) },
+  { key: "failed", ...k.failed, value: formatNumber(byStatus(today, "failed").length) },
+  {
+    key: "receipts",
+    ...k.receipts,
+    value: formatNumber(receiptsToday.length),
+    caption: k.receipts.caption(receiptsToday.filter((r) => r.status === "signed").length, receiptsToday.length),
+  },
+];
 
 const statusOptions = [
   { title: t.filters.all, value: null },
@@ -69,7 +87,7 @@ const notify = (text) => Object.assign(snack, { show: true, text });
 const reconcileOpen = ref(false);
 const reconcileRows = computed(() =>
   Object.entries(banks).map(([code, name]) => {
-    const paid = payments.filter((p) => p.bankCode === code && p.status === "paid");
+    const paid = byStatus(today, "paid").filter((p) => p.bankCode === code);
     const sum = paid.reduce((a, p) => a + p.amount, 0);
     return { bank: `${code} · ${name}`, count: paid.length, system: sum, bankAmount: sum };
   })
@@ -82,7 +100,7 @@ const confirmReconcile = () => {
 const reportOpen = ref(false);
 const reportRows = computed(() => {
   const rows = Object.keys(paymentStatuses).map((status) => {
-    const list = payments.filter((p) => p.status === status);
+    const list = byStatus(today, status);
     return { key: status, label: t.report.rows[status], count: list.length, sum: list.reduce((a, p) => a + p.amount, 0) };
   });
   const total = rows.reduce((a, r) => ({ count: a.count + r.count, sum: a.sum + r.sum }), { count: 0, sum: 0 });

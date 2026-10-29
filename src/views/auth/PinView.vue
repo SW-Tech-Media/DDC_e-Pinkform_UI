@@ -62,8 +62,8 @@ const submit = () => {
     digits.value = shuffledDigits();
     return;
   }
-  const match = Object.keys(staff).find((k) => staff[k].username === username.value);
-  if (match) session.signInAs(match);
+  // เข้าสู่ระบบแล้ว เมนูแสดงตามสิทธิ์ของบัญชีนี้ (บัญชีที่ไม่มีในรายชื่อจำลอง = โหมดตาม Figma)
+  session.useAccount(username.value);
   router.push({ name: "admin-home" });
 };
 

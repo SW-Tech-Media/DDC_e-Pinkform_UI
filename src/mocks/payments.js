@@ -1,4 +1,11 @@
 // ข้อมูลจำลองหน้า D13 · ติดตามการชำระเงิน (ตาม Figma node 19:3539)
+// รายการชำระสร้างจากคำขอที่เจ้าหน้าที่อนุมัติแล้ว (requestDetails[ref].payment) — ไม่มีรายการที่อ้างคำขอที่ไม่มีอยู่
+// ชั่วคราวจนกว่าจะมี API: backend เป็นผู้สร้างคำสั่งชำระเมื่ออนุมัติ และรับผลชำระจากธนาคารผ่าน NSW
+import { banks } from "./banks.js";
+import { requestDetails, requests } from "./requests.js";
+import { operators } from "./operators.js";
+
+export { banks };
 
 export const paymentToday = "2026-10-26";
 
@@ -9,27 +16,32 @@ export const paymentStatuses = {
   failed: { label: "ไม่สำเร็จ", tone: "danger" },
 };
 
-export const banks = {
-  "002": "ธนาคาร C",
-  "006": "ธนาคาร A",
-  "014": "ธนาคาร B",
-};
+const operatorByName = Object.fromEntries(operators.map((o) => [o.nameTh, o]));
 
-export const paymentKpis = [
-  { key: "received", icon: "far fa-credit-card", tone: "green", label: "ยอดรับชำระวันนี้ (บาท)", money: 12600, caption: "41 รายการ" },
-  { key: "pending", icon: "far fa-clock", tone: "amber", label: "รอการชำระเงิน", value: 7, caption: "ยอดรวม 2,700.00 บาท" },
-  { key: "failed", icon: "fas fa-triangle-exclamation", tone: "red", label: "ชำระไม่สำเร็จ", value: 1, caption: "แจ้งผู้ประกอบการผ่าน NSW" },
-  { key: "receipts", icon: "fas fa-file-invoice-dollar", tone: "teal", label: "ใบเสร็จที่ออกวันนี้", value: 41, caption: "ลงนามดิจิทัลครบถ้วน" },
-];
+// วันที่ที่รายการเกิดผลล่าสุด (ชำระแล้ว = วันที่ชำระ · ไม่สำเร็จ = วันที่ธนาคารแจ้ง · รอชำระ = วันที่ส่งคำสั่งชำระ) — ใช้กับรายงาน / KPI ประจำวัน
+export const paymentDayOf = (p) => (p.paidAt ?? p.failedAt ?? p.sentAt).slice(0, 10);
 
-export const payments = [
-  { id: "PAY6910260041", sentAt: "2026-10-26T10:58:00", company: "บริษัท ไทยเฟรช ฟู้ด จำกัด", taxId: "0105561098765", requestNo: "PF6910260030", ref1: "INV-6910-1087", ref2: "001", bankCode: "006", amount: 300, status: "pending" },
-  { id: "PAY6910260040", sentAt: "2026-10-26T10:44:00", company: "บริษัท สยามฟรุ๊ต เอ็กซ์ปอร์ต จำกัด", taxId: "0105556012345", requestNo: "PF6910260027", ref1: "INV-6910-1080", ref2: "001", bankCode: "014", amount: 600, status: "pending" },
-  { id: "PAY6910260037", sentAt: "2026-10-26T10:15:00", company: "บริษัท ทรอปิคอล แพค จำกัด", taxId: "0115560021140", requestNo: "PF6910260018", ref1: "INV-6910-1059", ref2: "001", bankCode: "002", amount: 300, status: "paid", paidAt: "2026-10-26T10:21:00", receiptNo: "R69-0104414" },
-  { id: "PAY6910260034", sentAt: "2026-10-26T09:51:00", company: "บริษัท อันดามัน ซีฟู้ด จำกัด", taxId: "0835558004412", requestNo: "PF6910260012", ref1: "INV-6910-1045", ref2: "001", bankCode: "006", amount: 300, status: "paid", paidAt: "2026-10-26T09:58:00", receiptNo: "R69-0104411" },
-  { id: "PAY6910260031", sentAt: "2026-10-26T09:37:00", company: "บริษัท โกลเด้นไรซ์ เทรดดิ้ง จำกัด", taxId: "0105549033211", requestNo: "PF6910260009", ref1: "INV-6910-1038", ref2: "002", bankCode: "014", amount: 900, status: "paid", paidAt: "2026-10-26T09:44:00", receiptNo: "R69-0104410" },
-  { id: "PAY6910260028", sentAt: "2026-10-26T09:19:00", company: "บริษัท สยามฟรุ๊ต เอ็กซ์ปอร์ต จำกัด", taxId: "0105556012345", requestNo: "PF6910260003", ref1: "INV-6910-1024", ref2: "001", bankCode: "006", amount: 300, status: "paid", paidAt: "2026-10-26T09:25:00", receiptNo: "R69-0104412" },
-  { id: "PAY6910260025", sentAt: "2026-10-26T09:02:00", company: "บริษัท มหาชัย โฟรเซ่น จำกัด", taxId: "0745557006623", requestNo: "PF6910250188", ref1: "INV-6910-0998", ref2: "001", bankCode: "006", amount: 300, status: "failed", failReason: "ยอดเงินในบัญชีไม่เพียงพอ (รหัส 51)" },
-  { id: "PAY6910260022", sentAt: "2026-10-26T08:47:00", company: "บริษัท เชียงใหม่ ออร์แกนิค จำกัด", taxId: "0505563007788", requestNo: "PF6910250185", ref1: "INV-6910-0991", ref2: "001", bankCode: "002", amount: 600, status: "paid", paidAt: "2026-10-26T08:55:00", receiptNo: "R69-0104407" },
-  { id: "PAY6910260019", sentAt: "2026-10-26T08:30:00", company: "บริษัท ทรอปิคอล แพค จำกัด", taxId: "0115560021140", requestNo: "PF6910250181", ref1: "INV-6910-0985", ref2: "003", bankCode: "014", amount: 300, status: "paid", paidAt: "2026-10-26T08:36:00", receiptNo: "R69-0104405" },
-];
+// เลขที่อ้างอิงการชำระในข้อมูลจำลองใช้เลขเดียวกับคำขอ (PAY + เลขหลัง PF) เพื่อให้อ่านคู่กันได้ง่าย
+// ใหม่ → เก่า ตามวันที่ส่งคำสั่งชำระ
+export const payments = requests
+  .filter((r) => requestDetails[r.ref].payment)
+  .map((r) => {
+    const d = requestDetails[r.ref];
+    const p = d.payment;
+    return {
+      id: `PAY${r.ref.slice(2)}`,
+      sentAt: p.orderedAt,
+      company: r.company,
+      taxId: operatorByName[r.company]?.taxId ?? d.exporter.taxId,
+      requestNo: r.ref,
+      ref1: r.invoice,
+      ref2: "001",
+      bankCode: p.bankCode,
+      amount: p.amount,
+      status: p.status,
+      ...(p.paidAt ? { paidAt: p.paidAt, receiptNo: d.receipt.no } : {}),
+      ...(p.failedAt ? { failedAt: p.failedAt } : {}),
+      ...(p.failReason ? { failReason: p.failReason } : {}),
+    };
+  })
+  .sort((a, b) => b.sentAt.localeCompare(a.sentAt));

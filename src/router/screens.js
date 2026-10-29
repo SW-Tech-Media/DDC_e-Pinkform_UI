@@ -1,6 +1,7 @@
 // ทะเบียนหน้าจอทั้งหมดของ Prototype — router และหน้ารวมหน้าจอ (/prototype) อ่านจากที่นี่
 // figma = รหัสหน้าจอใน Figma · code = รหัสในรายการหน้าจอ (md/system-overview.md)
 // design: false = หน้าที่ยังไม่มีใน Figma (แสดงเป็นหน้ากำลังจัดทำ)
+// permission = key เมนูในตารางสิทธิ์ (router/index.js อ่านจาก adminNav ให้อัตโนมัติ ระบุเองเฉพาะหน้าย่อยที่ไม่อยู่ใน Sidebar)
 
 export const screenGroups = [
   { key: "portal", title: "เว็บไซต์ประชาสัมพันธ์ (Portal)", icon: "fas fa-globe", tone: "teal" },
@@ -45,6 +46,7 @@ const view = {
   backofficeSync: () => import("@/views/admin/BackofficeSyncView.vue"),
   portalPending: () => import("@/views/portal/PortalPendingView.vue"),
   adminPending: () => import("@/views/admin/AdminPendingView.vue"),
+  forbidden: () => import("@/views/admin/ForbiddenView.vue"),
 };
 
 const s = (group, name, path, component, title, figma = [], code = "", extra = {}) => ({
@@ -80,6 +82,7 @@ export const screens = [
   s("admin", "admin-requests", "/admin/requests", view.requests, "คำขอใบรับรองฯ", ["D09", "D18"], "B-05"),
   s("admin", "admin-request-review", "/admin/requests/:ref", view.review, "พิจารณาคำขอ + Preview", ["D10", "D11"], "B-06 / B-07", {
     example: { ref: "PF6910260003" },
+    permission: "requests",
   }),
   s("admin", "admin-tracking", "/admin/tracking", view.tracking, "ติดตามสถานะคำขอ", ["D12"], "B-09"),
   s("admin", "admin-certificates", "/admin/certificates", view.certificates, "ข้อมูลใบรับรองฯ", [], "B-10"),
@@ -97,6 +100,7 @@ export const screens = [
   s("admin", "admin-surveys", "/admin/surveys", view.surveys, "จัดการแบบสอบถามและผล", [], "B-22", { proposed: true }),
   s("admin", "admin-cpa", "/admin/cpa", view.cpa, "ตั้งค่า CPA / การเชื่อมต่อ ebMS", [], "B-23", { proposed: true }),
   s("admin", "admin-api", "/admin/api", view.api, "ติดตามการเชื่อมโยง API", [], "B-24", { proposed: true }),
+  s("admin", "admin-forbidden", "/admin/forbidden", view.forbidden, "ไม่มีสิทธิ์เข้าใช้งาน", [], "B-00", { proposed: true }),
   s("admin", "admin-backoffice-sync", "/admin/backoffice-sync", view.backofficeSync, "ส่งข้อมูลระบบงานภายใน DDC", [], "B-25", { proposed: true }),
 ];
 

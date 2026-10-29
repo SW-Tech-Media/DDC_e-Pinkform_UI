@@ -1,7 +1,7 @@
 <script setup>
 // Layout Back Office (Figma: Web/Sidebar + Web/Topbar) — Sidebar 264 / Topbar 72 / body padding 32
 // breadcrumb: [{ title, to? }]
-import { computed } from "vue";
+import { computed, reactive, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useDisplay } from "vuetify";
 import AppBrand from "@/components/AppBrand.vue";
@@ -33,7 +33,35 @@ const { mdAndUp } = useDisplay();
 const drawer = defineModel("drawer", { type: Boolean, default: null });
 const crumbClass = computed(() => "pa-0 pf-type-body-sm-strong");
 
-const logout = () => router.push({ name: "admin-login" });
+// Sidebar แสดงเฉพาะเมนูที่บัญชีปัจจุบันมีสิทธิ์ "ดู" (กลุ่มที่ไม่เหลือเมนูถูกซ่อนทั้งกลุ่ม)
+const nav = computed(() =>
+  adminNav
+    .map((section) => ({ ...section, items: section.items.filter((item) => session.can(item.key)) }))
+    .filter((section) => section.items.length)
+);
+// สิทธิ์เปลี่ยนขณะอยู่ในหน้า (สลับบทบาท / Admin แก้สิทธิ์ของตัวเอง) → ไปหน้าไม่มีสิทธิ์ทันที
+watch(
+  () => !!route.meta.permission && !session.can(route.meta.permission),
+  (denied) => denied && router.replace({ name: "admin-forbidden", query: { menu: route.meta.permission } }),
+  { immediate: true }
+);
+
+// สลับบทบาทสาธิต (เฉพาะ Prototype)
+const demo = adminText.demo;
+const snack = reactive({ show: false, text: "" });
+const switchTo = (account) => {
+  if (session.useAccount(account.username)) Object.assign(snack, { show: true, text: demo.switched(account.label) });
+};
+const resetDemo = () => {
+  session.resetAccount();
+  Object.assign(snack, { show: true, text: demo.switched(demo.figma) });
+};
+const isCurrent = (username) => session.pinned && session.accountUsername === username;
+
+const logout = () => {
+  session.resetAccount();
+  router.push({ name: "admin-login" });
+};
 </script>
 
 <template>
@@ -51,7 +79,7 @@ const logout = () => router.push({ name: "admin-login" });
       </router-link>
     </div>
     <nav class="sidebar__menu d-flex flex-column px-4 py-2">
-      <template v-for="section in adminNav" :key="section.group">
+      <template v-for="section in nav" :key="section.group">
         <div class="pf-type-caption text-text-on-inverse-muted px-4 pt-3 pb-1">{{ section.group }}</div>
         <SidebarItem
           v-for="item in section.items"
@@ -103,7 +131,19 @@ const logout = () => router.push({ name: "admin-login" });
             <v-icon icon="fas fa-chevron-down" size="x-small" color="icon-default" />
           </button>
         </template>
-        <v-list density="compact">
+        <v-list density="compact" class="topbar__menu">
+          <v-list-subheader class="pf-type-caption-strong text-text-tertiary">{{ demo.title }}</v-list-subheader>
+          <v-list-item
+            v-for="a in demo.accounts"
+            :key="a.username"
+            :title="a.label"
+            :active="isCurrent(a.username)"
+            color="primary"
+            prepend-icon="far fa-user"
+            @click="switchTo(a)"
+          />
+          <v-list-item :title="demo.figma" :active="!session.pinned" color="primary" prepend-icon="far fa-images" @click="resetDemo" />
+          <v-divider class="my-1" />
           <v-list-item prepend-icon="fas fa-right-from-bracket" :title="adminText.logout" @click="logout" />
         </v-list>
       </v-menu>
@@ -115,6 +155,11 @@ const logout = () => router.push({ name: "admin-login" });
       <slot />
     </div>
   </v-main>
+
+  <v-snackbar v-model="snack.show" color="bg-bg-inverse" location="bottom right" :timeout="3000">
+    <v-icon icon="fas fa-circle-check" color="text-text-on-inverse-accent" size="small" class="me-2" />
+    {{ snack.text }}
+  </v-snackbar>
 </template>
 
 <style scoped>

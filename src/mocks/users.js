@@ -5,6 +5,7 @@ export const staff = {
   prapaporn: { name: "ประภาพร มั่นคง", username: "prapaporn.m", initials: "ปพ", role: "เจ้าหน้าที่ฝ่ายการเงิน" },
   thanakorn: { name: "ธนกร ศรีสุข", username: "thanakorn.s", initials: "ธก", role: "Admin · เทคโนโลยีสารสนเทศ" },
   wipawan: { name: "วิภาวรรณ ทองดี", username: "wipawan.t", initials: "วภ", role: "ผู้มีอำนาจลงนาม" },
+  superadmin: { name: "ผู้ดูแลระบบสูงสุด", username: "superadmin", initials: "ผด", role: "Super Admin · เทคโนโลยีสารสนเทศ" },
 };
 
 // จำนวนงานที่แสดงเป็น badge บน Sidebar

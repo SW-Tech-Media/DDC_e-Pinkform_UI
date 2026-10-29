@@ -1,6 +1,7 @@
 // เมนูของ Portal และ Sidebar ของ Back Office (ตาม Figma D01 และ D07)
 // to = ชื่อ route · badge = key ใน mocks/users.js (badges)
 // icon ของ adminNav = ชื่อไฟล์ใน src/assets/icons (ไอคอนเส้นจาก Figma)
+// key ของ adminNav = รหัสเมนูในตารางสิทธิ์ (mocks/users-roles.js) และ route meta.permission — ต้องไม่ซ้ำกัน
 
 export const portalNav = [
   { title: "หน้าแรก", to: { name: "portal-home" } },
@@ -48,56 +49,56 @@ export const portalText = {
 };
 
 export const adminNav = [
-  { group: "ภาพรวม", items: [{ title: "หน้าหลัก", icon: "home", to: { name: "admin-home" } }] },
+  { group: "ภาพรวม", items: [{ key: "home", title: "หน้าหลัก", icon: "home", to: { name: "admin-home" } }] },
   {
     group: "งานบริการ",
     items: [
-      { title: "ทะเบียนผู้ประกอบการ", icon: "building", to: { name: "admin-operators" } },
-      { title: "พิจารณาอนุมัติ THNSW", icon: "user-check", to: { name: "admin-thnsw" }, badge: "thnsw" },
-      { title: "คำขอใบรับรองฯ", icon: "file-text", to: { name: "admin-requests" }, badge: "requests" },
-      { title: "ติดตามสถานะคำขอ", icon: "route", to: { name: "admin-tracking" } },
-      { title: "ข้อมูลใบรับรองฯ", icon: "award", to: { name: "admin-certificates" } },
+      { key: "operators", title: "ทะเบียนผู้ประกอบการ", icon: "building", to: { name: "admin-operators" } },
+      { key: "thnsw", title: "พิจารณาอนุมัติ THNSW", icon: "user-check", to: { name: "admin-thnsw" }, badge: "thnsw" },
+      { key: "requests", title: "คำขอใบรับรองฯ", icon: "file-text", to: { name: "admin-requests" }, badge: "requests" },
+      { key: "tracking", title: "ติดตามสถานะคำขอ", icon: "route", to: { name: "admin-tracking" } },
+      { key: "certificates", title: "ข้อมูลใบรับรองฯ", icon: "award", to: { name: "admin-certificates" } },
     ],
   },
   {
     group: "การเงิน",
     items: [
-      { title: "ติดตามการชำระเงิน", icon: "credit-card", to: { name: "admin-payments" } },
-      { title: "ใบเสร็จรับเงิน", icon: "receipt", to: { name: "admin-receipts" } },
+      { key: "payments", title: "ติดตามการชำระเงิน", icon: "credit-card", to: { name: "admin-payments" } },
+      { key: "receipts", title: "ใบเสร็จรับเงิน", icon: "receipt", to: { name: "admin-receipts" } },
     ],
   },
   {
     group: "ข้อมูลหลัก",
     items: [
-      { title: "พื้นที่โรคระบาด", icon: "map", to: { name: "admin-outbreak-areas" } },
-      { title: "ข้อมูลหลักอื่น ๆ", icon: "database", to: { name: "admin-master-data" } },
+      { key: "outbreak", title: "พื้นที่โรคระบาด", icon: "map", to: { name: "admin-outbreak-areas" } },
+      { key: "masterData", title: "ข้อมูลหลักอื่น ๆ", icon: "database", to: { name: "admin-master-data" } },
     ],
   },
   {
     group: "รายงาน",
     items: [
-      { title: "รายงานสรุป", icon: "bar-chart", to: { name: "admin-reports" } },
-      { title: "รายงานผู้เข้าชม", icon: "eye", to: { name: "admin-visitors" } },
+      { key: "reports", title: "รายงานสรุป", icon: "bar-chart", to: { name: "admin-reports" } },
+      { key: "visitors", title: "รายงานผู้เข้าชม", icon: "eye", to: { name: "admin-visitors" } },
     ],
   },
   // กลุ่มเว็บไซต์ (TOR 4.5 — Figma ยังไม่มี)
   {
     group: "เว็บไซต์ประชาสัมพันธ์",
     items: [
-      { title: "จัดการเนื้อหา", icon: "book", to: { name: "admin-content" } },
-      { title: "แบบสอบถาม", icon: "clipboard-check", to: { name: "admin-surveys" } },
+      { key: "content", title: "จัดการเนื้อหา", icon: "book", to: { name: "admin-content" } },
+      { key: "surveys", title: "แบบสอบถาม", icon: "clipboard-check", to: { name: "admin-surveys" } },
     ],
   },
   {
     group: "ผู้ดูแลระบบ",
     items: [
-      { title: "ผู้ใช้งานและสิทธิ์", icon: "users", to: { name: "admin-users" } },
-      { title: "ติดตาม ebXML", icon: "server", to: { name: "admin-ebxml" } },
-      { title: "ใบรับรอง PKI", icon: "key", to: { name: "admin-pki" } },
-      { title: "ตั้งค่า CPA", icon: "settings", to: { name: "admin-cpa" } },
-      { title: "ติดตาม API", icon: "code", to: { name: "admin-api" } },
-      { title: "ส่งข้อมูลระบบงานภายใน", icon: "refresh", to: { name: "admin-backoffice-sync" } },
-      { title: "Audit Log", icon: "list", to: { name: "admin-audit-log" } },
+      { key: "users", title: "ผู้ใช้งานและสิทธิ์", icon: "users", to: { name: "admin-users" } },
+      { key: "ebxml", title: "ติดตาม ebXML", icon: "server", to: { name: "admin-ebxml" } },
+      { key: "pki", title: "ใบรับรอง PKI", icon: "key", to: { name: "admin-pki" } },
+      { key: "cpa", title: "ตั้งค่า CPA", icon: "settings", to: { name: "admin-cpa" } },
+      { key: "api", title: "ติดตาม API", icon: "code", to: { name: "admin-api" } },
+      { key: "backofficeSync", title: "ส่งข้อมูลระบบงานภายใน", icon: "refresh", to: { name: "admin-backoffice-sync" } },
+      { key: "auditLog", title: "Audit Log", icon: "list", to: { name: "admin-audit-log" } },
     ],
   },
 ];
@@ -106,4 +107,17 @@ export const adminText = {
   searchPlaceholder: "ค้นหา Reference No. / บริษัท",
   notifications: "การแจ้งเตือน",
   logout: "ออกจากระบบ",
+  // สลับบทบาทเพื่อสาธิตเมนูตามสิทธิ์ (เฉพาะ Prototype — ระบบจริงสิทธิ์มาจากบัญชีที่เข้าสู่ระบบ)
+  demo: {
+    title: "สาธิตบทบาท (Prototype)",
+    figma: "ตาม Figma (เห็นทุกเมนู)",
+    switched: (label) => `สลับเป็น ${label} แล้ว เมนูแสดงตามสิทธิ์ของบทบาทนี้`,
+    accounts: [
+      { username: "superadmin", label: "Super Admin" },
+      { username: "thanakorn.s", label: "Admin · เทคโนโลยีสารสนเทศ" },
+      { username: "somrudee.j", label: "User · ฝ่ายบริการ" },
+      { username: "prapaporn.m", label: "User · ฝ่ายการเงิน" },
+      { username: "wipawan.t", label: "User · ผู้มีอำนาจลงนาม" },
+    ],
+  },
 };

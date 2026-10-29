@@ -3,15 +3,10 @@
 // วันที่ของภาพรวม
 export const overviewDate = "2026-10-26";
 
-// KPI 4 ใบ — label/caption อยู่ใน content/admin-home.js (key ตรงกัน)
-export const kpis = {
-  newToday: { value: 18, trend: { direction: "up", value: "12%" } },
-  pending: { value: 12, oldestWait: { hours: 2, minutes: 15 } },
-  awaitingPayment: { value: 7 },
-  issuedMonth: { value: 426, trend: { direction: "up", value: "8.4%" } },
-};
+// KPI 4 ใบ และสถานะคำขอวันนี้ คำนวณจากรายการคำขอใน AdminHomeView (ไม่ใช่ตัวเลขคงที่)
 
-// กราฟ 14 วันล่าสุด (13 – 26 ต.ค. 2569)
+// กราฟ 14 วันล่าสุด (13 – 26 ต.ค. 2569) — วันก่อนหน้าเป็นยอดสรุปย้อนหลังตัวอย่าง (backend จะส่งจากรายงานประจำวัน)
+// วันล่าสุด (26) AdminHomeView แทนด้วยจำนวนที่นับจากรายการคำขอ / ใบรับรองฯ ของวันนั้น
 export const dailyChart = {
   labels: ["13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26"],
   requests: [53, 62, 49, 72, 68, 23, 15, 59, 75, 66, 71, 73, 26, 19],
@@ -19,13 +14,14 @@ export const dailyChart = {
   max: 80,
 };
 
-// สถานะคำขอวันนี้ — color = ชื่อสีใน Design Token
-export const todayStatus = [
-  { key: "received", count: 18, color: "chart-series-1" },
-  { key: "inProgress", count: 12, color: "status-info-fg" },
-  { key: "awaitingPayment", count: 7, color: "status-warning-fg" },
-  { key: "issued", count: 41, color: "status-success-fg" },
-  { key: "invalid", count: 3, color: "status-danger-fg" },
+// สถานะคำขอวันนี้ — กลุ่มสถานะ (key ใน requestStatuses) ที่นับรวมในแต่ละแถว · color = ชื่อสีใน Design Token
+// received = คำขอที่ยื่นวันนี้ทั้งหมด (statuses: null)
+export const todayStatusGroups = [
+  { key: "received", color: "chart-series-1", statuses: null },
+  { key: "inProgress", color: "status-info-fg", statuses: ["received", "checking", "pending", "approved", "paid"] },
+  { key: "awaitingPayment", color: "status-warning-fg", statuses: ["awaitingPayment"] },
+  { key: "issued", color: "status-success-fg", statuses: ["issued", "readyToDeliver", "completed"] },
+  { key: "invalid", color: "status-danger-fg", statuses: ["invalid", "rejected", "paymentFailed"] },
 ];
 
 // สถานะการเชื่อมโยงระบบ — state: connected | normal | slow
@@ -41,6 +37,6 @@ export const systemLinks = [
 export const pkiExpiring = { count: 2, daysLeft: 21 };
 
 // เวลาปัจจุบันของภาพ (ใช้คำนวณคำขอที่รอนาน)
-export const now = "2026-10-26T10:57:00+07:00";
+export const now = "2026-10-26T11:20:00+07:00";
 // รอนานกว่านี้ (นาที) แสดง badge ส้ม
 export const longWaitMinutes = 120;

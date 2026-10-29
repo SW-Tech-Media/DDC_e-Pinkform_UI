@@ -77,23 +77,14 @@ for (const r of requests) {
   ];
 }
 
-// ข้อมูลการชำระ / ใบรับรองที่ออกแล้ว (ใช้ในตารางรายการติดตามสถานะ D12)
-export const trackingExtras = {
-  PF6910260003: { bankCode: "006", certificate: "DDC-PF 69/012845" },
-};
+// ข้อมูลการชำระ / ใบรับรองที่ออกแล้ว (ใช้ในตารางรายการติดตามสถานะ D12) และเอกสารที่ออกแล้ว — สร้างจากรายละเอียดคำขอ
+export const trackingExtras = {};
+export const issuedDocuments = {};
 
-// เอกสารที่ออกแล้ว (D12)
-export const issuedDocuments = {
-  PF6910260003: [
-    { id: "cert", title: "ใบรับรองฯ (PDF / XML)", number: "DDC-PF 69/012845", icon: "fas fa-award", tone: "pink", formats: ["PDF", "XML"] },
-    { id: "receipt", title: "ใบเสร็จรับเงิน", number: "R69-0104412", icon: "fas fa-file-invoice-dollar", tone: "teal", formats: ["PDF"] },
-  ],
-};
-
-// คำขออื่นที่สร้างคำสั่งชำระ / ออกใบรับรองแล้ว
+// คำขอที่สร้างคำสั่งชำระ / ออกใบรับรองแล้ว
 for (const r of requests) {
   const d = requestDetails[r.ref];
-  if (trackingExtras[r.ref] || !d.bankCode) continue;
+  if (!d.bankCode) continue;
   trackingExtras[r.ref] = { bankCode: d.bankCode, certificate: d.issued?.certificate ?? "" };
   if (d.issued) {
     issuedDocuments[r.ref] = [

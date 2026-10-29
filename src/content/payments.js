@@ -4,6 +4,18 @@ export const paymentsText = {
   breadcrumb: [{ title: "การเงิน" }, { title: "ติดตามการชำระเงิน" }],
   title: "ติดตามการชำระเงินค่าบริการ",
   description: "ตรวจสอบคำสั่งชำระเงิน (Bill Payment) และผลการชำระเงินที่ได้รับจากธนาคารผ่านระบบ NSW",
+  // การ์ดสรุป — ตัวเลขคำนวณจากรายการชำระ (PaymentsView)
+  kpis: {
+    received: { icon: "far fa-credit-card", tone: "green", label: "ยอดรับชำระวันนี้ (บาท)", caption: (n) => `${n} รายการ` },
+    pending: { icon: "far fa-clock", tone: "amber", label: "รอการชำระเงิน", caption: (sum) => `ยอดรวม ${sum} บาท` },
+    failed: { icon: "fas fa-triangle-exclamation", tone: "red", label: "ชำระไม่สำเร็จวันนี้", caption: "แจ้งผู้ประกอบการผ่าน NSW" },
+    receipts: {
+      icon: "fas fa-file-invoice-dollar",
+      tone: "teal",
+      label: "ใบเสร็จที่ออกวันนี้",
+      caption: (signed, total) => (signed === total ? "ลงนามดิจิทัลครบถ้วน" : `ลงนามดิจิทัลแล้ว ${signed} ฉบับ`),
+    },
+  },
   actions: {
     reconcile: "กระทบยอด",
     dailyReport: "รายงานการชำระเงินประจำวัน",

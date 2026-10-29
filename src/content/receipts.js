@@ -4,6 +4,18 @@ export const receiptsText = {
   breadcrumb: [{ title: "การเงิน" }, { title: "ใบเสร็จรับเงิน" }],
   title: "ใบเสร็จรับเงิน",
   description: "ใบเสร็จรับเงินอิเล็กทรอนิกส์ที่ออกหลังได้รับการชำระเงิน ลงนามด้วยลายมือชื่อดิจิทัลของผู้มีอำนาจลงนาม",
+  // การ์ดสรุป — ตัวเลขคำนวณจากรายการใบเสร็จ / การชำระเงิน (ReceiptsView)
+  kpis: {
+    today: { icon: "fas fa-file-invoice-dollar", tone: "teal", label: "ใบเสร็จที่ออกวันนี้", caption: (n) => `ลงนามดิจิทัลแล้ว ${n} ฉบับ` },
+    amount: {
+      icon: "far fa-credit-card",
+      tone: "green",
+      label: "ยอดเงินวันนี้ (บาท)",
+      caption: (matched, paid) => (matched ? "ตรงกับยอดรับชำระ" : `ยอดรับชำระ ${paid} บาท`),
+    },
+    month: { icon: "far fa-calendar", tone: "blue", label: (month) => `ใบเสร็จเดือนนี้ (${month})`, caption: (sum) => `ยอดรวม ${sum} บาท` },
+    pending: { icon: "far fa-clock", tone: "amber", label: "รอลงนาม", caption: "ลงนามอัตโนมัติภายใน 5 นาที" },
+  },
   actions: {
     export: "ส่งออก Excel",
     exported: "ส่งออกรายการใบเสร็จรับเงินเป็น Excel แล้ว (จำลอง)",

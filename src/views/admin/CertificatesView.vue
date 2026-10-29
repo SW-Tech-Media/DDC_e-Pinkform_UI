@@ -18,14 +18,33 @@ import SecondaryButton from "@/components/SecondaryButton.vue";
 import CertificateViewDialog from "@/components/certificates/CertificateViewDialog.vue";
 import { certificatesText as t } from "@/content/certificates.js";
 import { common } from "@/content/common.js";
-import { certificateKpis, certificates, eLicensingStatuses } from "@/mocks/certificates.js";
-import { formatDate, formatNumber, formatTime } from "@/utils/format.js";
+import { certificates, certificateToday, eLicensingStatuses } from "@/mocks/certificates.js";
+import { formatDate, formatMonthYear, formatNumber, formatTime } from "@/utils/format.js";
 import { useSessionStore } from "@/stores/session.js";
 
 useSessionStore().signInAs("somrudee");
 
 const rows = ref(certificates.map((c) => ({ ...c })));
-const kpis = certificateKpis.map((k) => ({ ...k, value: formatNumber(k.value) }));
+// ----- การ์ดสรุป: นับจากรายการใบรับรองฯ (ส่งใหม่แล้วตัวเลขเปลี่ยนตาม) -----
+const k = t.kpis;
+const yearBE = Number(certificateToday.slice(0, 4)) + 543;
+const kpis = computed(() => {
+  const on = (prefix) => rows.value.filter((c) => c.sentAt.startsWith(prefix));
+  const today = on(certificateToday);
+  const count = (status) => rows.value.filter((c) => c.eLicensing === status).length;
+  const latest = today[0]?.sentAt;
+  return [
+    { key: "today", ...k.today, value: formatNumber(today.length), caption: latest ? k.today.caption(formatTime(latest)) : "" },
+    { key: "month", ...k.month, label: k.month.label(formatMonthYear(certificateToday)), value: formatNumber(on(certificateToday.slice(0, 7)).length) },
+    { key: "year", ...k.year, label: k.year.label(yearBE), value: formatNumber(on(certificateToday.slice(0, 4)).length) },
+    {
+      key: "eLicensing",
+      ...k.eLicensing,
+      value: formatNumber(today.filter((c) => c.eLicensing === "sent").length),
+      caption: k.eLicensing.caption(count("pending"), count("failed")),
+    },
+  ];
+});
 
 const blank = () => ({ taxId: "", company: "", ref: "", certNo: "", invoice: "", range: null });
 const draft = reactive(blank());

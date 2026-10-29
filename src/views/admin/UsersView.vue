@@ -15,28 +15,26 @@ import PermissionMatrix from "@/components/users/PermissionMatrix.vue";
 import UserFormDialog from "@/components/users/UserFormDialog.vue";
 import { usersText as t } from "@/content/users-roles.js";
 import { common } from "@/content/common.js";
-import {
-  groups,
-  permissionActions,
-  permissionMenus,
-  permissionTemplate,
-  roles,
-  userHistory,
-  users as seedUsers,
-  usersNow,
-} from "@/mocks/users-roles.js";
+import { groups, permissionActions, permissionMenus, permissionTemplate, roles, usersNow } from "@/mocks/users-roles.js";
 import { formatDate, formatDateTime, formatTime } from "@/utils/format.js";
 import { size } from "@/design/tokens.js";
+import { storeToRefs } from "pinia";
 import { useSessionStore } from "@/stores/session.js";
+import { useUsersStore } from "@/stores/users.js";
 
 const session = useSessionStore();
 session.signInAs("thanakorn");
 
 // คัดลอกลึก (structuredClone ใช้กับ reactive proxy ไม่ได้)
 const deep = (o) => JSON.parse(JSON.stringify(o));
-const clone = (u) => ({ ...u, permissions: deep(u.permissions) });
-const list = ref(seedUsers.map(clone));
-const history = ref(userHistory.map((h) => ({ ...h })));
+// รายชื่ออยู่ใน store — บันทึกสิทธิ์แล้วเมนู Sidebar ของบัญชีนั้นเปลี่ยนทันที (เมื่อสลับบทบาทเป็นบัญชีนั้น)
+const { list, history } = storeToRefs(useUsersStore());
+
+// สิทธิ์ของผู้แก้ไข — ซ่อนปุ่มตามสิทธิ์เมนู "ผู้ใช้งานและสิทธิ์" (backend ตรวจจริง)
+// สมมติฐานรอ Q-15: แก้ไขบัญชี Super Admin ได้เฉพาะ Super Admin
+const canCreate = computed(() => session.can("users", "create"));
+const canEdit = computed(() => session.can("users", "edit"));
+const canManage = (u) => canEdit.value && (u.role !== "superadmin" || session.account?.role === "superadmin");
 const snack = reactive({ show: false, text: "" });
 const notify = (text) => Object.assign(snack, { show: true, text });
 const log = (action, target, detail) =>
@@ -143,7 +141,7 @@ const historyOpen = ref(false);
     <PageHeader :title="t.title" :description="t.description">
       <template #actions>
         <SecondaryButton prepend-icon="fas fa-list" @click="historyOpen = true">{{ t.actions.history }}</SecondaryButton>
-        <v-btn color="primary" prepend-icon="fas fa-plus" :height="size['control-lg']" @click="openEditor()">
+        <v-btn v-if="canCreate" color="primary" prepend-icon="fas fa-plus" :height="size['control-lg']" @click="openEditor()">
           {{ t.actions.add }}
         </v-btn>
       </template>
@@ -216,8 +214,11 @@ const historyOpen = ref(false);
               </template>
               <template #item.actions="{ item }">
                 <div class="d-flex justify-center ga-2">
-                  <TableIconButton icon="far fa-pen-to-square" :label="t.edit" @click="openEditor(item)" />
-                  <TableIconButton icon="fas fa-key" :label="t.resetPin" @click="askReset(item)" />
+                  <template v-if="canManage(item)">
+                    <TableIconButton icon="far fa-pen-to-square" :label="t.edit" @click="openEditor(item)" />
+                    <TableIconButton icon="fas fa-key" :label="t.resetPin" @click="askReset(item)" />
+                  </template>
+                  <span v-else class="text-text-tertiary">–</span>
                 </div>
               </template>
               <template #no-data>
@@ -261,10 +262,12 @@ const historyOpen = ref(false);
             :menus="permissionMenus"
             :actions="permissionActions"
             :menu-label="t.permissions.menu"
+            :disabled="!canManage(selected)"
           />
           <div class="px-6 pt-4 pb-6">
             <v-switch
               v-model="draft.twoFactor"
+              :disabled="!canManage(selected)"
               :label="t.permissions.twoFactor"
               color="success"
               inset
@@ -273,13 +276,15 @@ const historyOpen = ref(false);
             />
             <v-switch
               v-model="draft.signer"
+              :disabled="!canManage(selected)"
               :label="t.permissions.signer"
               color="success"
               inset
               hide-details
               density="compact"
             />
-            <div class="d-flex flex-wrap align-center justify-end ga-2 mt-4">
+            <p v-if="!canManage(selected)" class="pf-type-caption text-text-tertiary mt-4">{{ t.permissions.readonly }}</p>
+            <div v-else class="d-flex flex-wrap align-center justify-end ga-2 mt-4">
               <span v-if="dirty" class="pf-type-caption text-status-warning-fg me-auto">{{ t.permissions.unsaved }}</span>
               <SecondaryButton :height="size['control-md']" :disabled="!dirty" @click="loadDraft">
                 {{ t.permissions.cancel }}

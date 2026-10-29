@@ -64,8 +64,11 @@ Component เฉพาะกลุ่มหน้าจอ ให้สร้า
 
 ## ข้อมูลที่ใช้ร่วมกัน
 
-- `src/mocks/requests.js` — คำขอ, สถานะคำขอ (`requestStatuses` → label + tone), ขั้นตอน 9 ขั้น, รายละเอียดคำขอทุกรายการ (`requestDetails` — PF6910260003 เขียนครบตาม Figma ส่วนรายการอื่นสร้างจาก `requests` — คำขอที่มี `outcome` ได้ประวัติสถานะ / Stepper / ผลการพิจารณาด้วย) · สถานะปัจจุบันของคำขออ่านจาก `useReviewStore().statusOf(ref)`
+- `src/mocks/requests.js` — คำขอ, สถานะคำขอ (`requestStatuses` → label + tone), ขั้นตอน 9 ขั้น, ค่าบริการ (`serviceFee`), รายละเอียดคำขอทุกรายการ (`requestDetails` — PF6910260003 เขียนครบตาม Figma D10 ส่วนรายการอื่นสร้างจาก `requests` — คำขอที่มี `outcome` ได้ประวัติสถานะ / Stepper / ผลการพิจารณา และ `payment` / `receipt` / `issued` ตามขั้นที่ไปถึง) · สถานะปัจจุบันของคำขออ่านจาก `useReviewStore().statusOf(ref)`
+- `src/mocks/payments.js`, `receipts.js`, `certificates.js` — สร้างจาก `requestDetails` ทั้งหมด (แหล่งความจริงเดียว: สถานะคำขอกำหนดว่ามีรายการชำระ / ใบเสร็จ / ใบรับรองฯ หรือไม่) · KPI ของ B-02 / B-10 / B-11 / B-12 คำนวณจากรายการในหน้า ห้ามใส่ตัวเลขคงที่
 - `src/mocks/users.js` — เจ้าหน้าที่ตัวอย่าง, badge sidebar, ตัวนับผู้เข้าชม
 - `src/utils/csv.js` — `downloadCsv(filename, headers, rows)` ส่งออก CSV (UTF-8 + BOM) ใช้ทุกหน้าที่มีปุ่มส่งออก
-- `src/stores/session.js` — ผู้ใช้ที่แสดงบน Topbar (`signInAs('prapaporn')` ฯลฯ)
+- `src/stores/session.js` — ผู้ใช้ที่แสดงบน Topbar ตาม Figma (`signInAs('prapaporn')` — ไม่มีผลเมื่อเลือกบัญชีแล้ว) และบัญชีที่ใช้ตรวจสิทธิ์ (`useAccount(username)` / `resetAccount()`) · `session.can(menuKey, action = 'view')` ใช้ซ่อนเมนู/ปุ่มตามสิทธิ์ (backend ตรวจจริง)
+- `src/stores/users.js` — รายชื่อผู้ใช้งานและสิทธิ์ (B-16) แก้สิทธิ์แล้วมีผลกับ Sidebar ของบัญชีนั้นทันที
+- สิทธิ์รายเมนู — `key` ของ `adminNav` (`content/navigation.js`) = แถวในตารางสิทธิ์ (`permissionMenus` ใน `mocks/users-roles.js`) = `meta.permission` ของ route · route ที่ไม่มีสิทธิ์ไปหน้า `admin-forbidden` · สลับบทบาทสาธิตได้จากเมนูผู้ใช้บน Topbar หรือ `?as=<username>`
 - `src/router/screens.js` — ชื่อ route ของทุกหน้าจอ

@@ -12,9 +12,10 @@ export const adminHomeText = {
       icon: "far fa-clock",
       tone: "amber",
       caption: (h, m) => `เก่าที่สุดรอ ${h} ชม. ${m} นาที`,
+      none: "ไม่มีคำขอค้างพิจารณา",
     },
     awaitingPayment: { label: "รอการชำระเงิน", icon: "far fa-credit-card", tone: "blue", caption: "Bill Payment ผ่านธนาคาร" },
-    issuedMonth: { label: "ออกใบรับรองฯ เดือนนี้", icon: "fas fa-award", tone: "pink", trendText: "จากเดือนก่อน" },
+    issuedMonth: { label: "ออกใบรับรองฯ เดือนนี้", icon: "fas fa-award", tone: "pink", caption: (month) => `ใบรับรองฯ ที่ออกใน ${month}` },
   },
   chart: {
     title: "จำนวนคำขอและใบรับรองฯ 14 วันล่าสุด",
@@ -28,7 +29,7 @@ export const adminHomeText = {
       inProgress: "อยู่ระหว่างดำเนินการ",
       awaitingPayment: "รอการชำระเงิน",
       issued: "ออกใบรับรองแล้ว",
-      invalid: "ข้อมูลไม่ถูกต้อง / ไม่อนุมัติ",
+      invalid: "ไม่ถูกต้อง / ไม่อนุมัติ / ชำระไม่สำเร็จ",
     },
   },
   pendingTable: {

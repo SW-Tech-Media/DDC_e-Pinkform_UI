@@ -1,4 +1,5 @@
 // ข้อมูลจำลองหน้า D15 · ผู้ใช้งานและสิทธิ์ (ตาม Figma node 20:4630)
+import { adminNav } from "@/content/navigation.js";
 
 export const groups = {
   service: "ฝ่ายบริการ",
@@ -13,17 +14,11 @@ export const roles = {
   superadmin: { label: "Super Admin", tone: "danger", description: "สิทธิ์สูงสุด กำหนดบทบาทและสิทธิ์ของผู้ดูแลระบบทั้งหมด" },
 };
 
-// เมนูในตารางสิทธิ์ และการกระทำ (คอลัมน์)
-export const permissionMenus = [
-  { key: "requests", label: "คำขอใบรับรองฯ" },
-  { key: "operators", label: "ทะเบียนผู้ประกอบการ" },
-  { key: "tracking", label: "ติดตามสถานะคำขอ" },
-  { key: "payments", label: "ติดตามการชำระเงิน" },
-  { key: "outbreak", label: "พื้นที่โรคระบาด" },
-  { key: "masterData", label: "ข้อมูลหลักอื่น ๆ" },
-  { key: "reports", label: "รายงานสรุป" },
-  { key: "users", label: "ผู้ใช้งานและสิทธิ์" },
-];
+// เมนูในตารางสิทธิ์ = ทุกเมนูใน Sidebar (content/navigation.js) ผูกด้วย key เดียวกัน (TOR 4.1.10)
+// fixed = เมนูที่ทุกบทบาทเห็นเสมอ แก้สิทธิ์ไม่ได้ (หน้าหลัก — ปลายทางของปุ่ม "กลับหน้าหลัก" ในหน้าไม่มีสิทธิ์)
+export const permissionMenus = adminNav.flatMap((section) =>
+  section.items.map((item) => ({ key: item.key, label: item.title, group: section.group, fixed: item.key === "home" }))
+);
 export const permissionActions = [
   { key: "view", label: "ดู" },
   { key: "create", label: "เพิ่ม" },
@@ -32,18 +27,42 @@ export const permissionActions = [
   { key: "approve", label: "อนุมัติ" },
 ];
 
-// แม่แบบสิทธิ์ — สตริง 5 หลักต่อเมนู ตามลำดับ ดู/เพิ่ม/แก้ไข/ลบ/อนุมัติ (1 = มีสิทธิ์)
+// แม่แบบสิทธิ์ — สตริง 5 หลักต่อเมนู ตามลำดับ ดู/เพิ่ม/แก้ไข/ลบ/อนุมัติ (1 = มีสิทธิ์) · เมนูที่ไม่ระบุ = ไม่มีสิทธิ์
+// สมมติฐานรอลูกค้ายืนยัน (Q-15): สิทธิ์รายเมนูของแต่ละกลุ่มงาน และความต่างของ Admin กับ Super Admin
+// ชั่วคราวจนกว่าจะมี API — ระบบจริง backend เป็นเจ้าของสิทธิ์และตรวจทุกคำขอ หน้าจอใช้เพื่อซ่อนเมนู/ปุ่มเท่านั้น
 const templates = {
-  service: { requests: "10101", operators: "11101", tracking: "10000", payments: "10000", outbreak: "11110", masterData: "10000", reports: "10000", users: "00000" },
-  finance: { requests: "10000", operators: "10000", tracking: "10000", payments: "11101", outbreak: "10000", masterData: "10000", reports: "10000", users: "00000" },
-  signer: { requests: "10001", operators: "10000", tracking: "10000", payments: "10000", outbreak: "10000", masterData: "00000", reports: "10000", users: "00000" },
-  admin: { requests: "10000", operators: "11110", tracking: "10000", payments: "10000", outbreak: "11110", masterData: "11110", reports: "10000", users: "11100" },
-  superadmin: { requests: "11111", operators: "11111", tracking: "11111", payments: "11111", outbreak: "11111", masterData: "11111", reports: "11111", users: "11111" },
+  // ฝ่ายบริการ: รับ-พิจารณาคำขอ, THNSW, พื้นที่โรคระบาด, เนื้อหาเว็บไซต์และแบบสอบถาม
+  service: {
+    operators: "11101", thnsw: "10001", requests: "10101", tracking: "10000", certificates: "10000",
+    payments: "10000", receipts: "10000", outbreak: "11110", masterData: "10000", reports: "10000",
+    content: "11110", surveys: "11110",
+  },
+  // ฝ่ายการเงิน: ติดตามการชำระเงิน / ใบเสร็จ ดูงานบริการได้อย่างเดียว
+  finance: {
+    operators: "10000", requests: "10000", tracking: "10000", certificates: "10000",
+    payments: "11101", receipts: "11100", outbreak: "10000", masterData: "10000", reports: "10000",
+  },
+  // ผู้มีอำนาจลงนาม: ดูและอนุมัติคำขอ ดูใบรับรองฯ และรายงาน
+  signer: {
+    operators: "10000", thnsw: "10000", requests: "10001", tracking: "10000", certificates: "10000",
+    payments: "10000", outbreak: "10000", reports: "10000",
+  },
+  // Admin (IT): ข้อมูลหลัก ผู้ใช้งาน ระบบเชื่อมโยง ดูงานบริการ/การเงินได้อย่างเดียว ไม่อนุมัติคำขอ
+  admin: {
+    operators: "11110", thnsw: "10000", requests: "10000", tracking: "10000", certificates: "10000",
+    payments: "10000", receipts: "10000", outbreak: "11110", masterData: "11110", reports: "10000",
+    visitors: "10000", content: "10000", surveys: "10000", users: "11100", ebxml: "11100",
+    pki: "11110", cpa: "11110", api: "10000", backofficeSync: "11100", auditLog: "10000",
+  },
+  // Super Admin: ทุกเมนู ทุกการกระทำ
+  superadmin: Object.fromEntries(permissionMenus.map((m) => [m.key, "11111"])),
 };
 
 export const permissionTemplate = (group, role) => {
   const tpl = role === "user" ? templates[group] : templates[role];
-  return Object.fromEntries(Object.entries(tpl).map(([menu, bits]) => [menu, [...bits].map((b) => b === "1")]));
+  return Object.fromEntries(
+    permissionMenus.map((m) => [m.key, [...(m.fixed ? "10000" : tpl?.[m.key] ?? "00000")].map((b) => b === "1")])
+  );
 };
 
 const u = (id, name, username, group, role, pinSet, active, lastActive, extra = {}) => ({

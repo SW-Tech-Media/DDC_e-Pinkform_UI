@@ -4,6 +4,18 @@ export const certificatesText = {
   breadcrumb: [{ title: "งานบริการ" }, { title: "ข้อมูลใบรับรองฯ" }],
   title: "ข้อมูลใบรับรองฯ",
   description: "ใบรับรองแหล่งผลิต แหล่งกำเนิดอาหารปลอดโรคที่ออกแล้ว และสถานะการส่งข้อมูลไประบบ e-Licensing กรมศุลกากร",
+  // การ์ดสรุป — ตัวเลขคำนวณจากรายการใบรับรองฯ (CertificatesView)
+  kpis: {
+    today: { icon: "fas fa-award", tone: "pink", label: "ออกวันนี้", caption: (time) => `ฉบับ · ณ ${time} น.` },
+    month: { icon: "far fa-calendar", tone: "teal", label: (month) => `เดือนนี้ (${month})`, caption: "ฉบับ" },
+    year: { icon: "fas fa-chart-column", tone: "blue", label: (year) => `ปีนี้ (${year})`, caption: "ฉบับ" },
+    eLicensing: {
+      icon: "fas fa-arrow-right-arrow-left",
+      tone: "green",
+      label: "ส่ง e-Licensing แล้ววันนี้",
+      caption: (pending, failed) => `รอส่ง ${pending} · ไม่สำเร็จ ${failed}`,
+    },
+  },
   filters: {
     taxId: { label: "เลขประจำตัวผู้เสียภาษี", placeholder: "เลข 13 หลัก" },
     company: { label: "ชื่อบริษัท (ไทย / Eng)", placeholder: "ระบุชื่อบริษัท" },

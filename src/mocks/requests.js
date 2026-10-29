@@ -1,9 +1,9 @@
 // คำขอใบรับรองฯ ตัวอย่าง (ข้อมูลจาก Figma D07, D09 – D12) — ใช้ร่วมกันหลายหน้าจอ
 // status ใช้ key ใน requestStatuses
 import { operators, operatorTypes } from "./operators.js";
-import { banks } from "./payments.js";
+import { banks } from "./banks.js";
 import { staff } from "./users.js";
-import { formatTime } from "@/utils/format.js";
+import { formatMoney, formatTime } from "@/utils/format.js";
 
 // สถานะคำขอตาม TOR 4.4.2 (8) — tone = สี StatusBadge, step = ลำดับใน Stepper ของหน้าติดตามสถานะ (D12)
 // final = สถานะสิ้นสุดที่ไม่อยู่ใน Stepper (atStep = ขั้นที่คำขอหยุดอยู่)
@@ -41,10 +41,17 @@ export const autoCheck = {
   flagged: (n) => ({ label: `ตรวจพบ ${n} รายการ`, tone: "warning" }),
 };
 
+// ค่าบริการต่อคำขอ (1 คำขอ = ใบรับรองฯ 1 ฉบับ) — ใช้ร่วมกันทุกหน้า (รายละเอียดคำขอ / การชำระเงิน / ใบเสร็จ)
+// ชั่วคราวจนกว่าจะมี API — อัตราจริงรอยืนยัน (Q-17: คงที่ต่อคำขอ หรือคิดตามจำนวนรายการ) และควรตั้งค่าได้ (G-16)
+export const serviceFee = 300;
+
 // when = "HH:mm" (วันที่ 26/10/2569) หรือ "YYYY-MM-DD HH:mm"
-// outcome = ผลของคำขอที่พ้นขั้นรอพิจารณาแล้ว (เวลาเป็น "YYYY-MM-DD HH:mm:ss") — ใช้สร้างประวัติสถานะใน decidedDetail
-//   อนุมัติ: { by, at, bank, paidAt?, failedAt?, cert?, receipt?, sendFailed?, completedAt? }
+// outcome = ผลของคำขอที่พ้นขั้นรอพิจารณาแล้ว (เวลาเป็น "YYYY-MM-DD HH:mm:ss") — ใช้สร้างประวัติสถานะ การชำระเงิน
+// ใบเสร็จ และใบรับรองฯ ใน decidedDetail (mocks/payments.js, receipts.js, certificates.js อ่านจากผลนี้ทั้งหมด)
+//   อนุมัติ: { by, at, bank, paidAt?, failedAt?, failReason?, cert?, receipt?, signer?, sendFailed?, completedAt? }
 //   ไม่อนุมัติ: { by, at, replyCode, reply } · ข้อมูลไม่ถูกต้อง: { at, reason, signatureValid? }
+// status เป็นตัวกำหนดว่าคำขอไปถึงขั้นใด: awaitingPayment = มีคำสั่งชำระ · paid = ชำระแล้ว ใบเสร็จรอลงนาม (ยังไม่มีเลขที่ใบรับรอง)
+//   issued ขึ้นไป = ออกใบรับรองฯ + ใบเสร็จแล้ว (issued ที่ไม่มี sendFailed = รอส่ง e-Licensing)
 const r = (ref, when, invoice, company, brand, country, items, flagged = 0, status = "pending", outcome = null) => ({
   ref,
   submittedAt: `${when.length > 5 ? when.replace(" ", "T") : `2026-10-26T${when}`}:00+07:00`,
@@ -58,7 +65,7 @@ const r = (ref, when, invoice, company, brand, country, items, flagged = 0, stat
   outcome,
 });
 
-// รายการคำขอ (D09) เรียงตามเวลาที่ยื่น เก่า → ใหม่ — คำขอที่ออกใบรับรองแล้วตรงกับ mocks/certificates.js
+// รายการคำขอ (D09) เรียงตามเวลาที่ยื่น เก่า → ใหม่ — เป็นแหล่งข้อมูลเดียวของการชำระเงิน / ใบเสร็จ / ใบรับรองฯ
 export const requests = [
   r("PF6910150012", "2026-10-15 08:21", "INV-6910-0733", "บริษัท ไทยเฟรช ฟู้ด จำกัด", "THAI FRESH", "จีน", 2, 0, "completed", {
     by: "somrudee", at: "2026-10-15 08:47:30", bank: "006", paidAt: "2026-10-15 09:14:02", cert: "012703", receipt: "R69-0104268", completedAt: "2026-10-15 13:20:00",
@@ -67,7 +74,7 @@ export const requests = [
     by: "somchai", at: "2026-10-20 13:02:11", bank: "014", paidAt: "2026-10-20 13:31:23", cert: "012745", receipt: "R69-0104310", completedAt: "2026-10-21 09:05:00",
   }),
   r("PF6910240071", "2026-10-24 09:58", "INV-6910-0881", "บริษัท โกลเด้นไรซ์ เทรดดิ้ง จำกัด", "JASMINE STAR", "ญี่ปุ่น", 2, 0, "completed", {
-    by: "somrudee", at: "2026-10-24 10:21:40", bank: "006", paidAt: "2026-10-24 10:48:47", cert: "012788", receipt: "R69-0104353", completedAt: "2026-10-24 15:30:00",
+    by: "somrudee", at: "2026-10-24 10:21:40", bank: "006", paidAt: "2026-10-24 10:48:47", cert: "012788", receipt: "R69-0104353", signer: "finance", completedAt: "2026-10-24 15:30:00",
   }),
   r("PF6910240085", "2026-10-24 13:22", "INV-6910-0890", "ห้างหุ้นส่วนจำกัด ราชบุรี เวจจี้", "RB VEGGIE", "เกาหลีใต้", 3, 1, "rejected", {
     by: "somchai", at: "2026-10-24 13:58:09", replyCode: "R05", reply: "แหล่งผลิตอยู่ในพื้นที่โรคระบาด",
@@ -82,13 +89,13 @@ export const requests = [
     by: "somchai", at: "2026-10-25 12:15:33", replyCode: "R04", reply: "พิกัดศุลกากร / รหัสสถิติไม่ถูกต้อง",
   }),
   r("PF6910250160", "2026-10-25 13:18", "INV-6910-0950", "บริษัท มหาชัย โฟรเซ่น จำกัด", "SEA PRIDE", "เวียดนาม", 1, 0, "completed", {
-    by: "somchai", at: "2026-10-25 13:37:05", bank: "014", paidAt: "2026-10-25 14:05:40", cert: "012826", receipt: "R69-0104391", completedAt: "2026-10-25 16:45:00",
+    by: "somchai", at: "2026-10-25 13:37:05", bank: "014", paidAt: "2026-10-25 14:05:40", cert: "012826", receipt: "R69-0104391", signer: "finance", completedAt: "2026-10-25 16:45:00",
   }),
   r("PF6910250166", "2026-10-25 14:40", "INV-6910-0955", "บริษัท มหาชัย โฟรเซ่น จำกัด", "SEA PRIDE", "เวียดนาม", 2, 0, "invalid", {
     at: "2026-10-25 14:40:12", reason: "XML Schema ไม่ถูกต้อง: ไม่พบ <HSCode> ของสินค้ารายการที่ 2",
   }),
   r("PF6910250172", "2026-10-25 14:52", "INV-6910-0962", "บริษัท ไทยเฟรช ฟู้ด จำกัด", "THAI FRESH", "จีน", 2, 0, "completed", {
-    by: "somrudee", at: "2026-10-25 15:10:26", bank: "006", paidAt: "2026-10-25 15:40:14", cert: "012831", receipt: "R69-0104398", completedAt: "2026-10-26 09:12:00",
+    by: "somrudee", at: "2026-10-25 15:10:26", bank: "006", paidAt: "2026-10-25 15:40:14", cert: "012831", receipt: "R69-0104398", signer: "finance", completedAt: "2026-10-26 09:12:00",
   }),
   r("PF6910250176", "2026-10-25 15:28", "INV-6910-0968", "บริษัท ทรอปิคอล แพค จำกัด", "TROPIC", "สิงคโปร์", 2, 0, "paymentFailed", {
     by: "somchai", at: "2026-10-25 15:49:37", bank: "002", failedAt: "2026-10-25 16:30:05",
@@ -109,14 +116,26 @@ export const requests = [
     by: "somrudee", at: "2026-10-26 08:36:44", bank: "006",
   }),
   r("PF6910260003", "08:42", "INV-6910-1024", "บริษัท สยามฟรุ๊ต เอ็กซ์ปอร์ต จำกัด", "GOLDEN MANGO", "ไต้หวัน", 4, 1),
-  r("PF6910260006", "09:10", "INV-6910-1031", "บริษัท ไทยเฟรช ฟู้ด จำกัด", "THAI FRESH", "จีน", 2),
+  r("PF6910260006", "09:10", "INV-6910-1031", "บริษัท ไทยเฟรช ฟู้ด จำกัด", "THAI FRESH", "จีน", 2, 0, "paid", {
+    by: "somrudee", at: "2026-10-26 09:31:12", bank: "014", paidAt: "2026-10-26 10:52:14", receipt: "R69-0104415",
+  }),
   r("PF6910260009", "09:37", "INV-6910-1038", "บริษัท โกลเด้นไรซ์ เทรดดิ้ง จำกัด", "JASMINE STAR", "ญี่ปุ่น", 6, 1),
-  r("PF6910260012", "09:51", "INV-6910-1045", "บริษัท อันดามัน ซีฟู้ด จำกัด", "ANDAMAN BLUE", "ฮ่องกง", 3),
-  r("PF6910260015", "10:02", "INV-6910-1052", "บริษัท เชียงใหม่ ออร์แกนิค จำกัด", "CM ORGANIC", "มาเลเซีย", 1),
-  r("PF6910260018", "10:15", "INV-6910-1059", "บริษัท ทรอปิคอล แพค จำกัด", "TROPIC", "สิงคโปร์", 3),
+  r("PF6910260012", "09:51", "INV-6910-1045", "บริษัท อันดามัน ซีฟู้ด จำกัด", "ANDAMAN BLUE", "ฮ่องกง", 3, 0, "completed", {
+    by: "somrudee", at: "2026-10-26 10:06:15", bank: "006", paidAt: "2026-10-26 10:18:40", cert: "012844", receipt: "R69-0104411", completedAt: "2026-10-26 10:48:00",
+  }),
+  r("PF6910260015", "10:02", "INV-6910-1052", "บริษัท เชียงใหม่ ออร์แกนิค จำกัด", "CM ORGANIC", "มาเลเซีย", 1, 0, "awaitingPayment", {
+    by: "somchai", at: "2026-10-26 10:12:05", bank: "002",
+  }),
+  r("PF6910260018", "10:15", "INV-6910-1059", "บริษัท ทรอปิคอล แพค จำกัด", "TROPIC", "สิงคโปร์", 3, 0, "issued", {
+    by: "somchai", at: "2026-10-26 10:24:30", bank: "002", paidAt: "2026-10-26 10:41:30", cert: "012847", receipt: "R69-0104414",
+  }),
   r("PF6910260021", "10:26", "INV-6910-1066", "ห้างหุ้นส่วนจำกัด ราชบุรี เวจจี้", "RB VEGGIE", "เกาหลีใต้", 8, 1),
-  r("PF6910260024", "10:31", "INV-6910-1073", "บริษัท มหาชัย โฟรเซ่น จำกัด", "SEA PRIDE", "เวียดนาม", 2),
-  r("PF6910260027", "10:44", "INV-6910-1080", "บริษัท สยามฟรุ๊ต เอ็กซ์ปอร์ต จำกัด", "GOLDEN MANGO", "ไต้หวัน", 5),
+  r("PF6910260024", "10:31", "INV-6910-1073", "บริษัท มหาชัย โฟรเซ่น จำกัด", "SEA PRIDE", "เวียดนาม", 2, 0, "paymentFailed", {
+    by: "somchai", at: "2026-10-26 10:41:20", bank: "006", failedAt: "2026-10-26 10:49:05", failReason: "ยอดเงินในบัญชีไม่เพียงพอ (รหัส 51)",
+  }),
+  r("PF6910260027", "10:44", "INV-6910-1080", "บริษัท สยามฟรุ๊ต เอ็กซ์ปอร์ต จำกัด", "GOLDEN MANGO", "ไต้หวัน", 5, 0, "awaitingPayment", {
+    by: "somrudee", at: "2026-10-26 10:54:10", bank: "014",
+  }),
   r("PF6910260030", "10:58", "INV-6910-1087", "บริษัท ไทยเฟรช ฟู้ด จำกัด", "THAI FRESH", "จีน", 2),
   r("PF6910260033", "11:06", "INV-6910-1094", "บริษัท โกลเด้นไรซ์ เทรดดิ้ง จำกัด", "JASMINE STAR", "ญี่ปุ่น", 3),
   r("PF6910260036", "11:12", "INV-6910-1101", "บริษัท อันดามัน ซีฟู้ด จำกัด", "ANDAMAN BLUE", "ฮ่องกง", 1),
@@ -215,7 +234,7 @@ function generatedDetail(req, i, flaggedIndex) {
     submittedAt: req.submittedAt,
     via: nsps[i % nsps.length],
     signatureValid: true,
-    fee: 300,
+    fee: serviceFee,
     exporter: {
       nameTh: req.company,
       nameEn: op.nameEn,
@@ -232,19 +251,26 @@ function generatedDetail(req, i, flaggedIndex) {
     items,
     ...(outbreak ? { outbreakNote: { item: items.length, area: outbreak.area, reportedAt: outbreak.reportedAt, freeAt: outbreak.freeAt } } : {}),
     documents: 3,
-    ...(req.outcome ? decidedDetail(req, 300) : {}),
+    ...(req.outcome ? decidedDetail(req) : {}),
   };
 }
 
+// เวลาทั้งหมดเก็บเป็นเวลาไทย "YYYY-MM-DDTHH:mm:ss+07:00" — slice(0, 10) จึงได้วันที่ตามเวลาไทยเสมอ (ใช้กรองรายการตามวัน)
 const at = (s) => `${s.replace(" ", "T")}+07:00`;
-const plus = (iso, s) => new Date(new Date(iso).getTime() + s * 1000).toISOString();
+const BKK = 7 * 3600 * 1000;
+const plus = (iso, s) => `${new Date(new Date(iso).getTime() + s * 1000 + BKK).toISOString().slice(0, 19)}+07:00`;
+const reached = (req, key) => (requestStatuses[req.status].step ?? -1) >= requestStatuses[key].step;
 
-// คำขอที่พ้นขั้นรอพิจารณาแล้ว: ผลการพิจารณา (decision) + ประวัติสถานะ (ใหม่ → เก่า) + เวลาใน Stepper + เลขที่ใบรับรอง
-function decidedDetail(req, fee) {
+// คำขอที่พ้นขั้นรอพิจารณาแล้ว: ผลการพิจารณา (decision) + ประวัติสถานะ (ใหม่ → เก่า) + เวลาใน Stepper
+// + คำสั่งชำระ (payment) / ใบเสร็จ (receipt) / ใบรับรองฯ (issued) ตามขั้นที่คำขอไปถึง
+function decidedDetail(req) {
   const o = req.outcome;
   const log = [{ status: "received", detail: "รับจาก NSW · ลายมือชื่อดิจิทัลและ XML Schema ถูกต้อง", at: plus(req.submittedAt, 10), by: "ebXML Gateway" }];
   const add = (status, detail, time, by, label) => log.push({ status, ...(label ? { label } : {}), detail, at: time, by });
   let decision;
+  let payment = null;
+  let receipt = null;
+  let issued = null;
 
   if (req.status === "invalid") {
     log[0].detail = "รับจาก NSW";
@@ -260,23 +286,37 @@ function decidedDetail(req, fee) {
       decision = { type: "rejected", at: decidedAt, by, replyCode: o.replyCode, note: "" };
     } else {
       const bank = `${banks[o.bank]} (${o.bank})`;
+      const orderedAt = plus(decidedAt, 16);
       add("approved", "ตรวจ Checklist ครบ 6/6 ข้อ", decidedAt, by);
-      add("awaitingPayment", `สร้างคำสั่งชำระ Ref.1 ${req.invoice} / Ref.2 001`, plus(decidedAt, 16), "ระบบ");
-      if (o.failedAt) add("paymentFailed", `${bank} · ชำระไม่สำเร็จ · แจ้งผู้ประกอบการผ่าน NSW`, at(o.failedAt), "ธนาคาร");
-      if (o.paidAt) {
-        const paidAt = at(o.paidAt);
-        add("paid", `${bank} · ${fee}.00 บาท · ช่องทาง Mobile Banking`, paidAt, "ธนาคาร");
-        add("issued", `ใบรับรองฯ DDC-PF 69/${o.cert} · ใบเสร็จ ${o.receipt} ลงนามดิจิทัลแล้ว`, plus(paidAt, 4), "ระบบ + PKI", "ออกเลขที่ใบรับรองและใบเสร็จ");
-        add(
-          "issued",
-          o.sendFailed ? "e-Licensing ไม่ตอบรับ (Timeout) · รอส่งใหม่อัตโนมัติ" : "e-Licensing ตอบรับ (ACK)",
-          plus(paidAt, 21),
-          "ebXML Gateway",
-          "ส่งข้อมูลใบรับรองฯ ไปกรมศุลกากร"
-        );
-        if (!o.sendFailed) add("readyToDeliver", "ส่งใบรับรองฯ และใบเสร็จรับเงินผ่าน NSW → Gateway → NSP สำเร็จ", plus(paidAt, 35), "ระบบ");
-        if (o.completedAt) add("completed", "ผู้ประกอบการรับใบรับรองฯ และใบเสร็จรับเงินแล้ว", at(o.completedAt), "NSP");
+      add("awaitingPayment", `สร้างคำสั่งชำระ Ref.1 ${req.invoice} / Ref.2 001`, orderedAt, "ระบบ");
+      payment = { orderedAt, bankCode: o.bank, amount: serviceFee, status: "pending" };
+      if (req.status === "paymentFailed") {
+        add("paymentFailed", `${bank} · ชำระไม่สำเร็จ · แจ้งผู้ประกอบการผ่าน NSW`, at(o.failedAt), "ธนาคาร");
+        Object.assign(payment, { status: "failed", failedAt: at(o.failedAt), ...(o.failReason ? { failReason: o.failReason } : {}) });
       }
+      if (reached(req, "paid")) {
+        const paidAt = at(o.paidAt);
+        add("paid", `${bank} · ${formatMoney(serviceFee)} บาท · ช่องทาง Mobile Banking`, paidAt, "ธนาคาร");
+        Object.assign(payment, { status: "paid", paidAt });
+        // ใบเสร็จออกพร้อมการรับชำระ — คำขอที่ยังอยู่ขั้น "ชำระแล้ว" คือใบเสร็จรอลงนามดิจิทัล
+        receipt = { no: o.receipt, issuedAt: plus(paidAt, 4), signer: o.signer ?? "wipawan", signed: reached(req, "issued") };
+      }
+      if (reached(req, "issued")) {
+        const issuedAt = plus(at(o.paidAt), 4);
+        const eLicensing = o.sendFailed ? "failed" : req.status === "issued" ? "pending" : "sent";
+        add("issued", `ใบรับรองฯ DDC-PF 69/${o.cert} · ใบเสร็จ ${o.receipt} ลงนามดิจิทัลแล้ว`, issuedAt, "ระบบ + PKI", "ออกเลขที่ใบรับรองและใบเสร็จ");
+        const sendDetail = {
+          failed: "e-Licensing ไม่ตอบรับ (Timeout) · รอส่งใหม่อัตโนมัติ",
+          pending: "อยู่ในคิวส่งข้อมูลไป e-Licensing",
+          sent: "e-Licensing ตอบรับ (ACK)",
+        }[eLicensing];
+        add("issued", sendDetail, plus(issuedAt, 17), "ebXML Gateway", "ส่งข้อมูลใบรับรองฯ ไปกรมศุลกากร");
+        issued = { certificate: `DDC-PF 69/${o.cert}`, receipt: o.receipt, at: issuedAt, eLicensing };
+      }
+      if (reached(req, "readyToDeliver")) {
+        add("readyToDeliver", "ส่งใบรับรองฯ และใบเสร็จรับเงินผ่าน NSW → Gateway → NSP สำเร็จ", plus(at(o.paidAt), 35), "ระบบ");
+      }
+      if (req.status === "completed") add("completed", "ผู้ประกอบการรับใบรับรองฯ และใบเสร็จรับเงินแล้ว", at(o.completedAt), "NSP");
       decision = { type: "approved", at: decidedAt, by, replyCode: "R01", note: "" };
     }
   }
@@ -292,21 +332,24 @@ function decidedDetail(req, fee) {
     decision,
     history: log.reverse(),
     stepTimes: Array.from({ length: requestSteps.length }, (_, n) => stepTimes[n] ?? ""),
-    currentStatus: req.status,
     ...(o.bank ? { bankCode: o.bank } : {}),
-    ...(o.cert ? { issued: { certificate: `DDC-PF 69/${o.cert}`, receipt: o.receipt } } : {}),
+    ...(payment ? { payment } : {}),
+    ...(receipt ? { receipt } : {}),
+    ...(issued ? { issued } : {}),
   };
 }
 
 // รายละเอียดคำขอฉบับเต็ม (D10 – D12) — key = Reference No.
-// PF6910260003 เขียนไว้ครบตาม Figma (มีประวัติสถานะและ Stepper) ส่วนคำขออื่นสร้างจาก requests
+// PF6910260003 เขียนไว้ครบตาม Figma D10 (คำขอรอพิจารณา) ส่วนคำขออื่นสร้างจาก requests
+// Figma D12 ใช้เลขเดียวกันในสถานะ "แจ้งสถานะพร้อมจ่าย" — Prototype ยึดสถานะรอพิจารณาตาม D10 ให้ทุกหน้าตรงกัน
+// ตัวอย่าง D12 ที่มีประวัติครบดูที่ PF6910250181 (พร้อมจ่าย) / PF6910260012 (เสร็จสมบูรณ์)
 const figmaDetails = {
   PF6910260003: {
     ref: "PF6910260003",
     submittedAt: "2026-10-26T08:42:00+07:00",
     via: "NSP: บริษัท ไทยอีดีไอ เซอร์วิส จำกัด",
     signatureValid: true,
-    fee: 300,
+    fee: serviceFee,
     exporter: {
       nameTh: "บริษัท สยามฟรุ๊ต เอ็กซ์ปอร์ต จำกัด",
       nameEn: "Siam Fruit Export Co., Ltd.",
@@ -376,52 +419,6 @@ const figmaDetails = {
       freeAt: "2026-11-02",
     },
     documents: 3,
-    // ประวัติสถานะ (D12) ใหม่ → เก่า
-    history: [
-      {
-        status: "readyToDeliver",
-        detail: "ส่งใบรับรองฯ และใบเสร็จรับเงินผ่าน NSW → Gateway → NSP สำเร็จ",
-        at: "2026-10-26T10:03:12+07:00",
-        by: "ระบบ",
-      },
-      {
-        status: "issued",
-        label: "ส่งข้อมูลใบรับรองฯ ไปกรมศุลกากร",
-        detail: "e-Licensing ตอบรับ (ACK) Message ID 8f2c...a71e",
-        at: "2026-10-26T10:02:58+07:00",
-        by: "ebXML Gateway",
-      },
-      {
-        status: "issued",
-        label: "ออกเลขที่ใบรับรองและใบเสร็จ",
-        detail: "ใบรับรองฯ DDC-PF 69/012845 · ใบเสร็จ R69-0104412 ลงนามดิจิทัลแล้ว",
-        at: "2026-10-26T10:02:41+07:00",
-        by: "ระบบ + PKI",
-      },
-      {
-        status: "paid",
-        detail: "ธนาคาร A (006) · 300.00 บาท · ช่องทาง Mobile Banking",
-        at: "2026-10-26T10:02:37+07:00",
-        by: "ธนาคาร",
-      },
-      {
-        status: "awaitingPayment",
-        detail: "สร้างคำสั่งชำระ Ref.1 INV-6910-1024 / Ref.2 001",
-        at: "2026-10-26T09:19:03+07:00",
-        by: "ระบบ",
-      },
-      { status: "approved", detail: "ตรวจ Checklist ครบ 6/6 ข้อ", at: "2026-10-26T09:18:47+07:00", by: "สมฤดี ใจดี" },
-      {
-        status: "received",
-        detail: "รับจาก NSW · ลายมือชื่อดิจิทัลและ XML Schema ถูกต้อง",
-        at: "2026-10-26T08:42:10+07:00",
-        by: "ebXML Gateway",
-      },
-    ],
-    // เวลาของแต่ละขั้นใน Stepper (D12) — index ตาม requestSteps
-    stepTimes: ["08:42", "08:42", "09:05", "09:18", "09:19", "10:02", "10:02", "10:03"],
-    currentStatus: "readyToDeliver",
-    issued: { certificate: "DDC-PF 69/012845", receipt: "R69-0104412" },
   },
 };
 
