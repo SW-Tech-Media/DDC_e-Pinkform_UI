@@ -138,6 +138,7 @@ export const size = {
   "dialog-md": 640,
   "portal-header": 80,
   sidebar: 264,
+  "sidebar-item": 44,
   topbar: 72,
   "desktop-search": 360,
   "auth-panel": 640,

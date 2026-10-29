@@ -26,13 +26,15 @@
 
 | Component          | ใช้ทำอะไร (Figma)                         | Props สำคัญ                                                                                   |
 | ------------------ | ---------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `AppBrand`         | โลโก้ (Brand/Logo)                        | `inverse`, `subtitle`                                                                        |
+| `AppBrand`         | โลโก้ (Brand/Logo)                        | `inverse`, `subtitle`, `size`: lg · sm                                                                        |
 | `PageHeader`       | หัวหน้าจอ Back Office                      | `title`, `description` · slot `actions`                                                       |
 | `PageHero`         | แถบหัวหน้าจอ Portal (Web/Page Hero)        | `title`, `description`, `breadcrumb`, `overlap` (เว้นที่ให้การ์ดซ้อน)                           |
 | `SectionCard`      | การ์ดมีหัวข้อ (Card/Header)                | `title`, `subtitle`, `flush` (ไม่มี padding — ใช้กับตาราง) · slot `header`, `actions`, `footer`   |
 | `KpiCard`          | การ์ดตัวเลข (Card/KPI)                     | `icon`, `tone`, `label`, `value`, `caption`, `trend: { direction, value, text }`              |
 | `IconTile`         | กล่องไอคอนพื้นอ่อน                         | `icon`, `tone`: teal · pink · blue · green · amber · red · neutral, `size`: md · lg              |
 | `StatusBadge`      | Badge สถานะ                              | `tone`: success · warning · danger · info · neutral · accent, `dot`                           |
+| `SvgIcon`          | ไอคอนเส้นจาก Figma (Icon/*) สีตาม currentColor | `name` = ชื่อไฟล์ใน `src/assets/icons/` · กำหนดขนาดด้วย CSS width/height |
+| `SidebarItem`      | เมนูด้านข้าง (Web/Sidebar Item)            | `to`, `icon` (ชื่อ SvgIcon), `label`, `badge`, `active` |
 | `SecondaryButton`  | ปุ่มรอง พื้นขาว ขอบเทา ตัวอักษรเข้ม (Button/Secondary) | `icon`, `height` (ชื่อ size เช่น `control-lg`) · props อื่นส่งต่อให้ v-btn                 |
 | `AlertBox`         | กล่องแจ้งเตือน / ข้อมูล                     | `tone`, `title`, `icon` · slot `aside` (ปุ่ม/ตัวเลขด้านขวา)                                   |
 | `FilterCard`       | แผงตัวกรอง + ปุ่ม ค้นหา / ล้าง               | `showReset` · emit `search`, `reset` · ใส่ `<v-col>` + field ใน slot                           |

@@ -5,6 +5,7 @@ import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useDisplay } from "vuetify";
 import AppBrand from "@/components/AppBrand.vue";
+import SidebarItem from "@/components/SidebarItem.vue";
 import { adminNav, adminText } from "@/content/navigation.js";
 import { common } from "@/content/common.js";
 import { badges } from "@/mocks/users.js";
@@ -38,39 +39,28 @@ const logout = () => router.push({ name: "admin-login" });
     class="sidebar bg-bg-inverse"
     border="0"
   >
-    <div class="px-5 py-5 pf-bordered-bottom sidebar__brand">
+    <!-- Figma: Web/Sidebar — Brand (24/20) · Menu (16/8, ระยะเมนู 2) · Footer (24/16) -->
+    <div class="px-6 py-5 pf-bordered-bottom sidebar__brand">
       <router-link :to="{ name: 'admin-home' }" class="text-decoration-none">
-        <AppBrand inverse />
+        <AppBrand inverse size="sm" />
       </router-link>
     </div>
-    <nav class="px-3 py-4">
+    <nav class="sidebar__menu d-flex flex-column px-4 py-2">
       <template v-for="section in adminNav" :key="section.group">
-        <div class="pf-type-caption text-text-on-inverse-muted px-3 pt-4 pb-2">{{ section.group }}</div>
-        <v-list density="compact" bg-color="transparent" class="pa-0" nav>
-          <v-list-item
-            v-for="item in section.items"
-            :key="item.title"
-            :to="item.to"
-            :active="isActive(item.to)"
-            rounded="lg"
-            class="sidebar__item mb-1"
-            active-class="sidebar__item--active"
-          >
-            <template #prepend>
-              <v-icon :icon="item.icon" size="small" />
-            </template>
-            <v-list-item-title class="pf-type-body-sm">{{ item.title }}</v-list-item-title>
-            <template v-if="item.badge" #append>
-              <span class="pf-type-caption-strong bg-accent text-text-on-inverse rounded-pill px-2">
-                {{ badges[item.badge] }}
-              </span>
-            </template>
-          </v-list-item>
-        </v-list>
+        <div class="pf-type-caption text-text-on-inverse-muted px-4 pt-3 pb-1">{{ section.group }}</div>
+        <SidebarItem
+          v-for="item in section.items"
+          :key="item.title"
+          :to="item.to"
+          :icon="item.icon"
+          :label="item.title"
+          :badge="item.badge ? badges[item.badge] : null"
+          :active="isActive(item.to)"
+        />
       </template>
     </nav>
     <template #append>
-      <div class="px-5 py-4 pf-type-caption text-text-on-inverse-muted pf-bordered-top sidebar__footer">
+      <div class="px-6 py-4 pf-type-caption text-text-on-inverse-muted pf-bordered-top sidebar__footer">
         {{ common.version }} · {{ common.division }}
       </div>
     </template>
@@ -127,22 +117,8 @@ const logout = () => router.push({ name: "admin-login" });
 .sidebar__footer {
   border-color: rgb(var(--v-theme-border-inverse)) !important;
 }
-.sidebar__item {
-  color: rgb(var(--v-theme-text-on-inverse-muted));
-}
-.sidebar__item:hover {
-  background: rgb(var(--v-theme-bg-inverse-hover));
-}
-.sidebar__item--active {
-  color: rgb(var(--v-theme-text-on-inverse));
-  background: rgb(var(--v-theme-bg-inverse-active));
-  box-shadow: inset var(--pf-space-4) 0 0 rgb(var(--v-theme-accent));
-}
-.sidebar__item--active :deep(.v-list-item-title) {
-  font-weight: var(--pf-font-weight-semibold);
-}
-.sidebar__item :deep(.v-list-item__overlay) {
-  display: none;
+.sidebar__menu {
+  gap: var(--pf-space-2);
 }
 .topbar__crumbs {
   overflow: hidden;

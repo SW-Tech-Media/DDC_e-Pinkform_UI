@@ -18,6 +18,18 @@ export const patchNotesText = {
 
 export const patchNotes = [
   {
+    version: "0.2.1",
+    date: "2026-10-29",
+    title: "ปรับ Sidebar ให้ตรง Figma",
+    changes: [
+      { type: "changed", text: "Sidebar หลังบ้านใช้ขนาดและระยะตาม Figma (Web/Sidebar): เมนูสูง 44, มุม md, ระยะห่างเมนู 2, หัวกลุ่มเยื้อง 32" },
+      { type: "changed", text: "เมนูที่เปิดอยู่แสดงแถบชมพูชิดขอบ Sidebar พื้นสว่างขึ้นและตัวหนา ตาม State Active ใน Figma" },
+      { type: "changed", text: "ไอคอนเมนูและโลโก้ใช้ไอคอนเส้นจาก Figma (Icon/*) แทน Font Awesome" },
+      { type: "changed", text: "โลโก้ใน Sidebar ใช้ขนาด Small (ชื่อ 16, คำบรรยายบรรทัดเดียว)" },
+      { type: "added", text: "Component SvgIcon และ SidebarItem" },
+    ],
+  },
+  {
     version: "0.2.0",
     date: "2026-10-28",
     title: "หน้าจอ Prototype ตาม Figma ครบทุก Flow",

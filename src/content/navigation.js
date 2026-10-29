@@ -1,5 +1,6 @@
 // เมนูของ Portal และ Sidebar ของ Back Office (ตาม Figma D01 และ D07)
-// to = ชื่อ route · badge = key ใน mocks/badges.js
+// to = ชื่อ route · badge = key ใน mocks/users.js (badges)
+// icon ของ adminNav = ชื่อไฟล์ใน src/assets/icons (ไอคอนเส้นจาก Figma)
 
 export const portalNav = [
   { title: "หน้าแรก", to: { name: "portal-home" } },
@@ -47,39 +48,39 @@ export const portalText = {
 };
 
 export const adminNav = [
-  { group: "ภาพรวม", items: [{ title: "หน้าหลัก", icon: "fas fa-house", to: { name: "admin-home" } }] },
+  { group: "ภาพรวม", items: [{ title: "หน้าหลัก", icon: "home", to: { name: "admin-home" } }] },
   {
     group: "งานบริการ",
     items: [
-      { title: "ทะเบียนผู้ประกอบการ", icon: "far fa-building", to: { name: "admin-operators" } },
-      { title: "พิจารณาอนุมัติ THNSW", icon: "fas fa-user-check", to: { name: "admin-thnsw" }, badge: "thnsw" },
-      { title: "คำขอใบรับรองฯ", icon: "far fa-file-lines", to: { name: "admin-requests" }, badge: "requests" },
-      { title: "ติดตามสถานะคำขอ", icon: "fas fa-route", to: { name: "admin-tracking" } },
-      { title: "ข้อมูลใบรับรองฯ", icon: "fas fa-award", to: { name: "admin-certificates" } },
+      { title: "ทะเบียนผู้ประกอบการ", icon: "building", to: { name: "admin-operators" } },
+      { title: "พิจารณาอนุมัติ THNSW", icon: "user-check", to: { name: "admin-thnsw" }, badge: "thnsw" },
+      { title: "คำขอใบรับรองฯ", icon: "file-text", to: { name: "admin-requests" }, badge: "requests" },
+      { title: "ติดตามสถานะคำขอ", icon: "route", to: { name: "admin-tracking" } },
+      { title: "ข้อมูลใบรับรองฯ", icon: "award", to: { name: "admin-certificates" } },
     ],
   },
   {
     group: "การเงิน",
     items: [
-      { title: "ติดตามการชำระเงิน", icon: "far fa-credit-card", to: { name: "admin-payments" } },
-      { title: "ใบเสร็จรับเงิน", icon: "fas fa-receipt", to: { name: "admin-receipts" } },
+      { title: "ติดตามการชำระเงิน", icon: "credit-card", to: { name: "admin-payments" } },
+      { title: "ใบเสร็จรับเงิน", icon: "receipt", to: { name: "admin-receipts" } },
     ],
   },
   {
     group: "ข้อมูลหลัก",
     items: [
-      { title: "พื้นที่โรคระบาด", icon: "far fa-map", to: { name: "admin-outbreak-areas" } },
-      { title: "ข้อมูลหลักอื่น ๆ", icon: "fas fa-database", to: { name: "admin-master-data" } },
+      { title: "พื้นที่โรคระบาด", icon: "map", to: { name: "admin-outbreak-areas" } },
+      { title: "ข้อมูลหลักอื่น ๆ", icon: "database", to: { name: "admin-master-data" } },
     ],
   },
-  { group: "รายงาน", items: [{ title: "รายงานสรุป", icon: "fas fa-chart-column", to: { name: "admin-reports" } }] },
+  { group: "รายงาน", items: [{ title: "รายงานสรุป", icon: "bar-chart", to: { name: "admin-reports" } }] },
   {
     group: "ผู้ดูแลระบบ",
     items: [
-      { title: "ผู้ใช้งานและสิทธิ์", icon: "fas fa-users", to: { name: "admin-users" } },
-      { title: "ติดตาม ebXML", icon: "fas fa-server", to: { name: "admin-ebxml" } },
-      { title: "ใบรับรอง PKI", icon: "fas fa-key", to: { name: "admin-pki" } },
-      { title: "Audit Log", icon: "fas fa-list", to: { name: "admin-audit-log" } },
+      { title: "ผู้ใช้งานและสิทธิ์", icon: "users", to: { name: "admin-users" } },
+      { title: "ติดตาม ebXML", icon: "server", to: { name: "admin-ebxml" } },
+      { title: "ใบรับรอง PKI", icon: "key", to: { name: "admin-pki" } },
+      { title: "Audit Log", icon: "list", to: { name: "admin-audit-log" } },
     ],
   },
 ];
