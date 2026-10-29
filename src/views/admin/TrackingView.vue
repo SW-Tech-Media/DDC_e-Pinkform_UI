@@ -33,8 +33,7 @@ const store = useReviewStore();
 const breadcrumb = [{ title: t.breadcrumb.group }, { title: t.breadcrumb.title }];
 
 // ----- ข้อมูลรายการ -----
-const statusKeyOf = (r) =>
-  requestDetails[r.ref]?.currentStatus ?? store.record(r.ref)?.decision?.type ?? r.status;
+const statusKeyOf = (r) => requestDetails[r.ref]?.currentStatus ?? store.statusOf(r.ref);
 const rows = computed(() =>
   requests.map((r) => ({
     ...r,
@@ -59,7 +58,10 @@ const matches = (r, f) => {
   if (f.date && formatDate(r.submittedAt) !== f.date.trim()) return false;
   return true;
 };
-const filtered = computed(() => rows.value.filter((r) => matches(r, applied.value)));
+// รายการล่าสุดอยู่ด้านบน
+const filtered = computed(() =>
+  rows.value.filter((r) => matches(r, applied.value)).sort((a, b) => b.submittedAt.localeCompare(a.submittedAt))
+);
 
 const search = () => {
   const f = { ...filters };
@@ -100,7 +102,7 @@ const steps = computed(() => {
   const times = [h[2].at, h[1].at, h[0].at];
   return requestSteps.map((label, i) => ({ label, caption: times[i] ? formatTime(times[i]) : "" }));
 });
-const stepIndex = computed(() => current.value.step ?? 2);
+const stepIndex = computed(() => current.value.step ?? current.value.atStep ?? 2);
 const currentLabel = computed(() =>
   !full.value?.history && req.value.statusKey === "pending" ? requestSteps[2] : current.value.label
 );

@@ -64,7 +64,7 @@ Component เฉพาะกลุ่มหน้าจอ ให้สร้า
 
 ## ข้อมูลที่ใช้ร่วมกัน
 
-- `src/mocks/requests.js` — คำขอ, สถานะคำขอ (`requestStatuses` → label + tone), ขั้นตอน 9 ขั้น, รายละเอียดคำขอทุกรายการ (`requestDetails` — PF6910260003 เขียนครบตาม Figma ส่วนรายการอื่นสร้างจาก `requests`)
+- `src/mocks/requests.js` — คำขอ, สถานะคำขอ (`requestStatuses` → label + tone), ขั้นตอน 9 ขั้น, รายละเอียดคำขอทุกรายการ (`requestDetails` — PF6910260003 เขียนครบตาม Figma ส่วนรายการอื่นสร้างจาก `requests` — คำขอที่มี `outcome` ได้ประวัติสถานะ / Stepper / ผลการพิจารณาด้วย) · สถานะปัจจุบันของคำขออ่านจาก `useReviewStore().statusOf(ref)`
 - `src/mocks/users.js` — เจ้าหน้าที่ตัวอย่าง, badge sidebar, ตัวนับผู้เข้าชม
 - `src/utils/csv.js` — `downloadCsv(filename, headers, rows)` ส่งออก CSV (UTF-8 + BOM) ใช้ทุกหน้าที่มีปุ่มส่งออก
 - `src/stores/session.js` — ผู้ใช้ที่แสดงบน Topbar (`signInAs('prapaporn')` ฯลฯ)

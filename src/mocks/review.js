@@ -56,8 +56,13 @@ export const reviewHistory = {
   ],
 };
 
+// คำขอที่มีผลแล้วใช้ประวัติสถานะฉบับเต็มจากรายละเอียดคำขอ
 for (const r of requests) {
   if (reviewHistory[r.ref]) continue;
+  if (requestDetails[r.ref].decision) {
+    reviewHistory[r.ref] = requestDetails[r.ref].history;
+    continue;
+  }
   const flagged = requestDetails[r.ref]?.outbreakNote;
   reviewHistory[r.ref] = [
     {
@@ -84,6 +89,19 @@ export const issuedDocuments = {
     { id: "receipt", title: "ใบเสร็จรับเงิน", number: "R69-0104412", icon: "fas fa-file-invoice-dollar", tone: "teal", formats: ["PDF"] },
   ],
 };
+
+// คำขออื่นที่สร้างคำสั่งชำระ / ออกใบรับรองแล้ว
+for (const r of requests) {
+  const d = requestDetails[r.ref];
+  if (trackingExtras[r.ref] || !d.bankCode) continue;
+  trackingExtras[r.ref] = { bankCode: d.bankCode, certificate: d.issued?.certificate ?? "" };
+  if (d.issued) {
+    issuedDocuments[r.ref] = [
+      { id: "cert", title: "ใบรับรองฯ (PDF / XML)", number: d.issued.certificate, icon: "fas fa-award", tone: "pink", formats: ["PDF", "XML"] },
+      { id: "receipt", title: "ใบเสร็จรับเงิน", number: d.issued.receipt, icon: "fas fa-file-invoice-dollar", tone: "teal", formats: ["PDF"] },
+    ];
+  }
+}
 
 // ระยะเวลาที่ยกเลิกการอนุมัติได้ (นาที) — TOR 4.4.2 (3)
 export const undoWindowMinutes = 15;

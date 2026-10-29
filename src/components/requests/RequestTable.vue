@@ -1,12 +1,12 @@
 <script setup>
 // ตารางคำขอใบรับรองฯ (Figma D09: Table) — คลิกแถว / ปุ่ม View → emit open
-// highlight = Reference No. ของแถวที่ต้องไฮไลต์ (คำขอที่ยื่นก่อนสุด) · slot "empty" = Empty state
+// item.undoUntil = เวลาสิ้นสุดการยกเลิกการอนุมัติ (ms) ของคำขอที่เพิ่งอนุมัติ · item.statusAt = เวลาอัปเดตสถานะ (แสดงเมื่อเรียงตามเวลานี้) · highlight = Reference No. ของแถวที่ต้องไฮไลต์ (คำขอที่ยื่นก่อนสุด) · slot "empty" = Empty state
 import AppDataTable from "@/components/AppDataTable.vue";
 import StatusBadge from "@/components/StatusBadge.vue";
 import TableIconButton from "@/components/TableIconButton.vue";
 import { requestsText as t } from "@/content/requests.js";
 import { autoCheck, requestStatuses } from "@/mocks/requests.js";
-import { formatDate, formatNumber, formatTime } from "@/utils/format.js";
+import { formatDate, formatDateTime, formatNumber, formatTime } from "@/utils/format.js";
 
 defineProps({
   items: { type: Array, required: true },
@@ -65,7 +65,15 @@ const check = (item) => (item.flagged ? autoCheck.flagged(item.flagged) : autoCh
       <StatusBadge :tone="check(item).tone" dot>{{ check(item).label }}</StatusBadge>
     </template>
     <template #item.status="{ item }">
-      <StatusBadge :tone="requestStatuses[item.status].tone" dot>{{ requestStatuses[item.status].label }}</StatusBadge>
+      <div class="py-2">
+        <StatusBadge :tone="requestStatuses[item.status].tone" dot>{{ requestStatuses[item.status].label }}</StatusBadge>
+        <div v-if="item.undoUntil" class="pf-type-caption text-text-tertiary mt-1">
+          {{ t.undoUntil(formatTime(item.undoUntil)) }}
+        </div>
+        <div v-else-if="item.statusAt" class="pf-type-caption text-text-tertiary mt-1">
+          {{ t.statusAt(formatDateTime(item.statusAt)) }}
+        </div>
+      </div>
     </template>
     <template #item.view="{ item }">
       <TableIconButton icon="far fa-eye" :label="t.viewAria(item.ref)" @click="emit('open', item)" />

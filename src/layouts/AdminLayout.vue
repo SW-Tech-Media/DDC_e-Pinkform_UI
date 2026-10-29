@@ -11,12 +11,17 @@ import { common } from "@/content/common.js";
 import { badges } from "@/mocks/users.js";
 import { size } from "@/design/tokens.js";
 import { useSessionStore } from "@/stores/session.js";
+import { useReviewStore } from "@/stores/review.js";
+import { requests } from "@/mocks/requests.js";
 
 defineProps({
   breadcrumb: { type: Array, default: () => [] },
 });
 
 const session = useSessionStore();
+const review = useReviewStore();
+// badge คำขอใบรับรองฯ = จำนวนคำขอที่รอพิจารณาอยู่ขณะนี้
+const navBadges = computed(() => ({ ...badges, requests: requests.filter((r) => review.statusOf(r.ref) === "pending").length }));
 const router = useRouter();
 const route = useRoute();
 // เมนูยัง active เมื่ออยู่ในหน้าย่อย เช่น /admin/requests/PF… → "คำขอใบรับรองฯ" (ยกเว้นหน้าหลักที่ต้องตรงทุกตัว)
@@ -54,7 +59,7 @@ const logout = () => router.push({ name: "admin-login" });
           :to="item.to"
           :icon="item.icon"
           :label="item.title"
-          :badge="item.badge ? badges[item.badge] : null"
+          :badge="item.badge ? navBadges[item.badge] : null"
           :active="isActive(item.to)"
         />
       </template>

@@ -2,7 +2,7 @@
 // D10 พิจารณาคำขอใบรับรองฯ (Checklist Incomplete) + D11 Preview & Confirm (Modal) — Figma 17:1852, 18:2217
 // ?preview = เปิด D11 ทันที · ?preview=complete = เปิด D11 พร้อมทำเครื่องหมาย Checklist ครบ (ใช้ทดสอบ)
 import { computed, onMounted, ref, watch } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import AdminLayout from "@/layouts/AdminLayout.vue";
 import PageHeader from "@/components/PageHeader.vue";
 import SectionCard from "@/components/SectionCard.vue";
@@ -31,6 +31,7 @@ import { formatDateTime } from "@/utils/format.js";
 import { size } from "@/design/tokens.js";
 
 const route = useRoute();
+const router = useRouter();
 const store = useReviewStore();
 const session = useSessionStore();
 
@@ -47,9 +48,10 @@ const breadcrumb = computed(() => [
 
 // ----- สถานะ -----
 const decision = computed(() => rec.value?.decision ?? null);
-const status = computed(() =>
-  decision.value ? requestStatuses[decision.value.type] : t.summary.inProgress
-);
+const status = computed(() => {
+  const key = store.statusOf(refNo.value);
+  return key === "pending" ? t.summary.inProgress : requestStatuses[key];
+});
 
 // ----- แท็บ -----
 const tab = ref("info");
@@ -90,8 +92,16 @@ const rejectOpen = ref(false);
 const snack = ref({ show: false, text: "" });
 const notify = (text) => (snack.value = { show: true, text });
 
-const approve = () => store.approve(refNo.value, session.user.name);
-const reject = () => store.reject(refNo.value, session.user.name);
+// บันทึกผลแล้วกลับไปหน้ารายการคำขอ (หน้ารายการแจ้งผลด้วย Snackbar)
+const backToList = () => router.push({ name: "admin-requests", query: { decided: refNo.value } });
+const approve = () => {
+  store.approve(refNo.value, session.user.name);
+  backToList();
+};
+const reject = () => {
+  store.reject(refNo.value, session.user.name);
+  backToList();
+};
 const undo = (reason) => {
   store.undoApproval(refNo.value, session.user.name, reason);
   notify(t.decided.undone);
@@ -142,6 +152,14 @@ onMounted(() => {
         class="mb-6"
       >
         {{ t.decided.rejectedNote(decidedReply ? t.reply.item(decidedReply) : decision.note) }}
+      </AlertBox>
+      <AlertBox
+        v-else-if="decision?.type === 'invalid'"
+        tone="danger"
+        :title="t.decided.invalid(formatDateTime(decision.at))"
+        class="mb-6"
+      >
+        {{ t.decided.invalidNote(decision.note) }}
       </AlertBox>
 
       <v-row>

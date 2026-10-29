@@ -29,9 +29,11 @@ import { requests } from "@/mocks/requests.js";
 import { formatNumber, formatThaiDate, formatTime } from "@/utils/format.js";
 import { size } from "@/design/tokens.js";
 import { useSessionStore } from "@/stores/session.js";
+import { useReviewStore } from "@/stores/review.js";
 
 const router = useRouter();
 const session = useSessionStore();
+const review = useReviewStore();
 const { lgAndUp, smAndUp } = useDisplay();
 
 const breadcrumb = [{ title: t.breadcrumb }];
@@ -62,10 +64,15 @@ const headers = [
   { title: h.items, key: "items", align: "end", sortable: false },
   { title: h.submittedAt, key: "submittedAt", sortable: false },
 ];
-const pending = requests.slice(0, 5).map((r) => {
-  const waited = Math.floor((new Date(now) - new Date(r.submittedAt)) / 60000);
-  return { ...r, time: formatTime(r.submittedAt), waitedHours: Math.floor(waited / 60), long: waited >= longWaitMinutes };
-});
+const pending = computed(() =>
+  requests
+    .filter((r) => review.statusOf(r.ref) === "pending")
+    .slice(0, 5)
+    .map((r) => {
+      const waited = Math.floor((new Date(now) - new Date(r.submittedAt)) / 60000);
+      return { ...r, time: formatTime(r.submittedAt), waitedHours: Math.floor(waited / 60), long: waited >= longWaitMinutes };
+    })
+);
 
 const openRequest = (item) => router.push({ name: "admin-request-review", params: { ref: item.ref } });
 </script>
