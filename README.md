@@ -25,6 +25,8 @@ npm run build            # build สำหรับ deploy (โฟลเดอ�
 | `src/content/`      | ข้อความของหน้า และ Patch Notes (`patch-notes.js`)                                    |
 | `md/`               | เอกสารระบบ: ภาพรวม/Flow/TOR (`system-overview.md`), หน้าจอ (`screens.md`), Framework/Token (`flamework.md`) |
 | `mcp/`              | MCP server ให้ AI อ่านเอกสารใน `md/` (ดู [mcp/README.md](mcp/README.md))              |
+| `docs/`             | เอกสารออกแบบเพื่อพัฒนาต่อ (ADR, requirement, API, data, integration, test, ops) — ดู [docs/README.md](docs/README.md) |
+| `.claude/agents/`   | Agent ตามบทบาททีมพัฒนาสำหรับ Claude Code                                            |
 
 ## กฎการสร้างหน้า
 
@@ -34,3 +36,21 @@ npm run build            # build สำหรับ deploy (โฟลเดอ�
 - **ใช้ Component เสมอ** ถ้ายังไม่มีให้สร้างใน `src/components/` ก่อน แล้วค่อยใช้ในหน้า
 - ข้อความของหน้าเก็บใน `src/content/` ไม่เขียนกระจายใน template
 - ทุกครั้งที่ปล่อยเวอร์ชันใหม่ ให้เพิ่มรายการไว้บนสุดของ `src/content/patch-notes.js`
+
+## ทีม Agent (Claude Code)
+
+โปรเจกต์นี้มองเป็นจุดเริ่มของระบบจริง ไม่ใช่ Prototype ทิ้ง — แต่ละบทบาทมี agent ใน `.claude/agents/` เรียกใช้ใน Claude Code ได้ด้วยการพิมพ์ชื่อบทบาท (เช่น "ให้ business-analyst เขียน story ของหน้าพิจารณาคำขอ") หรือ `@agent-<ชื่อ>`
+
+| Agent | ใช้เมื่อ |
+| --- | --- |
+| `solution-architect` | ตัดสินใจโครงสร้าง, เลือก backend stack (ADR), ออกแบบการเชื่อมระบบ, non-functional |
+| `business-analyst` | แปลง TOR เป็น story / acceptance criteria / กฎทางธุรกิจ / traceability |
+| `ux-ui-designer` | ออกแบบ / รีวิวหน้าจอตาม Figma และ Design System, UX copy, accessibility |
+| `frontend-developer` | สร้าง / แก้หน้าจอ Vue + Vuetify, เตรียมชั้น API ให้สลับ mock เป็น backend จริงได้ |
+| `backend-developer` | OpenAPI, data model, state machine, audit log, โค้ด backend (หลัง ADR) |
+| `integration-engineer` | ebXML / NSW, XML Schema / DSig, PKI, ธนาคาร, e-Licensing, Back Office เดิม |
+| `qa-engineer` | Test plan / test case (Unit → UAT), ทดสอบหน้าจอจริง, regression |
+| `security-reviewer` | รีวิวความปลอดภัย / PDPA / OWASP / CTAM (อ่านอย่างเดียว ไม่แก้โค้ด) |
+| `devops-engineer` | Environment บน GDCC, CI/CD, Backup/DR, Monitoring |
+
+ผลงานของแต่ละบทบาทเก็บใน `docs/` ตามที่ระบุใน [docs/README.md](docs/README.md)
