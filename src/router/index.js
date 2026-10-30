@@ -25,6 +25,12 @@ const router = createRouter({
       component: () => import("@/views/DesignSystemView.vue"),
       meta: { title: "คู่มือ Design System" },
     },
+    {
+      path: "/tor-trace",
+      name: "tor-trace",
+      component: () => import("@/views/TorTraceView.vue"),
+      meta: { title: "เทียบ TOR กับ Prototype" },
+    },
     ...screens.map((x) => ({
       path: x.path,
       name: x.name,

@@ -19,6 +19,16 @@ export const patchNotesText = {
 
 export const patchNotes = [
   {
+    version: "0.3.8",
+    date: "2026-10-30",
+    title: "หน้าเทียบ TOR กับ Prototype",
+    changes: [
+      { type: "added", text: "หน้าเทียบ TOR กับ Prototype (/tor-trace): ข้อกำหนด 162 ข้อ (Functional / Non-functional) พร้อมหน้าจอ path และสถานะ ครบ / บางส่วน / N/A · กดรหัสหน้าจอเพื่อเปิดหน้านั้น" },
+      { type: "added", text: "ดูได้ 2 มุมมอง: ตามข้อ TOR (ตาราง) และตามหน้าจอ (แต่ละหน้าจอรองรับข้อ TOR ใดบ้าง) · ค้นหาและกรองตามประเภท สถานะ และหน้าจอ" },
+      { type: "added", text: "ข้อมูลสร้างจากเอกสาร Traceability ใน docs/ ด้วยคำสั่ง npm run tor-trace เมื่อเอกสารปรับปรุง · เพิ่มการ์ดทางเข้าที่หน้าแรก Prototype" },
+    ],
+  },
+  {
     version: "0.3.7",
     date: "2026-10-30",
     title: "จัดการบัญชีถูกระงับ แจ้งผู้ยื่นทางอีเมล และ ebXML ตามผลการพิจารณา",

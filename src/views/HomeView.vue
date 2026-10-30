@@ -57,7 +57,7 @@ const currentVersion = patchNotes[0]?.version;
     <section class="pf-container px-4 px-md-6 pb-16 cards">
       <h2 class="pf-type-label-md text-text-on-inverse-muted mb-4">{{ home.chooseLabel }}</h2>
       <v-row>
-        <v-col v-for="entry in home.entries" :key="entry.key" cols="12" md="6">
+        <v-col v-for="entry in home.entries" :key="entry.key" cols="12" md="4">
           <EntryCard v-bind="entry" />
         </v-col>
       </v-row>

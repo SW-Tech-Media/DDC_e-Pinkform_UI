@@ -1,0 +1,52 @@
+// ข้อความของหน้าเทียบ TOR กับหน้าจอ Prototype (/tor-trace) — ข้อมูลอยู่ที่ mocks/tor-trace.js
+export const torTraceText = {
+  home: "หน้าแรก",
+  title: "เทียบ TOR กับ Prototype",
+  description: "ข้อกำหนดแต่ละข้อใน TOR อยู่ที่หน้าจอใด (path) และ Prototype รองรับครบแล้วหรือยัง · กดรหัสหน้าจอเพื่อเปิดหน้านั้น",
+  source: (file, version, date) => `ข้อมูลจาก ${file} (ตรวจกับ Prototype v${version} · ปรับปรุง ${date})`,
+  kpis: {
+    total: { label: "ข้อกำหนดทั้งหมด", icon: "fas fa-list-check", tone: "blue" },
+    done: { label: "ครบ", icon: "fas fa-circle-check", tone: "green" },
+    partial: { label: "บางส่วน", icon: "fas fa-circle-half-stroke", tone: "amber" },
+    na: { label: "N/A (ไม่ต้องแสดงในหน้าจอ)", icon: "fas fa-server", tone: "neutral" },
+  },
+  coverage: (pct) => `ครบ ${pct}% ของข้อที่ต้องแสดงในหน้าจอ`,
+  modes: [
+    { value: "tor", label: "ตามข้อ TOR" },
+    { value: "screen", label: "ตามหน้าจอ" },
+  ],
+  modeLabel: "มุมมอง",
+  filters: {
+    search: { label: "ค้นหา", placeholder: "ข้อ TOR, ข้อกำหนด หรือหมายเหตุ" },
+    kind: { label: "ประเภท" },
+    status: { label: "สถานะ" },
+    screen: { label: "หน้าจอ", placeholder: "ทุกหน้าจอ" },
+  },
+  kinds: [
+    { value: "all", title: "ทั้งหมด" },
+    { value: "F", title: "Functional" },
+    { value: "NF", title: "Non-functional" },
+  ],
+  statuses: {
+    done: { label: "ครบ", tone: "success" },
+    partial: { label: "บางส่วน", tone: "warning" },
+    missing: { label: "ไม่มี", tone: "danger" },
+    na: { label: "N/A", tone: "neutral" },
+  },
+  allStatuses: "ทุกสถานะ",
+  headers: {
+    id: "รหัส",
+    tor: "ข้อ TOR",
+    requirement: "ข้อกำหนด (ย่อ)",
+    screens: "หน้าจอ / Path",
+    status: "สถานะ",
+    note: "หมายเหตุ",
+  },
+  noScreen: "ไม่มีหน้าจอ",
+  itemCount: (n) => `${n} ข้อ`,
+  noTor: "ไม่มีข้อ TOR ที่อ้างถึงหน้าจอนี้ตามตัวกรอง",
+  unmapped: "ข้อที่ไม่ผูกกับหน้าจอใดหน้าจอหนึ่ง",
+  unmappedPath: "ทุกหน้า / ส่วนกลาง / หลักฐานนอกหน้าจอ",
+  empty: { icon: "fas fa-magnifying-glass", title: "ไม่พบข้อกำหนดตามตัวกรอง", description: "ลองล้างตัวกรองหรือเปลี่ยนคำค้นหา" },
+  open: "เปิดหน้าจอ",
+};

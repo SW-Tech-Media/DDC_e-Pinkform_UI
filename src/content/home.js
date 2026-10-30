@@ -24,6 +24,15 @@ export const home = {
       cta: "เปิดคู่มือ",
       to: { name: "design-system" },
     },
+    {
+      key: "tor-trace",
+      icon: "fas fa-list-check",
+      tone: "blue",
+      title: "เทียบ TOR กับ Prototype",
+      description: "ข้อกำหนดแต่ละข้อใน TOR อยู่ที่หน้าจอและ path ใด รองรับครบแล้วหรือยัง ดูได้ทั้งตามข้อ TOR และตามหน้าจอ",
+      cta: "เปิดตารางเทียบ",
+      to: { name: "tor-trace" },
+    },
   ],
 };
 

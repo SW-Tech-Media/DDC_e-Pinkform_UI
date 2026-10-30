@@ -1,6 +1,6 @@
 {
   "name": "ddc-epinkforms-prototype",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "private": true,
   "type": "module",
   "description": "Prototype ระบบ DDC e-Pinkforms (Vue 3 + Vuetify 3) และ MCP server เอกสารในโฟลเดอร์ mcp/",
@@ -9,6 +9,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "tor-trace": "node scripts/build-tor-trace.mjs",
     "mcp:dev": "npm --prefix mcp run dev --",
     "mcp:serve": "npm --prefix mcp run serve --",
     "mcp:start": "npm --prefix mcp start --",
