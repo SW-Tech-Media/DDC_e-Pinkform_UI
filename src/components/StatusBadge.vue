@@ -26,7 +26,8 @@ const classes = computed(() => [
 </template>
 
 <style scoped>
-.status-badge--wrap {
+/* .v-chip นำหน้า = ชนะ height / padding ของ .v-chip--density-default, .v-chip--size-small ที่ Vuetify โหลดทีหลัง */
+.v-chip.status-badge--wrap {
   height: auto;
   min-height: var(--v-chip-height);
   max-width: 100%;
