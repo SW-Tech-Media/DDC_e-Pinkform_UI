@@ -1,6 +1,6 @@
 {
   "name": "ddc-epinkforms-prototype",
-  "version": "0.3.9",
+  "version": "0.3.10",
   "private": true,
   "type": "module",
   "description": "Prototype ระบบ DDC e-Pinkforms (Vue 3 + Vuetify 3) และ MCP server เอกสารในโฟลเดอร์ mcp/",

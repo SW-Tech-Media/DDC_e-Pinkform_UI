@@ -15,7 +15,6 @@ import RequestSummaryCard from "@/components/review/RequestSummaryCard.vue";
 import RequestInfoPanel from "@/components/review/RequestInfoPanel.vue";
 import ProductTable from "@/components/review/ProductTable.vue";
 import DocumentList from "@/components/review/DocumentList.vue";
-import XmlSourceView from "@/components/review/XmlSourceView.vue";
 import ApprovalChecklist from "@/components/review/ApprovalChecklist.vue";
 import ReplyMessageForm from "@/components/review/ReplyMessageForm.vue";
 import ConfirmDecisionDialog from "@/components/review/ConfirmDecisionDialog.vue";
@@ -24,7 +23,7 @@ import SecondaryButton from "@/components/SecondaryButton.vue";
 import StatusHistoryTable from "@/components/tracking/StatusHistoryTable.vue";
 import { reviewText as t } from "@/content/review.js";
 import { emailText } from "@/content/notifications.js";
-import { checklistItems, replyMessages, requestDocuments, reviewHistory, sourceXml } from "@/mocks/review.js";
+import { checklistItems, replyMessages, requestDocuments, reviewHistory } from "@/mocks/review.js";
 import { requestStatuses } from "@/mocks/requests.js";
 import { useReviewStore } from "@/stores/review.js";
 import { usePaymentsStore } from "@/stores/payments.js";
@@ -68,7 +67,6 @@ const tabs = computed(() => [
   { value: "products", label: t.tabs.products, count: detail.value.items.length },
   { value: "documents", label: t.tabs.documents, count: documents.value.length },
   { value: "history", label: t.tabs.history },
-  { value: "xml", label: t.tabs.xml },
 ]);
 const history = computed(() => [...(rec.value?.events ?? []), ...(reviewHistory[refNo.value] ?? [])]);
 const flagged = computed(() => detail.value.items.filter((i) => i.result !== "ok").length);
@@ -219,7 +217,6 @@ onMounted(() => {
                 @save="saveEdits"
               />
               <DocumentList v-else-if="tab === 'documents'" :documents="documents" @download="(n) => notify(t.documents.downloaded(n))" />
-              <XmlSourceView v-else-if="tab === 'xml'" :xml="sourceXml(refNo)" :filename="`${refNo}.xml`" @notify="notify" />
             </div>
           </SectionCard>
 

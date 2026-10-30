@@ -31,7 +31,6 @@ export const reviewText = {
     products: "รายการสินค้า",
     documents: "เอกสารประกอบ",
     history: "ประวัติสถานะ",
-    xml: "XML ต้นฉบับ",
   },
 
   info: {
@@ -119,14 +118,6 @@ export const reviewText = {
     paymentValue: (id, ref1) => `${id} (Ref.1 ${ref1})`,
     paymentCancelled: "ยกเลิกคำสั่งชำระ",
     reason: "เหตุผลการยกเลิก",
-  },
-
-  xml: {
-    title: "XML ต้นฉบับ (DDCPFREQ)",
-    subtitle: "ข้อความที่ได้รับจาก NSW ผ่าน ebXML Gateway",
-    copy: "คัดลอก",
-    copied: "คัดลอก XML แล้ว",
-    download: "ดาวน์โหลด XML",
   },
 
   checklist: {
