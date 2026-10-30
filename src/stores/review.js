@@ -4,7 +4,7 @@
 // ชั่วคราวจนกว่าจะมี API: backend เป็นผู้ตรวจกฎ (Checklist ครบ, ประเภทข้อความตอบกลับ, ช่วงยกเลิก 15 นาที) และเปลี่ยนสถานะคำขอ
 import { defineStore } from "pinia";
 import { checklistItems, defaultReplyCode, replyMessages, undoWindowMinutes } from "@/mocks/review.js";
-import { requestDetails, requestStatuses, requests } from "@/mocks/requests.js";
+import { emailEvent, emailNotice, requestDetails, requestStatuses, requests } from "@/mocks/requests.js";
 import { reviewText } from "@/content/review.js";
 import { useAuditStore } from "@/stores/audit.js";
 import { usePaymentsStore } from "@/stores/payments.js";
@@ -35,7 +35,7 @@ const newRecord = (ref) => {
     defaultNote: note, // ข้อความแนะนำการแก้ไขแหล่งผลิต (ใช้กับการไม่อนุมัติ)
     edits: { exporter: {}, consignee: {} },
     lastEdit: null,
-    decision: seeded, // { type: 'approved' | 'rejected' | 'invalid', at, by, replyCode, note, paymentId?, seeded? }
+    decision: seeded, // { type: 'approved' | 'rejected' | 'invalid', at, by, replyCode, note, paymentId?, notification?, seeded? }
     events: [], // ใหม่ → เก่า
   };
 };
@@ -134,8 +134,17 @@ export const useReviewStore = defineStore("review", {
       const r = this.ensure(ref);
       if (r.decision || replyByCode[r.replyCode]?.type !== "reject") return false;
       const at = nowThaiIso();
-      r.decision = { type: "rejected", at, by, replyCode: r.replyCode, note: r.note };
-      r.events.unshift({ event: "rejected", detail: reviewText.history.rejectedDetail(replyLabel(r.replyCode)), at, by });
+      // แจ้งผู้ยื่นทางอีเมลอัตโนมัติ (G-06 · TOR 7.8.32) — ชั่วคราวจนกว่าจะมี API: backend ส่งอีเมลและบันทึกผลการส่ง
+      const d = requestDetails[ref];
+      const notification = emailNotice("rejected", { ref, company: d.exporter.nameTh, invoice: d.exporter.invoice }, at, {
+        reason: replyLabel(r.replyCode),
+        note: r.note,
+      });
+      r.decision = { type: "rejected", at, by, replyCode: r.replyCode, note: r.note, notification };
+      r.events.unshift(
+        emailEvent(notification),
+        { event: "rejected", detail: reviewText.history.rejectedDetail(replyLabel(r.replyCode)), at, by }
+      );
       useAuditStore().record("requests", "reject", `${ref} ${requestDetails[ref].exporter.nameTh}`, [
         { field: reviewText.audit.status, before: S("pending"), after: S("rejected") },
         { field: reviewText.audit.reply, before: null, after: replyLabel(r.replyCode) },

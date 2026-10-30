@@ -62,11 +62,13 @@ const check = (item) => (item.flagged ? autoCheck.flagged(item.flagged) : autoCh
       <span class="pf-type-body-sm-strong">{{ formatNumber(item.items) }}</span>
     </template>
     <template #item.flagged="{ item }">
-      <StatusBadge :tone="check(item).tone" dot>{{ check(item).label }}</StatusBadge>
+      <div class="py-2 request-table__check">
+        <StatusBadge :tone="check(item).tone" dot wrap>{{ check(item).label }}</StatusBadge>
+      </div>
     </template>
     <template #item.status="{ item }">
-      <div class="py-2">
-        <StatusBadge :tone="requestStatuses[item.status].tone" dot>{{ requestStatuses[item.status].label }}</StatusBadge>
+      <div class="py-2 request-table__status">
+        <StatusBadge :tone="requestStatuses[item.status].tone" dot wrap>{{ requestStatuses[item.status].label }}</StatusBadge>
         <div v-if="item.undoUntil" class="pf-type-caption text-text-tertiary mt-1">
           {{ t.undoUntil(formatTime(item.undoUntil)) }}
         </div>
@@ -110,5 +112,16 @@ const check = (item) => (item.flagged ? autoCheck.flagged(item.flagged) : autoCh
 }
 .request-table :deep(td:has(.v-chip)) {
   white-space: nowrap;
+}
+/* สถานะยาว (เช่น "รอการชำระเงิน BILLPAYMENT", "ตรวจพบ 1 รายการ") ตัดบรรทัดในความกว้างคงที่
+   ไม่ดันตารางให้กว้างจนถูกคอลัมน์ View ที่ sticky บัง (ตารางพอดีการ์ดที่ 1440 · จอแคบกว่าเลื่อนดูได้) */
+.request-table__check {
+  white-space: normal;
+  max-width: calc(var(--pf-space-80) + var(--pf-space-12));
+}
+.request-table__status {
+  white-space: normal;
+  text-wrap: balance;
+  width: var(--pf-space-120);
 }
 </style>

@@ -65,6 +65,10 @@ export const permissionTemplate = (group, role) => {
   );
 };
 
+// สถานะบัญชี (G-11 · Flow 4.1) คำนวณใน stores/users.js statusOf() ตามลำดับ:
+//   active = false → ปิดใช้งาน (ผู้ดูแลปิดเอง) · ถูกล็อกใน mocks/auth.js authAccounts → ระงับ (กรอกรหัสผ่านผิดครบ 5 ครั้ง)
+//   emailVerified = false → รอยืนยันอีเมล (ยังไม่กดลิงก์ / ยังไม่ตั้งรหัสผ่าน + PIN) · อื่น ๆ → ใช้งาน
+// verificationSentAt = เวลาที่ส่งลิงก์ยืนยันอีเมลล่าสุด (ลิงก์ใช้ครั้งเดียว อายุ 24 ชั่วโมง — authMock.verifyAccount.linkHours)
 const u = (id, name, username, group, role, pinSet, active, lastActive, extra = {}) => ({
   id,
   name,
@@ -77,6 +81,7 @@ const u = (id, name, username, group, role, pinSet, active, lastActive, extra = 
   lastActive,
   twoFactor: true,
   signer: group === "signer" || group === "service",
+  emailVerified: true,
   ...extra,
 });
 
@@ -95,13 +100,13 @@ export const users = [
   u(11, "ปิยะนุช ศรีวงศ์", "piyanuch.s", "service", "user", true, true, "2026-10-25T15:48:00"),
   u(12, "วรวุฒิ ทองคำ", "worawut.t", "service", "user", true, true, "2026-10-25T14:20:00"),
   u(13, "ศิริพร แสงทอง", "siriporn.s", "service", "user", true, true, "2026-10-25T11:05:00"),
-  u(14, "อรทัย จันทร์เพ็ญ", "orathai.c", "service", "user", false, true, "2026-10-24T16:10:00"),
+  u(14, "อรทัย จันทร์เพ็ญ", "orathai.c", "service", "user", false, true, null, { emailVerified: false, verificationSentAt: "2026-10-24T16:10:00+07:00" }),
   u(15, "ชัยวัฒน์ พรหมมา", "chaiwat.p", "service", "user", true, true, "2026-10-24T10:32:00"),
   u(16, "พรทิพย์ อินทร์แก้ว", "pornthip.i", "service", "user", true, false, "2026-09-30T09:00:00"),
   u(17, "สุนิสา รุ่งเรือง", "sunisa.r", "finance", "user", true, true, "2026-10-26T09:47:00"),
   u(18, "ธีรพงษ์ มีสุข", "teerapong.m", "finance", "user", true, true, "2026-10-25T16:15:00"),
   u(19, "นภัสสร ใจงาม", "napatsorn.j", "finance", "user", true, true, "2026-10-24T13:28:00"),
-  u(20, "เกศินี บุญเรือง", "kesinee.b", "finance", "user", false, true, "2026-10-20T10:00:00"),
+  u(20, "เกศินี บุญเรือง", "kesinee.b", "finance", "user", false, true, null, { emailVerified: false, verificationSentAt: "2026-10-20T10:00:00+07:00" }),
   u(21, "ประเสริฐ วัฒนกุล", "prasert.w", "signer", "user", true, true, "2026-10-26T07:58:00"),
   u(22, "รัชนี ศรีสวัสดิ์", "ratchanee.s", "signer", "user", true, true, "2026-10-23T15:36:00"),
   u(23, "สมศักดิ์ เจริญผล", "somsak.c", "signer", "user", true, true, "2026-10-22T11:11:00"),
@@ -112,15 +117,16 @@ export const users = [
   u(28, "มาลัย ทองประเสริฐ", "malai.t", "service", "user", false, false, "2026-07-15T10:20:00", { twoFactor: false }),
 ].map((x) => ({ ...x, permissions: permissionTemplate(x.group === "it" && x.role === "user" ? "service" : x.group, x.role) }));
 
-// ประวัติการจัดการผู้ใช้ (TOR 4.1.12)
+// ประวัติการจัดการผู้ใช้ (TOR 4.1.12) — ใหม่ → เก่า
 export const userHistory = [
   { id: 1, at: "2026-10-26T10:42:00", actor: "ธนกร ศรีสุข", action: "แก้ไขสิทธิ์", target: "สมฤดี ใจดี", detail: "เพิ่มสิทธิ์อนุมัติ เมนูคำขอใบรับรองฯ" },
+  { id: 8, at: "2026-10-26T09:58:12", actor: "ระบบ", action: "ระงับบัญชี", target: "ชัยวัฒน์ พรหมมา", detail: "กรอกรหัสผ่านผิดครบ 5 ครั้ง" },
   { id: 2, at: "2026-10-26T09:15:00", actor: "ธนกร ศรีสุข", action: "รีเซ็ต PIN", target: "จิราพร บุญมา", detail: "ส่งอีเมลให้ตั้ง PIN ใหม่" },
   { id: 3, at: "2026-10-25T16:02:00", actor: "ผู้ดูแลระบบสูงสุด", action: "เปลี่ยนบทบาท", target: "ศุภชัย นาคสวัสดิ์", detail: "User → Admin" },
   { id: 4, at: "2026-10-25T11:30:00", actor: "ธนกร ศรีสุข", action: "เพิ่มผู้ใช้งาน", target: "วีระพงษ์ สายทอง", detail: "กลุ่มงานฝ่ายบริการ · บทบาท User" },
   { id: 5, at: "2026-10-24T14:18:00", actor: "ธนกร ศรีสุข", action: "ผูกใบรับรอง Signer", target: "รัชนี ศรีสวัสดิ์", detail: "CN=Ratchanee Srisawat (Authorized Signer)" },
-  { id: 6, at: "2026-10-20T10:05:00", actor: "ผู้ดูแลระบบสูงสุด", action: "ระงับผู้ใช้งาน", target: "อนุชา แก้วมณี", detail: "ไม่ได้ใช้งานเกิน 60 วัน" },
-  { id: 7, at: "2026-10-18T09:00:00", actor: "ธนกร ศรีสุข", action: "ระงับผู้ใช้งาน", target: "มาลัย ทองประเสริฐ", detail: "โอนย้ายหน่วยงาน" },
+  { id: 6, at: "2026-10-20T10:05:00", actor: "ผู้ดูแลระบบสูงสุด", action: "ปิดใช้งานบัญชี", target: "อนุชา แก้วมณี", detail: "ไม่ได้ใช้งานเกิน 60 วัน" },
+  { id: 7, at: "2026-10-18T09:00:00", actor: "ธนกร ศรีสุข", action: "ปิดใช้งานบัญชี", target: "มาลัย ทองประเสริฐ", detail: "โอนย้ายหน่วยงาน" },
 ];
 
 export const usersNow = "2026-10-26T11:30:00";

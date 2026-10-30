@@ -1,4 +1,5 @@
 // ข้อความที่ใช้ร่วมกันทั้งระบบ
+import { version as appVersion } from "../../package.json";
 
 export const common = {
   org: "กรมควบคุมโรค กระทรวงสาธารณสุข",
@@ -23,5 +24,5 @@ export const common = {
     show: "แสดง",
     perPage: "รายการ/หน้า",
   },
-  version: "เวอร์ชัน 1.0 (Prototype)",
+  version: `เวอร์ชัน ${appVersion} (Prototype)`,
 };

@@ -1,4 +1,5 @@
 // ข้อความหน้า D15 · ผู้ใช้งานและสิทธิ์ (B-16)
+import { formatNumber } from "@/utils/format.js";
 
 export const usersText = {
   breadcrumb: [{ title: "ผู้ดูแลระบบ" }, { title: "ผู้ใช้งานและสิทธิ์" }],
@@ -13,13 +14,14 @@ export const usersText = {
     search: "ค้นหาชื่อ / Username",
     allGroups: "ทุกกลุ่มงาน",
     allRoles: "ทุกบทบาท",
+    allStatuses: "ทุกสถานะ",
   },
   headers: [
     { title: "ผู้ใช้งาน", key: "name" },
     { title: "กลุ่มงาน", key: "group" },
     { title: "บทบาท", key: "role" },
     { title: "ตั้ง PIN", key: "pinSet" },
-    { title: "สถานะ", key: "active" },
+    { title: "สถานะ", key: "status" },
     { title: "ใช้งานล่าสุด", key: "lastActive" },
     { title: "จัดการ", key: "actions", align: "center", sortable: false },
   ],
@@ -29,9 +31,45 @@ export const usersText = {
     { title: "จำนวนผู้ใช้", key: "count", align: "end" },
   ],
   pin: { set: "ตั้งแล้ว", unset: "ยังไม่ตั้ง" },
-  status: { active: "ใช้งาน", suspended: "ระงับ" },
+  // สถานะบัญชี (G-11 · Flow 4.1) — key ตาม stores/users.js statusOf() · tone = StatusBadge
+  status: {
+    active: { label: "ใช้งาน", tone: "success" },
+    pendingVerification: { label: "รอยืนยันอีเมล", tone: "warning" },
+    locked: { label: "ระงับ", tone: "danger" },
+    disabled: { label: "ปิดใช้งาน", tone: "neutral" },
+  },
   edit: "แก้ไขผู้ใช้งาน",
   resetPin: "รีเซ็ต PIN",
+  unlock: "ปลดล็อกบัญชี",
+  resend: "ส่งลิงก์ยืนยันอีเมลใหม่",
+
+  // กล่องสถานะบัญชีของผู้ใช้ที่เลือก (คอลัมน์ขวา)
+  account: {
+    title: "สถานะบัญชี",
+    lockedTitle: "บัญชีถูกระงับชั่วคราว",
+    locked: (at, n) => `กรอกรหัสผ่านผิดครบ ${formatNumber(n)} ครั้งเมื่อ ${at} · เข้าสู่ระบบไม่ได้จนกว่าผู้ดูแลระบบจะปลดล็อก`,
+    pendingTitle: "รอผู้ใช้ยืนยันอีเมล",
+    pending: (email, at) => `ส่งลิงก์ยืนยันไปที่ ${email} ล่าสุดเมื่อ ${at} · ลิงก์ใช้ได้ครั้งเดียวภายใน 24 ชั่วโมง`,
+    pendingNever: (email) => `ยังไม่ได้ส่งลิงก์ยืนยันไปที่ ${email}`,
+    disabled: "ผู้ดูแลระบบปิดใช้งานบัญชีนี้ เปิดใช้งานได้จากปุ่มแก้ไขผู้ใช้งาน",
+  },
+  // การเรียก API ไม่สำเร็จ (ปลดล็อก / ส่งลิงก์ใหม่)
+  failed: "ดำเนินการไม่สำเร็จ ระบบขัดข้องชั่วคราว กรุณาลองใหม่",
+  retry: "ลองใหม่",
+  confirmUnlock: {
+    title: "ปลดล็อกบัญชี",
+    message: (name, username) =>
+      `ต้องการปลดล็อกบัญชีของ ${name} (${username}) ใช่หรือไม่ จำนวนครั้งที่กรอกรหัสผ่านผิดจะถูกล้าง และผู้ใช้เข้าสู่ระบบด้วยรหัสผ่านเดิมได้ทันที`,
+    confirm: "ปลดล็อก",
+    done: (name) => `ปลดล็อกบัญชีของ ${name} แล้ว ผู้ใช้เข้าสู่ระบบได้อีกครั้ง`,
+  },
+  confirmResend: {
+    title: "ส่งลิงก์ยืนยันอีเมลใหม่",
+    message: (name, email) =>
+      `ส่งลิงก์ยืนยันอีเมลและตั้งรหัสผ่าน / PIN ใหม่ให้ ${name} ที่ ${email} ใช่หรือไม่ ลิงก์เดิมที่ยังไม่ได้ใช้จะถูกยกเลิก`,
+    confirm: "ส่งลิงก์ใหม่",
+    done: (email, hours) => `ส่งลิงก์ยืนยันใหม่ไปที่ ${email} แล้ว (ใช้ได้ภายใน ${hours} ชั่วโมง)`,
+  },
   noData: "ไม่พบผู้ใช้งานที่ตรงกับเงื่อนไข",
   permissions: {
     title: "สิทธิการเข้าถึง",
@@ -69,6 +107,30 @@ export const usersText = {
     resetPinDetail: "ส่งอีเมลให้ตั้ง PIN ใหม่",
     add: "เพิ่มผู้ใช้งาน",
     edit: "แก้ไขข้อมูลผู้ใช้งาน",
+    locked: "ระงับบัญชี",
+    lockedDetail: (n) => `กรอกรหัสผ่านผิดครบ ${n} ครั้ง`,
+    unlock: "ปลดล็อกบัญชี",
+    unlockDetail: "ล้างจำนวนครั้งที่กรอกรหัสผ่านผิด เข้าสู่ระบบได้อีกครั้ง",
+    resend: "ส่งลิงก์ยืนยันอีเมลใหม่",
+    resendDetail: (email) => `ส่งลิงก์ยืนยันไปที่ ${email} (ลิงก์เดิมถูกยกเลิก)`,
+    system: "ระบบ",
+  },
+  // ฟิลด์ใน Audit Log (B-19) ของเหตุการณ์บัญชีผู้ใช้ — บันทึกจาก src/api/auth.js และ src/api/users.js (โหมด mock)
+  audit: {
+    account: (name, username) => `${name} (${username})`,
+    status: "สถานะบัญชี",
+    attempts: "จำนวนครั้งที่กรอกผิดติดต่อกัน",
+    attemptsValue: (n, max) => `${n} / ${max}`,
+    reason: "เหตุผล",
+    invalidPassword: "รหัสผ่านไม่ถูกต้อง",
+    lockedAttempt: "บัญชีถูกระงับอยู่",
+    lockedReason: (n) => `กรอกรหัสผ่านผิดครบ ${n} ครั้ง`,
+    email: "อีเมลที่ส่งลิงก์",
+    password: "รหัสผ่าน",
+    passwordChanged: "ตั้งค่าใหม่แล้ว (เก็บเป็น Hash)",
+    via: "ช่องทาง",
+    viaActivate: "ลิงก์ยืนยันอีเมลบัญชีใหม่ (ตั้งรหัสผ่าน + PIN)",
+    viaReset: "ลิงก์ลืมรหัสผ่าน",
   },
   form: {
     addTitle: "เพิ่มผู้ใช้งาน",
@@ -82,7 +144,7 @@ export const usersText = {
     active: "เปิดใช้งานบัญชี",
     required: "กรุณากรอกข้อมูล",
     save: "บันทึก",
-    added: (name) => `เพิ่มผู้ใช้งาน ${name} แล้ว ระบบส่งอีเมลให้ยืนยันและตั้ง PIN`,
+    added: (name) => `เพิ่มผู้ใช้งาน ${name} แล้ว ระบบส่งอีเมลให้ยืนยันและตั้ง PIN (สถานะรอยืนยันอีเมล)`,
     updated: (name) => `บันทึกข้อมูลของ ${name} แล้ว`,
   },
 };

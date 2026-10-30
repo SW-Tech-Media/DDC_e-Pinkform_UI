@@ -1,12 +1,14 @@
 <script setup>
 // ตารางประวัติสถานะ (Figma D12) — ใช้ทั้งหน้า D12 และแท็บ "ประวัติสถานะ" ของ D10
-// entries: [{ status?: key ใน requestStatuses, event?: key ใน reviewText.history.events, label?, tone?, detail, at, by }]
+// entries: [{ status?: key ใน requestStatuses, event?: key ใน reviewText.history.events, label?, tone?, detail, at, by, email? }]
+// email = ร่องรอยอีเมลแจ้งผู้ยื่น (G-06) { to, subject, summary } — แสดงหัวเรื่องและสรุปเนื้อหาใต้รายละเอียด
 import { computed } from "vue";
 import AppDataTable from "@/components/AppDataTable.vue";
 import StatusBadge from "@/components/StatusBadge.vue";
 import { requestStatuses } from "@/mocks/requests.js";
 import { reviewText } from "@/content/review.js";
 import { trackingText } from "@/content/tracking.js";
+import { emailText } from "@/content/notifications.js";
 import { formatDate, formatDateTimeSec } from "@/utils/format.js";
 
 const props = defineProps({
@@ -35,7 +37,17 @@ const timeOf = (at) => formatDateTimeSec(at).slice(formatDate(at).length + 1);
         <StatusBadge :tone="item.tone" dot>{{ item.label }}</StatusBadge>
       </template>
       <template #item.detail="{ item }">
-        <div class="py-3 history__detail">{{ item.detail }}</div>
+        <div class="py-3 history__detail">
+          {{ item.detail }}
+          <div v-if="item.email" class="pf-type-caption text-text-secondary mt-1">
+            <div>
+              <span class="text-text-tertiary">{{ emailText.fields.subject }}:</span> {{ item.email.subject }}
+            </div>
+            <div>
+              <span class="text-text-tertiary">{{ emailText.fields.summary }}:</span> {{ item.email.summary }}
+            </div>
+          </div>
+        </div>
       </template>
       <template #item.at="{ item }">
         <div class="py-3 text-no-wrap">

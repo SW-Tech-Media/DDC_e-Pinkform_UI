@@ -8,6 +8,8 @@ import { reviewText } from "@/content/review.js";
 const props = defineProps({
   items: { type: Array, required: true }, // [{ id, label }]
   readonly: { type: Boolean, default: false },
+  // ข้อความใต้ Checklist เมื่อ readonly (ค่าเริ่มต้น = บันทึกผลแล้ว)
+  readonlyText: { type: String, default: "" },
 });
 const model = defineModel({ type: Array, default: () => [] });
 const t = reviewText.checklist;
@@ -49,7 +51,7 @@ const toggle = (id, on) => {
       :aria-label="t.title"
     />
     <p class="pf-type-caption mt-2" :class="complete ? 'text-status-success-fg' : 'text-text-tertiary'">
-      {{ readonly ? t.locked : complete ? t.done : t.hint }}
+      {{ readonly ? readonlyText || t.locked : complete ? t.done : t.hint }}
     </p>
   </SectionCard>
 </template>

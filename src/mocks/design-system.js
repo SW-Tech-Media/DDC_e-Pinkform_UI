@@ -10,6 +10,8 @@ export const demoBadges = [
   { tone: "neutral", label: "ฉบับร่าง" },
   { tone: "accent", label: "พร้อมจ่าย" },
 ];
+// ตัวอย่าง wrap — สถานะยาวในคอลัมน์ตารางที่จำกัดความกว้าง (B-05)
+export const demoWrapBadge = { tone: "warning", label: "รอการชำระเงิน BILLPAYMENT" };
 
 export const demoAlerts = [
   { tone: "info", title: "ข้อมูล", body: "ระบบจะส่งอีเมลแจ้งผลให้ผู้ประกอบการโดยอัตโนมัติ" },

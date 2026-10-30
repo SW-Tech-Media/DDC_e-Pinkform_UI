@@ -32,7 +32,7 @@
 | `SectionCard`      | การ์ดมีหัวข้อ (Card/Header)                | `title`, `subtitle`, `flush` (ไม่มี padding — ใช้กับตาราง) · slot `header`, `actions`, `footer`   |
 | `KpiCard`          | การ์ดตัวเลข (Card/KPI)                     | `icon`, `tone`, `label`, `value`, `caption`, `trend: { direction, value, text }`              |
 | `IconTile`         | กล่องไอคอนพื้นอ่อน                         | `icon`, `tone`: teal · pink · blue · green · amber · red · neutral, `size`: md · lg              |
-| `StatusBadge`      | Badge สถานะ                              | `tone`: success · warning · danger · info · neutral · accent, `dot`                           |
+| `StatusBadge`      | Badge สถานะ                              | `tone`: success · warning · danger · info · neutral · accent, `dot`, `wrap` (ข้อความยาวตัดบรรทัดในคอลัมน์ตาราง) |
 | `SvgIcon`          | ไอคอนเส้นจาก Figma (Icon/*) สีตาม currentColor | `name` = ชื่อไฟล์ใน `src/assets/icons/` · กำหนดขนาดด้วย CSS width/height |
 | `SidebarItem`      | เมนูด้านข้าง (Web/Sidebar Item)            | `to`, `icon` (ชื่อ SvgIcon), `label`, `badge`, `active` |
 | `SecondaryButton`  | ปุ่มรอง พื้นขาว ขอบเทา ตัวอักษรเข้ม (Button/Secondary) | `icon`, `height` (ชื่อ size เช่น `control-lg`) · props อื่นส่งต่อให้ v-btn                 |
@@ -40,7 +40,7 @@
 | `FilterCard`       | แผงตัวกรอง + ปุ่ม ค้นหา / ล้าง               | `showReset` · emit `search`, `reset` · ใส่ `<v-col>` + field ใน slot                           |
 | `FieldLabel`       | ป้ายชื่อเหนือช่องกรอก (Form/Field)          | `label`, `required`, `for`                                                                   |
 | `StatusTabs`       | แท็บพร้อมตัวนับ (Tab/Item)                  | `tabs: [{ value, label, count? }]` · `v-model`                                              |
-| `AppDataTable`     | ตาราง + Pagination (Table, Pagination)    | `headers`, `items`, `itemValue`, `paginate`, `perPage`, `showPerPage`, `total` (จำนวนรวมในระบบ), `rowClass(item)` (`'pf-row-highlight'` = แถวชมพู) · slot `item.<key>`, `no-data` · emit `click:row` |
+| `AppDataTable`     | ตาราง + Pagination (Table, Pagination)    | `headers`, `items`, `itemValue`, `paginate`, `perPage`, `showPerPage`, `total` (จำนวนรวมในระบบ), `rowClass(item)` (`'pf-row-highlight'` = แถวชมพู) · slot `item.<key>`, `no-data` · emit `click:row` · คอลัมน์ `actions` / `view` sticky ขวา และมีเส้นแบ่งเมื่อมีเนื้อหาซ่อนอยู่ข้างใต้ |
 | `TablePagination`  | แถบเลื่อนหน้าแยก                           | `total` · `v-model:page`, `v-model:per-page`                                                |
 | `BarChart`         | กราฟแท่ง (Chart/Bar Group)                 | `labels`, `series: [{ name, color: 'chart-series-1', data }]`, `ticks`, `max`, `axisLabel`, `hideLegend`     |
 | `StepIndicator`    | ขั้นตอนแนวนอน (Stepper)                    | `steps: [{ label, caption? }]`, `current`, `complete`, `compact` (แบบบรรทัดเดียว ใช้หน้า Login)  |
@@ -71,10 +71,12 @@ Component เฉพาะกลุ่มหน้าจอ ให้สร้า
 - `src/mocks/users.js` — เจ้าหน้าที่ตัวอย่าง, badge sidebar, ตัวนับผู้เข้าชม
 - `src/utils/csv.js` — `downloadCsv(filename, headers, rows)` ส่งออก CSV (UTF-8 + BOM) ใช้ทุกหน้าที่มีปุ่มส่งออก
 - `src/stores/session.js` — ผู้ใช้ที่แสดงบน Topbar ตาม Figma (`signInAs('prapaporn')` — ไม่มีผลเมื่อเลือกบัญชีแล้ว) และบัญชีที่ใช้ตรวจสิทธิ์ (`useAccount(username)` / `resetAccount()`) · `session.can(menuKey, action = 'view')` ใช้ซ่อนเมนู/ปุ่มตามสิทธิ์ (backend ตรวจจริง)
-- `src/stores/users.js` — รายชื่อผู้ใช้งานและสิทธิ์ (B-16) แก้สิทธิ์แล้วมีผลกับ Sidebar ของบัญชีนั้นทันที
+- `src/stores/users.js` — รายชื่อผู้ใช้งานและสิทธิ์ (B-16) แก้สิทธิ์แล้วมีผลกับ Sidebar ของบัญชีนั้นทันที · `statusOf(user)` = `active` / `pendingVerification` / `locked` / `disabled` (ป้ายใน `usersText.status`) · `unlock` / `resendVerification` เรียก `api/users.js` · สถานะระงับอ่านจาก `authAccounts` ใน `mocks/auth.js` ตัวเดียวกับที่ B-01 นับรหัสผิด
 - `src/stores/review.js` — ผลพิจารณาคำขอ (B-06/B-07) · `statusOf(ref)` (อนุมัติในรอบนี้ = `awaitingPayment` ทันที) · `approve` / `reject` / `undoApproval` ตรวจเงื่อนไขซ้ำ (Checklist ครบ, ประเภทข้อความตอบกลับ, ภายใน 15 นาที) แล้วส่งต่อไป `payments` + `audit` · `setReplyType` กรองข้อความตอบกลับตามประเภท approve / reject
 - `src/stores/payments.js` — คำสั่งชำระของ B-11 (`all` = ข้อมูลจำลอง + ที่เกิดจากการอนุมัติในรอบนี้, แถวสร้างด้วย `paymentRow()` ใน `mocks/payments.js` รูปเดียวกับ `decidedDetail().payment`) · ยกเลิกการอนุมัติ → สถานะ `cancelled`
-- `src/stores/audit.js` — Audit Log ของ B-19 (`all` = ข้อมูลจำลอง + `record(menu, action, target, changes)` ที่บันทึกในรอบนี้) · backend เป็นผู้บันทึกจริง
+- `src/stores/audit.js` — Audit Log ของ B-19 (`all` = ข้อมูลจำลอง + `record(menu, action, target, changes, as?)` ที่บันทึกในรอบนี้ — `as = { name, username }` เมื่อผู้กระทำไม่ใช่ผู้ใช้ที่เข้าสู่ระบบอยู่ เช่น กรอกรหัสผ่านผิดที่ B-01) · backend เป็นผู้บันทึกจริง
 - สิทธิ์รายเมนู — `key` ของ `adminNav` (`content/navigation.js`) = แถวในตารางสิทธิ์ (`permissionMenus` ใน `mocks/users-roles.js`) = `meta.permission` ของ route · route ที่ไม่มีสิทธิ์ไปหน้า `admin-forbidden` · สลับบทบาทสาธิตได้จากเมนูผู้ใช้บน Topbar หรือ `?as=<username>`
-- `src/api/auth.js` — ชั้น API การยืนยันตัวตน (เข้าสู่ระบบขั้นที่ 1, ยืนยันอีเมล + ตั้งรหัสผ่าน/PIN, ลืมรหัสผ่าน) คืน Promise / throw `AuthApiError { status, code, data }` · `VITE_API_MODE=mock` (ค่าเริ่มต้น) ใช้ `mocks/auth.js` · `http` เรียก endpoint ที่เสนอ · นโยบายรหัสผ่านอยู่ที่ `utils/password.js` (สมมติฐานรอ Q-20)
+- `src/api/auth.js` — ชั้น API การยืนยันตัวตน (เข้าสู่ระบบขั้นที่ 1, ยืนยันอีเมล + ตั้งรหัสผ่าน/PIN, ลืมรหัสผ่าน) คืน Promise / throw `AuthApiError { status, code, data }` · `VITE_API_MODE=mock` (ค่าเริ่มต้น) ใช้ `mocks/auth.js` · `http` เรียก endpoint ที่เสนอ · นโยบายรหัสผ่านอยู่ที่ `utils/password.js` (สมมติฐานรอ Q-20) · โหมด mock บันทึก Audit Log เข้าสู่ระบบไม่สำเร็จ / ระงับบัญชี / ตั้ง–รีเซ็ตรหัสผ่าน
+- `src/api/users.js` — ชั้น API ผู้ใช้งาน (B-16): `unlock(username)` / `resendVerification(username)` throw `UsersApiError { status, code }`
+- อีเมลแจ้งผู้ยื่นอัตโนมัติ (G-06) — `emailNotice()` / `emailEvent()` ใน `mocks/requests.js` (ข้อความใน `content/notifications.js`) ใช้ทั้ง `decidedDetail()` และ `review.reject()` · แสดงใน `StatusHistoryTable` (event `emailed` + `email`), กล่องผลการพิจารณา B-06 และ `PaymentDetailDialog` (B-11) · ผู้รับ = `operators[].email` (สมมติฐานรอ Q-18)
 - `src/router/screens.js` — ชื่อ route ของทุกหน้าจอ · `hint` = วิธีสาธิตกรณียกเว้นที่แสดงในหน้า /prototype

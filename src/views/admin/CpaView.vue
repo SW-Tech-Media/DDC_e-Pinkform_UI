@@ -59,6 +59,10 @@ const filtered = computed(() => {
   );
 });
 const rowClass = (c) => (c.lastTest === "fail" ? "pf-row-highlight" : "");
+// eb:Action ในตาราง — แสดงไม่เกิน ACTION_PREVIEW รายการ ที่เหลือรวมเป็น "+n" (ดูครบใน Tooltip / XML ของ CPA)
+const ACTION_PREVIEW = 3;
+const shownActions = (c) => (c.actions.length > ACTION_PREVIEW + 1 ? c.actions.slice(0, ACTION_PREVIEW) : c.actions);
+const hiddenActions = (c) => c.actions.slice(shownActions(c).length);
 
 // ---------- แก้ไข ----------
 const editor = reactive({ open: false, cpa: null });
@@ -143,8 +147,25 @@ const openHistory = (c) => Object.assign(history, { open: true, cpa: c });
           </div>
         </template>
         <template #item.service="{ item }">
-          <div>{{ item.service }}</div>
-          <div class="pf-type-caption text-text-tertiary">{{ item.actions.join(" · ") }}</div>
+          <div class="service py-3">
+            <div>{{ item.service }}</div>
+            <div class="d-flex flex-wrap ga-1 mt-1">
+              <StatusBadge v-for="a in shownActions(item)" :key="a" tone="neutral">{{ a }}</StatusBadge>
+              <v-tooltip v-if="hiddenActions(item).length" location="top" max-width="320">
+                <template #activator="{ props: tip }">
+                  <StatusBadge
+                    v-bind="tip"
+                    tone="info"
+                    tabindex="0"
+                    :aria-label="t.moreActionsAria(hiddenActions(item).length, hiddenActions(item).join(', '))"
+                  >
+                    {{ t.moreActions(hiddenActions(item).length) }}
+                  </StatusBadge>
+                </template>
+                {{ item.actions.join(" · ") }}
+              </v-tooltip>
+            </div>
+          </div>
         </template>
         <template #item.version="{ item }">
           <StatusBadge tone="neutral">v{{ item.version }}</StatusBadge>
@@ -229,6 +250,12 @@ const openHistory = (c) => Object.assign(history, { open: true, cpa: c });
 .cpa-table :deep(th),
 .cpa-table :deep(td) {
   padding-inline: var(--pf-space-12) !important;
+}
+/* Service / Action ตัดบรรทัดได้ ให้ Action ทุกตัวอ่านได้ไม่ถูกคอลัมน์จัดการบัง */
+.service {
+  white-space: normal;
+  min-width: calc(var(--pf-space-120) * 2 + var(--pf-space-40));
+  max-width: calc(var(--pf-space-120) * 2 + var(--pf-space-80));
 }
 .endpoint {
   max-width: calc(var(--pf-space-120) + var(--pf-space-80));

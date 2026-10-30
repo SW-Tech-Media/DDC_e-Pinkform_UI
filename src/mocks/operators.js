@@ -17,7 +17,9 @@ export const operatorAccess = {
   suspended: { label: "ระงับชั่วคราว", tone: "danger" },
 };
 
-const o = (taxId, branch, nameTh, nameEn, type, service, nswId, access, lastRequestAt) => ({
+// email = อีเมลติดต่อของผู้ประกอบการในทะเบียน ใช้ส่งอีเมลแจ้งผลอัตโนมัติ (TOR 7.8.32, 7.8.36 · G-06)
+// สมมติฐานรอ Q-18: ส่งถึงอีเมลในทะเบียนผู้ประกอบการของผู้ส่งออก (ไม่ใช่อีเมลในข้อความคำขอ) และยังไม่ส่งสำเนาถึงตัวแทนออกของ
+const o = (taxId, branch, nameTh, nameEn, type, service, nswId, access, lastRequestAt, email) => ({
   id: `${taxId}-${branch}`,
   taxId,
   branch,
@@ -28,17 +30,18 @@ const o = (taxId, branch, nameTh, nameEn, type, service, nswId, access, lastRequ
   nswId,
   access,
   lastRequestAt,
+  email,
 });
 
 export const operators = [
-  o("0105556012345", "00000", "บริษัท สยามฟรุ๊ต เอ็กซ์ปอร์ต จำกัด", "Siam Fruit Export Co., Ltd.", "exporter", "certificate", "NSW6400123", "active", "2026-10-24"),
-  o("0105561098765", "00000", "บริษัท ไทยเฟรช ฟู้ด จำกัด", "Thai Fresh Food Co., Ltd.", "exporter", "certificate", "NSW6401034", "active", "2026-10-25"),
-  o("0105549033211", "00000", "บริษัท โกลเด้นไรซ์ เทรดดิ้ง จำกัด", "Golden Rice Trading Co., Ltd.", "exporter", "certificate", "NSW6401945", "active", "2026-10-26"),
-  o("0835558004412", "00002", "บริษัท อันดามัน ซีฟู้ด จำกัด", "Andaman Seafood Co., Ltd.", "exporter", "certificate", "NSW6402856", "active", "2026-10-19"),
-  o("0505563007788", "00000", "บริษัท เชียงใหม่ ออร์แกนิค จำกัด", "Chiang Mai Organic Co., Ltd.", "exporter", "certificate", "NSW6403767", "active", "2026-10-26"),
-  o("0115560021140", "00000", "บริษัท ทรอปิคอล แพค จำกัด", "Tropical Pack Co., Ltd.", "agent", "onBehalf", "NSW6404678", "active", "2026-10-26"),
-  o("0703554000981", "00000", "ห้างหุ้นส่วนจำกัด ราชบุรี เวจจี้", "Ratchaburi Veggie Ltd., Part.", "exporter", "certificate", "NSW6405589", "suspended", "2026-09-02"),
-  o("0745557006623", "00000", "บริษัท มหาชัย โฟรเซ่น จำกัด", "Mahachai Frozen Co., Ltd.", "counter", "onBehalf", "NSW6406500", "active", "2026-10-22"),
+  o("0105556012345", "00000", "บริษัท สยามฟรุ๊ต เอ็กซ์ปอร์ต จำกัด", "Siam Fruit Export Co., Ltd.", "exporter", "certificate", "NSW6400123", "active", "2026-10-24", "export@siamfruit.co.th"),
+  o("0105561098765", "00000", "บริษัท ไทยเฟรช ฟู้ด จำกัด", "Thai Fresh Food Co., Ltd.", "exporter", "certificate", "NSW6401034", "active", "2026-10-25", "docs@thaifreshfood.co.th"),
+  o("0105549033211", "00000", "บริษัท โกลเด้นไรซ์ เทรดดิ้ง จำกัด", "Golden Rice Trading Co., Ltd.", "exporter", "certificate", "NSW6401945", "active", "2026-10-26", "shipping@goldenrice.co.th"),
+  o("0835558004412", "00002", "บริษัท อันดามัน ซีฟู้ด จำกัด", "Andaman Seafood Co., Ltd.", "exporter", "certificate", "NSW6402856", "active", "2026-10-19", "export@andamanseafood.co.th"),
+  o("0505563007788", "00000", "บริษัท เชียงใหม่ ออร์แกนิค จำกัด", "Chiang Mai Organic Co., Ltd.", "exporter", "certificate", "NSW6403767", "active", "2026-10-26", "info@cmorganic.co.th"),
+  o("0115560021140", "00000", "บริษัท ทรอปิคอล แพค จำกัด", "Tropical Pack Co., Ltd.", "agent", "onBehalf", "NSW6404678", "active", "2026-10-26", "customs@tropicalpack.co.th"),
+  o("0703554000981", "00000", "ห้างหุ้นส่วนจำกัด ราชบุรี เวจจี้", "Ratchaburi Veggie Ltd., Part.", "exporter", "certificate", "NSW6405589", "suspended", "2026-09-02", "export@rbveggie.co.th"),
+  o("0745557006623", "00000", "บริษัท มหาชัย โฟรเซ่น จำกัด", "Mahachai Frozen Co., Ltd.", "counter", "onBehalf", "NSW6406500", "active", "2026-10-22", "export@mahachaifrozen.co.th"),
 ];
 
 // KPI ด้านบนของ D08

@@ -18,8 +18,9 @@ export const useAuditStore = defineStore("audit", {
   actions: {
     // menu = key ใน auditText.menus · action = key ใน auditText.actions · changes: [{ field, before, after }]
     // user = key ใน staff — บัญชีที่ไม่อยู่ใน staff เก็บชื่อไว้ใน actor
-    record(menu, action, target, changes = []) {
-      const u = useSessionStore().user;
+    // as = ผู้กระทำที่ไม่ใช่ผู้ใช้ที่เข้าสู่ระบบอยู่ { name, username } — เช่น ผู้ที่กรอกรหัสผ่านผิดที่ B-01 / ตั้งรหัสผ่านจากลิงก์
+    record(menu, action, target, changes = [], as = null) {
+      const u = as ?? useSessionStore().user;
       const key = staffKeyByUsername[u.username];
       this.entries.unshift({
         id: `AL${String(auditLogs.length + this.entries.length + 1).padStart(5, "0")}`,

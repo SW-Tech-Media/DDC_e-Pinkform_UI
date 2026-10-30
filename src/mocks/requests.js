@@ -4,6 +4,7 @@ import { operators, operatorTypes } from "./operators.js";
 import { banks } from "./banks.js";
 import { staff } from "./users.js";
 import { formatMoney, formatTime } from "@/utils/format.js";
+import { emailText } from "@/content/notifications.js";
 
 // สถานะคำขอตาม TOR 4.4.2 (8) — tone = สี StatusBadge, step = ลำดับใน Stepper ของหน้าติดตามสถานะ (D12)
 // final = สถานะสิ้นสุดที่ไม่อยู่ใน Stepper (atStep = ขั้นที่คำขอหยุดอยู่)
@@ -38,7 +39,7 @@ export const requestSteps = [
 // ผลตรวจอัตโนมัติ
 export const autoCheck = {
   passed: { label: "ผ่าน", tone: "success" },
-  flagged: (n) => ({ label: `ตรวจพบ ${n} รายการ`, tone: "warning" }),
+  flagged: (n) => ({ label: `ตรวจพบ ${n}\u00a0รายการ`, tone: "warning" }),
 };
 
 // ค่าบริการต่อคำขอ (1 คำขอ = ใบรับรองฯ 1 ฉบับ) — ใช้ร่วมกันทุกหน้า (รายละเอียดคำขอ / การชำระเงิน / ใบเสร็จ)
@@ -217,6 +218,23 @@ const nsps = ["NSP: บริษัท ไทยอีดีไอ เซอร�
 const operatorByName = Object.fromEntries(operators.map((o) => [o.nameTh, o]));
 const shiftDays = (iso, n) => new Date(new Date(iso).getTime() - n * 86400000).toISOString().slice(0, 10);
 
+// ---------- อีเมลแจ้งผู้ยื่นอัตโนมัติ (G-06 · TOR 7.8.32, 7.8.36) ----------
+// ใช้ทั้งข้อมูลตัวอย่าง (decidedDetail) และผลที่บันทึกในรอบนี้ (stores/review.js) ให้รูปเดียวกัน
+// ผู้รับ = อีเมลในทะเบียนผู้ประกอบการของผู้ส่งออก (mocks/operators.js) — สมมติฐานรอ Q-18 (อีเมลจากทะเบียน หรือจากข้อความคำขอ / ส่งถึงตัวแทนออกของด้วยหรือไม่)
+// ชั่วคราวจนกว่าจะมี API: backend ส่งอีเมลและเก็บผลการส่ง หน้าจออ่านจากประวัติสถานะของคำขอ
+// notice = { kind: invalid | rejected | paymentFailed, to, at, subject, summary, status: "sent" }
+export const applicantEmailOf = (company) => operatorByName[company]?.email ?? null;
+export const emailNotice = (kind, { ref, company, invoice }, at, info = {}) => ({
+  kind,
+  to: applicantEmailOf(company),
+  at,
+  subject: emailText.subjects[kind](ref),
+  summary: emailText.summaries[kind]({ ref, invoice, ...info }),
+  status: "sent",
+});
+// แถวในประวัติสถานะ (StatusHistoryTable แสดงหัวเรื่อง + สรุปเนื้อหาจาก email)
+export const emailEvent = (notice) => ({ event: "emailed", detail: emailText.historyDetail(notice.to), at: notice.at, by: emailText.by, email: notice });
+
 // รายละเอียดคำขอที่สร้างจากรายการคำขอ — คำขอที่รอพิจารณาไม่มีประวัติสถานะ / Stepper ฉบับเต็ม (หน้า D12 ใช้ประวัติอย่างง่ายแทน)
 function generatedDetail(req, i, flaggedIndex) {
   const op = operatorByName[req.company];
@@ -270,6 +288,12 @@ function decidedDetail(req) {
   const o = req.outcome;
   const log = [{ status: "received", detail: "รับจาก NSW · ลายมือชื่อดิจิทัลและ XML Schema ถูกต้อง", at: plus(req.submittedAt, 10), by: "ebXML Gateway" }];
   const add = (status, detail, time, by, label) => log.push({ status, ...(label ? { label } : {}), detail, at: time, by });
+  // อีเมลแจ้งผู้ยื่นส่งหลังบันทึกผล 5 วินาที (TOR 7.8.32, 7.8.36)
+  const email = (kind, time, info) => {
+    const notice = emailNotice(kind, req, plus(time, 5), info);
+    log.push(emailEvent(notice));
+    return notice;
+  };
   let decision;
   let payment = null;
   let receipt = null;
@@ -278,7 +302,8 @@ function decidedDetail(req) {
   if (req.status === "invalid") {
     log[0].detail = "รับจาก NSW";
     add("invalid", `${o.reason} · แจ้งผู้ประกอบการผ่าน NSW`, at(o.at), "ebXML Gateway");
-    decision = { type: "invalid", at: at(o.at), by: "ebXML Gateway", note: o.reason };
+    const notification = email("invalid", at(o.at), { reason: o.reason });
+    decision = { type: "invalid", at: at(o.at), by: "ebXML Gateway", note: o.reason, notification };
   } else {
     const by = staff[o.by].name;
     const decidedAt = at(o.at);
@@ -286,7 +311,8 @@ function decidedDetail(req) {
     add("pending", "เจ้าหน้าที่เปิดพิจารณาคำขอ", plus(decidedAt, -540), by, "อยู่ระหว่างดำเนินการ");
     if (req.status === "rejected") {
       add("rejected", `ข้อความตอบกลับ ${o.replyCode} – ${o.reply}`, decidedAt, by);
-      decision = { type: "rejected", at: decidedAt, by, replyCode: o.replyCode, note: "" };
+      const notification = email("rejected", decidedAt, { reason: `${o.replyCode} – ${o.reply}` });
+      decision = { type: "rejected", at: decidedAt, by, replyCode: o.replyCode, note: "", notification };
     } else {
       const bank = `${banks[o.bank]} (${o.bank})`;
       const orderedAt = plus(decidedAt, 16);
@@ -296,6 +322,7 @@ function decidedDetail(req) {
       if (req.status === "paymentFailed") {
         add("paymentFailed", `${bank} · ชำระไม่สำเร็จ · แจ้งผู้ประกอบการผ่าน NSW`, at(o.failedAt), "ธนาคาร");
         Object.assign(payment, { status: "failed", failedAt: at(o.failedAt), ...(o.failReason ? { failReason: o.failReason } : {}) });
+        payment.notification = email("paymentFailed", at(o.failedAt), { bank, amount: serviceFee });
       }
       if (reached(req, "paid")) {
         const paidAt = at(o.paidAt);
@@ -327,6 +354,7 @@ function decidedDetail(req) {
   // เวลาของแต่ละขั้นใน Stepper — เวลาแรกที่ไปถึงขั้นนั้น
   const stepTimes = [];
   log.forEach((e) => {
+    if (!e.status) return; // เหตุการณ์ที่ไม่ใช่สถานะ (เช่น ส่งอีเมล) ไม่นับใน Stepper
     const step = requestStatuses[e.status].step;
     if (step !== undefined && !stepTimes[step]) stepTimes[step] = formatTime(e.at);
   });

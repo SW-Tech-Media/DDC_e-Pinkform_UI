@@ -56,6 +56,11 @@ export const auditText = {
     sign: { label: "ลงนาม", tone: "accent" },
     resend: { label: "ส่งข้อความซ้ำ", tone: "info" },
     resetPin: { label: "รีเซ็ต PIN", tone: "warning" },
+    accountLocked: { label: "ระงับบัญชี", tone: "danger" },
+    unlock: { label: "ปลดล็อกบัญชี", tone: "success" },
+    resendVerification: { label: "ส่งลิงก์ยืนยันอีเมลใหม่", tone: "info" },
+    setPassword: { label: "ตั้งรหัสผ่าน", tone: "info" },
+    resetPassword: { label: "รีเซ็ตรหัสผ่าน", tone: "warning" },
     export: { label: "ส่งออกข้อมูล", tone: "neutral" },
   },
 

@@ -6,6 +6,7 @@ import AlertBox from "@/components/AlertBox.vue";
 import KeyValueList from "@/components/KeyValueList.vue";
 import StatusBadge from "@/components/StatusBadge.vue";
 import { paymentsText } from "@/content/payments.js";
+import { emailText } from "@/content/notifications.js";
 import { common } from "@/content/common.js";
 import { banks, paymentStatuses } from "@/mocks/payments.js";
 import { formatDateTime, formatMoney } from "@/utils/format.js";
@@ -52,6 +53,23 @@ const sections = computed(() => {
     },
   ];
 });
+
+// ร่องรอยอีเมลแจ้งผู้ยื่นเมื่อชำระไม่สำเร็จ (G-06 · TOR 7.8.36)
+const ef = emailText.fields;
+const emailItems = computed(() => {
+  const n = props.payment?.notification;
+  if (!n) return null;
+  return {
+    meta: [
+      { label: ef.to, value: n.to },
+      { label: ef.at, value: formatDateTime(n.at) },
+    ],
+    content: [
+      { label: ef.subject, value: n.subject },
+      { label: ef.summary, value: n.summary },
+    ],
+  };
+});
 </script>
 
 <template>
@@ -71,6 +89,14 @@ const sections = computed(() => {
       <AlertBox v-if="payment.status === 'failed'" tone="danger" :title="payment.failReason" class="mt-6">
         {{ t.failedNote }}
       </AlertBox>
+      <section v-if="emailItems" class="mt-6">
+        <h3 class="pf-type-label-lg text-text-primary mb-3 d-flex align-center ga-2">
+          {{ emailText.sectionTitle }}
+          <StatusBadge tone="success" dot>{{ emailText.sent }}</StatusBadge>
+        </h3>
+        <KeyValueList :items="emailItems.meta" :columns="2" />
+        <KeyValueList :items="emailItems.content" class="mt-4" />
+      </section>
       <AlertBox v-else-if="payment.status === 'pending'" tone="warning" class="mt-6">{{ t.pendingNote }}</AlertBox>
       <AlertBox v-else-if="payment.status === 'cancelled'" tone="neutral" :title="t.cancelledTitle" class="mt-6">
         {{ t.cancelledNote(formatDateTime(payment.cancelledAt), payment.cancelReason) }}

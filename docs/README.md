@@ -1,15 +1,34 @@
 # เอกสารพัฒนาระบบ DDC e-Pinkforms
 
-โฟลเดอร์นี้เก็บผลงานของแต่ละบทบาท (agent ใน `.claude/agents/`) เพื่อให้ Prototype ต่อยอดเป็นระบบจริงได้ทั้ง frontend และ backend
-เอกสารต้นทาง (TOR, Flow, รายการหน้าจอ) ยังอยู่ที่ `md/` และโฟลเดอร์ `../1_Flow` – `../4_เอกสารอธิบาย` — ที่นี่เก็บเฉพาะสิ่งที่ทีม **ตัดสินใจและออกแบบต่อจากนั้น**
+โฟลเดอร์นี้เก็บผลงานของแต่ละบทบาท (agent ใน `.claude/agents/`) เพื่อให้ Prototype ต่อยอดเป็นระบบจริงได้ทั้ง frontend และ backend — ที่นี่เก็บเฉพาะสิ่งที่ทีม **ตัดสินใจและออกแบบต่อจากเอกสารต้นทาง**
+
+## ไฟล์ที่มีอยู่ตอนนี้ (30/10/2569)
+
+| ไฟล์ | เจ้าของ | เนื้อหา |
+| --- | --- | --- |
+| `README.md` | ทุกบทบาท | ไฟล์นี้ — โครงสร้าง แหล่งความจริง การประสานงาน ข้อตกลงร่วม |
+| `Traceability_TOR_Flow_Prototype.md` | business-analyst | Traceability TOR (F-001 – F-105, NF-01 – NF-57) ↔ Flow 4 – 11 ↔ หน้าจอ Prototype, รายการ Gap (G-xx), คำถามลูกค้า (Q-xx) — อัปเดตล่าสุดตาม **Prototype v0.3.6** (เดิมอยู่ที่ `docs/5_วิเคราะห์ความครบถ้วน/`) |
+
+## เอกสารต้นทาง (อยู่ที่ไหน)
+
+| เอกสาร | ตำแหน่ง |
+| --- | --- |
+| สรุประบบ / Flow / สถานะ / รายการหน้าจอ / ตารางตรวจ TOR | `../md/system-overview.md` (อ่านผ่าน MCP `pinkforms-docs` ใน `../mcp/` ได้) |
+| รายละเอียด UI รายหน้าจอจาก Figma | `../md/screens.md` |
+| Framework / Font / Design Token | `../md/flamework.md`, `../src/design/tokens.js`, `../src/components/README.md` |
+| ทะเบียนหน้าจอและ route (P-xx / B-xx / รหัส Figma D-xx) | `../src/router/screens.js` และหน้ารวมหน้าจอ `/prototype` |
+| ประวัติการเปลี่ยนแปลง Prototype | `../src/content/patch-notes.js` (ปุ่ม Patch Notes ในแอป) |
+| TOR v.4 (.docx), Flow (.drawio / .png), `Checklist_TOR_DDC_ePinkforms.xlsx`, `รายการหน้าจอ_DDC_ePinkforms.xlsx`, เอกสารสถาปัตยกรรม (.docx) | **ไม่อยู่ใน repo แล้ว** (ผู้ใช้ย้ายออก) — ขอจากผู้ใช้เมื่อต้องอ้างต้นฉบับ · ระหว่างนี้ใช้ `md/` และตารางใน `Traceability_TOR_Flow_Prototype.md` |
+
+## โครงสร้างที่วางไว้ (สร้างเมื่อเริ่มงานของบทบาทนั้น — ตอนนี้ยังไม่มีโฟลเดอร์ใดถูกสร้าง)
 
 | โฟลเดอร์ | เจ้าของ | เนื้อหา |
 | --- | --- | --- |
 | `adr/` | solution-architect | Architecture Decision Record (`NNNN-<หัวข้อ>.md`) — รวมถึงการเลือก backend stack |
 | `architecture/` | solution-architect | ภาพรวม (C4), module / bounded context, non-functional ตาม TOR |
-| `requirements/` | business-analyst | User story + acceptance criteria ต่อ module, กฎทางธุรกิจ (BR-xxx), traceability, glossary |
+| `requirements/` | business-analyst | User story + acceptance criteria ต่อ module, กฎทางธุรกิจ (`business-rules.md`, BR-xxx), `traceability.md` (TOR ↔ BR / Story ↔ หน้าจอ ↔ API ↔ Test case), `glossary.md` — เมื่อสร้าง `traceability.md` แล้วให้ย้าย / อ้างตารางจาก `Traceability_TOR_Flow_Prototype.md` |
 | `design/` | ux-ui-designer | Spec หน้าจอและการเปลี่ยนแปลง UI (อ้างรหัสหน้าจอ P-xx / B-xx) |
-| `api/` | backend-developer | `openapi.yaml` — contract ภายในระหว่าง frontend กับ backend |
+| `api/` | backend-developer | `openapi.yaml` — contract ภายในระหว่าง frontend กับ backend (endpoint ที่เสนอไว้แล้ว: `src/api/auth.js`) |
 | `data/` | backend-developer | Data model, state machine ของคำขอ / การชำระ / ใบรับรอง |
 | `integration/` | integration-engineer | ข้อความ ebXML / XSD / sequence / error handling / PKI และ `external-api.yaml` (API ทางเลือกให้ NSP / ระบบภายนอก) |
 | `test/` | qa-engineer | Test plan, test case (TC-xxx), รายงานผลทดสอบ |
@@ -21,10 +40,13 @@ Security reviewer ไม่มีโฟลเดอร์ของตัวเ�
 
 | เรื่อง | ยึดตาม | ฝั่งที่ต้องตาม |
 | --- | --- | --- |
-| ข้อกำหนด | TOR v.4 (11-9-69) → `md/system-overview.md` | ทุกบทบาท |
-| กฎทางธุรกิจ (BR-xxx) | `requirements/business-rules.md` | data/state-machines, หน้าจอ, test case |
-| สถานะและการเปลี่ยนสถานะ | `data/state-machines.md` (เมื่อมีแล้ว) — ก่อนหน้านั้นคือ `requestStatuses` ใน `src/mocks/requests.js` | mock / store ฝั่ง frontend, integration sequences |
-| รูปข้อมูล API ภายใน | `api/openapi.yaml` (เมื่อมีแล้ว) — ก่อนหน้านั้นคือ `src/mocks/` | `src/api/` ฝั่ง frontend |
+| ข้อกำหนด | TOR v.4 (11-9-69) → `md/system-overview.md` · ความครบถ้วนเทียบ Prototype: `Traceability_TOR_Flow_Prototype.md` | ทุกบทบาท |
+| กฎทางธุรกิจ (BR-xxx) | `requirements/business-rules.md` (เมื่อมีแล้ว) — ก่อนหน้านั้นคือกฎใน `src/stores/review.js` (Checklist ครบ, ประเภทข้อความตอบกลับ, ยกเลิก 15 นาที, อนุมัติ → คำสั่งชำระ) | data/state-machines, หน้าจอ, test case |
+| สถานะและการเปลี่ยนสถานะ | `data/state-machines.md` (เมื่อมีแล้ว) — ก่อนหน้านั้นคือ `requestStatuses` ใน `src/mocks/requests.js` และ `paymentStatuses` ใน `src/mocks/payments.js` | mock / store ฝั่ง frontend, integration sequences |
+| สิทธิ์รายเมนู | `requirements/business-rules.md` (เมื่อมีแล้ว) — ก่อนหน้านั้นคือร่าง `permissionTemplate` ใน `src/mocks/users-roles.js` (รอยืนยัน Q-15) | router guard, Sidebar, backend |
+| นโยบายรหัสผ่าน / การล็อก / อายุลิงก์ | ก่อนมี BR: `src/utils/password.js`, `src/mocks/auth.js` (สมมติฐาน รอยืนยัน Q-20) | backend, B-01.x |
+| ชื่อข้อความ ebXML | `integration/` (เมื่อมีแล้ว) — ก่อนหน้านั้นคือ `src/mocks/message-types.js` (รอยืนยัน Q-10) | B-17, B-04, backend / Gateway |
+| รูปข้อมูล API ภายใน | `api/openapi.yaml` (เมื่อมีแล้ว) — ก่อนหน้านั้นคือ `src/mocks/` และ `src/api/` | `src/api/` ฝั่ง frontend |
 | หน้าตา / Token / Component | Figma → `src/design/tokens.js` + `src/components/README.md` | design spec, หน้าจอ |
 | โครงสร้าง / stack | ADR สถานะ Accepted | ทุกบทบาท |
 

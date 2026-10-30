@@ -6,6 +6,7 @@
 // ชั่วคราวจนกว่าจะมี API: backend อ่าน Transaction Log จาก ebXML Gateway
 import { banks } from "./banks.js";
 import { messageTypes } from "./message-types.js";
+import { paymentRow } from "./payments.js";
 import { paymentRefOf, requestDetails, requests } from "./requests.js";
 import { thnswDecided, thnswRequests } from "./thnsw.js";
 
@@ -119,6 +120,23 @@ const toNsp = "DDC → NSW → NSP";
 const accept = (req, at, step, note) =>
   msg("DDCPFREQ_ACCEPT", { requestRef: req.ref, reference: req.ref, at, kind: "out", step, note, route: toNsp, sender: DDC, receiver: NSP });
 
+// ข้อความคำสั่งชำระ / ผลชำระของคำขอ ผ่าน NSW ไป-กลับธนาคาร — payRef = เลขที่อ้างอิงการชำระ (แถวใน B-11)
+const payMessage = (requestRef, payRef, bankCode) => {
+  const bank = `${banks[bankCode]} (${bankCode})`;
+  const bankParty = `BANK-${bankCode}`;
+  return (typeKey, at, kind, note) =>
+    msg(typeKey, {
+      requestRef,
+      reference: payRef,
+      at,
+      kind,
+      note,
+      route: kind === "in" ? `${bank} → NSW → DDC` : `DDC → NSW → ${bank}`,
+      sender: kind === "in" ? bankParty : DDC,
+      receiver: kind === "in" ? DDC : bankParty,
+    });
+};
+
 function requestMessages(req) {
   const d = requestDetails[req.ref];
   const out = [];
@@ -151,20 +169,7 @@ function requestMessages(req) {
 
   // คำสั่งชำระ / ผลชำระ ผ่าน NSW (Flow 10 ข้อ 3.1 / 4.1)
   const p = d.payment;
-  const bank = `${banks[p.bankCode]} (${p.bankCode})`;
-  const bankParty = `BANK-${p.bankCode}`;
-  const payRef = paymentRefOf(req.ref);
-  const pay = (typeKey, at, kind, note) =>
-    msg(typeKey, {
-      requestRef: req.ref,
-      reference: payRef,
-      at,
-      kind,
-      note,
-      route: kind === "in" ? `${bank} → NSW → DDC` : `DDC → NSW → ${bank}`,
-      sender: kind === "in" ? bankParty : DDC,
-      receiver: kind === "in" ? DDC : bankParty,
-    });
+  const pay = payMessage(req.ref, paymentRefOf(req.ref), p.bankCode);
   out.push(pay("paymentOrder", p.orderedAt, "out"));
   out.push(accept(req, plus(p.orderedAt, 20), "4", "รอการชำระเงิน BILLPAYMENT"));
   if (p.status === "failed") {
@@ -194,6 +199,38 @@ function requestMessages(req) {
   out.push(accept(req, plus(p.paidAt, 35), "9", "พร้อมจ่าย"));
   if (req.status === "completed") out.push(accept(req, d.history[0].at, "10", "เสร็จสมบูรณ์"));
   return out;
+}
+
+// ---------- ข้อความที่เกิดจากการพิจารณาในรอบใช้งานนี้ (B-06) ----------
+// อ่านผลจาก stores/payments.js (orders) และ stores/review.js (records) — หน้า B-17 รวมกับ messages ด้านล่าง
+// รูปแบบเดียวกับ requestMessages: อนุมัติ = แจ้งอนุมัติ (ข้อ 3) → คำสั่งชำระ (3.1) → แจ้งรอชำระ (ข้อ 4)
+//   ไม่อนุมัติ = แจ้งไม่อนุมัติพร้อมรหัสข้อความตอบกลับ
+//   ยกเลิกการอนุมัติ (สมมติฐาน — Flow 10 ยังไม่มีข้อความยกเลิก รอยืนยัน Q-10): ส่งคำสั่งชำระฉบับยกเลิกไปธนาคารผ่าน NSW
+//   แล้วแจ้ง NSP ด้วย DDCPFREQ_ACCEPT ว่ายกเลิกการอนุมัติ คำขอกลับไปอยู่ระหว่างดำเนินการ (ข้อ 2)
+// ชั่วคราวจนกว่าจะมี API: backend / ebXML Gateway สร้างข้อความเหล่านี้เองเมื่อบันทึกผลพิจารณา และหน้าจออ่านจาก Transaction Log
+// orders = { [ref]: [{ orderedAt, bankCode, status, seq, cancelledAt? }] } · records = { [ref]: { decision } }
+export function sessionMessages(orders = {}, records = {}) {
+  const out = [];
+  Object.entries(orders).forEach(([ref, list]) => {
+    list.forEach((o) => {
+      const req = { ref };
+      const pay = payMessage(ref, paymentRow(ref, o, o.seq).id, o.bankCode);
+      out.push(accept(req, plus(o.orderedAt, 5), "3", "เจ้าหน้าที่อนุมัติ"));
+      out.push(pay("paymentOrder", plus(o.orderedAt, 10), "out"));
+      out.push(accept(req, plus(o.orderedAt, 20), "4", "รอการชำระเงิน BILLPAYMENT"));
+      if (o.status !== "cancelled") return;
+      // ข้อความยกเลิกต้องตามหลังข้อความอนุมัติเสมอ (กรณียกเลิกทันทีภายในไม่กี่วินาที)
+      const cancelAt = [o.cancelledAt, plus(o.orderedAt, 20)].sort().at(-1);
+      out.push(pay("paymentOrder", plus(cancelAt, 5), "out", "ยกเลิกคำสั่งชำระ"));
+      out.push(accept(req, plus(cancelAt, 10), "2", "ยกเลิกการอนุมัติ · อยู่ระหว่างดำเนินการ"));
+    });
+  });
+  Object.entries(records).forEach(([ref, r]) => {
+    const dec = r?.decision;
+    if (dec?.type !== "rejected" || dec.seeded) return;
+    out.push(accept({ ref }, plus(dec.at, 5), "", `เจ้าหน้าที่ไม่อนุมัติ · ${dec.replyCode}`));
+  });
+  return out.sort((a, b) => b.at.localeCompare(a.at));
 }
 
 // ---------- ข้อความขึ้นทะเบียนผู้ใช้บริการ (Flow 6 ข้อ 2 / 7) ----------

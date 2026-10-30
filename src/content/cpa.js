@@ -30,6 +30,9 @@ export const cpaText = {
     { title: "จัดการ", key: "actions", align: "center", sortable: false },
   ],
   lastTest: { success: "ทดสอบผ่าน", fail: "ทดสอบล้มเหลว" },
+  // Action ที่ไม่ได้แสดงในตาราง (เกินจำนวนที่แสดง) — ดูครบใน Tooltip
+  moreActions: (n) => `+${n}`,
+  moreActionsAria: (n, list) => `อีก ${n} Action: ${list}`,
   edit: "แก้ไข CPA",
   test: "ทดสอบการเชื่อมต่อ",
   viewXml: "ดู XML ของ CPA",

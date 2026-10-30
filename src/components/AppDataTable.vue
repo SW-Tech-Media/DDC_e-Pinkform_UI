@@ -4,7 +4,8 @@
 // ปรับแต่ง cell ผ่าน slot แบบ v-data-table เช่น <template #item.status="{ item }">
 // rowClass(item) → class ของแถว เช่น 'pf-row-highlight'
 // คอลัมน์ปุ่ม (key "actions" / "view") ติดขอบขวาเสมอ ไม่ถูกตัดเมื่อตารางกว้างเกินการ์ด
-import { computed, ref, useSlots } from "vue";
+//   เมื่อยังมีเนื้อหาซ่อนอยู่ใต้คอลัมน์นี้ (ตารางกว้างกว่าการ์ดและยังเลื่อนไม่สุด) แสดงเส้นแบ่ง ให้รู้ว่าเลื่อนดูต่อได้
+import { computed, onBeforeUnmount, onMounted, ref, useSlots } from "vue";
 import TablePagination from "./TablePagination.vue";
 
 const props = defineProps({
@@ -33,10 +34,34 @@ const sticky = { class: "pf-col-actions" };
 const tableHeaders = computed(() =>
   props.headers.map((h) => (ACTION_KEYS.includes(h.key) ? { ...h, nowrap: true, headerProps: sticky, cellProps: sticky } : h))
 );
+
+// clipped = มีเนื้อหาอยู่ใต้คอลัมน์ปุ่มที่ sticky (ยังเลื่อนไปทางขวาได้)
+const root = ref(null);
+const clipped = ref(false);
+let wrapper = null;
+let observer = null;
+const measure = () => {
+  if (!wrapper) return;
+  clipped.value = wrapper.scrollLeft + wrapper.clientWidth < wrapper.scrollWidth - 1;
+};
+onMounted(() => {
+  wrapper = root.value?.querySelector(".v-table__wrapper");
+  if (!wrapper) return;
+  wrapper.addEventListener("scroll", measure, { passive: true });
+  observer = new ResizeObserver(measure);
+  observer.observe(wrapper);
+  const table = wrapper.querySelector("table");
+  if (table) observer.observe(table);
+  measure();
+});
+onBeforeUnmount(() => {
+  wrapper?.removeEventListener("scroll", measure);
+  observer?.disconnect();
+});
 </script>
 
 <template>
-  <div>
+  <div ref="root">
     <v-data-table
       v-model:page="page"
       v-model:items-per-page="itemsPerPage"
@@ -48,6 +73,7 @@ const tableHeaders = computed(() =>
       :hover="hover"
       hide-default-footer
       class="pf-table"
+      :class="{ 'pf-table--clipped': clipped }"
       @click:row="(e, { item }) => $emit('click:row', item)"
     >
       <template v-for="name in cellSlots" :key="name" #[name]="slotProps">
@@ -105,6 +131,11 @@ const tableHeaders = computed(() =>
 }
 .pf-table :deep(td.pf-col-actions) {
   background: rgb(var(--v-theme-surface));
+}
+/* เส้นแบ่งด้านซ้ายของคอลัมน์ปุ่ม เมื่อมีเนื้อหาซ่อนอยู่ข้างใต้ */
+.pf-table--clipped :deep(td.pf-col-actions),
+.pf-table--clipped :deep(th.pf-col-actions) {
+  box-shadow: inset var(--pf-stroke-default) 0 0 rgb(var(--v-theme-border-default));
 }
 .pf-table :deep(tr.pf-row-highlight > td.pf-col-actions) {
   background: rgb(var(--v-theme-bg-row-highlight));

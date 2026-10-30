@@ -1,5 +1,6 @@
 // ข้อความหน้าจอ D10 พิจารณาคำขอใบรับรองฯ และ D11 Preview & Confirm (Modal)
 import { formatDate } from "@/utils/format.js";
+import { emailText } from "@/content/notifications.js";
 
 export const reviewText = {
   breadcrumb: { group: "งานบริการ", requests: "คำขอใบรับรองฯ" },
@@ -7,6 +8,7 @@ export const reviewText = {
   description: "ตรวจสอบรายละเอียดคำขอ ทำเครื่องหมายรายการตรวจสอบ และบันทึกผลการพิจารณา",
   back: "กลับไปรายการคำขอ",
   tracking: "ติดตามสถานะคำขอ",
+  openEbxml: "ดูข้อความ ebXML",
 
   notFound: {
     title: "ไม่พบรายละเอียดคำขอฉบับเต็ม",
@@ -98,6 +100,7 @@ export const reviewText = {
       approved: { label: "เจ้าหน้าที่อนุมัติ", tone: "success" },
       rejected: { label: "เจ้าหน้าที่ไม่อนุมัติ", tone: "danger" },
       undone: { label: "ยกเลิกการอนุมัติ", tone: "danger" },
+      emailed: emailText.event, // ส่งอีเมลแจ้งผู้ยื่น (G-06)
     },
     editedDetail: (fields) => `แก้ไข ${fields}`,
     approvedDetail: (n, total) => `ตรวจ Checklist ครบ ${n}/${total} ข้อ`,
@@ -131,6 +134,7 @@ export const reviewText = {
     hint: "ต้องทำเครื่องหมายครบทุกข้อจึงจะอนุมัติได้",
     done: "ตรวจครบทุกข้อแล้ว พร้อมอนุมัติ",
     locked: "บันทึกผลการพิจารณาแล้ว",
+    viewOnly: "บัญชีนี้ดูรายการตรวจสอบได้อย่างเดียว",
     count: (n, total) => `${n} / ${total}`,
   },
 
@@ -190,7 +194,7 @@ export const reviewText = {
 
   rejectDialog: {
     title: "ยืนยันการไม่อนุมัติคำขอ",
-    description: "ตรวจสอบใบรับรองฯ และใบแนบอีกครั้ง ระบบจะแจ้งผลไม่อนุมัติพร้อมข้อความตอบกลับด้านล่างไปยังผู้ประกอบการผ่าน NSW",
+    description: "ตรวจสอบใบรับรองฯ และใบแนบอีกครั้ง ระบบจะแจ้งผลไม่อนุมัติพร้อมข้อความตอบกลับด้านล่างไปยังผู้ประกอบการผ่าน NSW และส่งอีเมลแจ้งผู้ยื่นอัตโนมัติ",
     reply: "ข้อความตอบกลับที่เลือก",
     note: "ข้อความเพิ่มเติม",
     noReply: "ยังไม่ได้เลือกข้อความตอบกลับประเภทไม่อนุมัติ — กรุณาปิดหน้าต่างนี้และเลือกข้อความตอบกลับก่อนยืนยัน",

@@ -19,11 +19,13 @@ import RetryHistory from "@/components/ebxml/RetryHistory.vue";
 import CpaDialog from "@/components/ebxml/CpaDialog.vue";
 import { buildHeaderXml, buildPayloadXml, ebxmlText as t } from "@/content/ebxml.js";
 import { common } from "@/content/common.js";
-import { directions, ebxmlNow, ebxmlToday, maxRetry, messages, messageTypes } from "@/mocks/ebxml.js";
+import { directions, ebxmlNow, ebxmlToday, maxRetry, messages, messageTypes, sessionMessages } from "@/mocks/ebxml.js";
 import { pendingCodeNote } from "@/mocks/message-types.js";
 import { formatDate, formatNumber } from "@/utils/format.js";
 import { size } from "@/design/tokens.js";
 import { useSessionStore } from "@/stores/session.js";
+import { usePaymentsStore } from "@/stores/payments.js";
+import { useReviewStore } from "@/stores/review.js";
 
 const session = useSessionStore();
 session.signInAs("thanakorn");
@@ -31,6 +33,21 @@ const route = useRoute();
 const router = useRouter();
 
 const list = ref(messages.map((m) => ({ ...m, attempts: m.attempts.map((a) => ({ ...a })) })));
+
+// ข้อความจากการอนุมัติ / ไม่อนุมัติ / ยกเลิกการอนุมัติในรอบนี้ (B-06) — เพิ่มเข้า list ครั้งเดียวต่อข้อความ
+// เพื่อให้ผลการ "ส่งใหม่" ที่แก้ใน list ไม่หายเมื่อ store เปลี่ยน · ชั่วคราวจนกว่าจะมี API (backend อ่านจาก Transaction Log)
+const paymentsStore = usePaymentsStore();
+const reviewStore = useReviewStore();
+const fresh = computed(() => sessionMessages(paymentsStore.orders, reviewStore.records));
+watch(
+  fresh,
+  (msgs) => {
+    const ids = new Set(list.value.map((m) => m.id));
+    const added = msgs.filter((m) => !ids.has(m.id));
+    if (added.length) list.value = [...added, ...list.value].sort((a, b) => b.at.localeCompare(a.at));
+  },
+  { immediate: true }
+);
 const snack = reactive({ show: false, text: "" });
 const notify = (text) => Object.assign(snack, { show: true, text });
 
@@ -120,6 +137,12 @@ const requestCount = computed(() => list.value.filter((m) => m.requestRef === re
 // ลิงก์กลับไปหน้าติดตามสถานะ — เฉพาะคำขอใบรับรองฯ และผู้ใช้ที่มีสิทธิ์เมนูนั้น (backend เป็นผู้ตรวจจริง)
 const canTrack = computed(() => /^PF\d+$/.test(requestRef.value) && session.can("tracking"));
 const selected = computed(() => list.value.find((m) => m.id === selectedId.value));
+// ข้อความในรอบนี้ที่ไม่อยู่ในวันที่ที่กรอง (วันที่จริงต่างจากวันที่ของข้อมูลจำลอง) — แจ้งให้เปิดดูทุกวันที่
+const freshHidden = computed(() => (filters.date ? fresh.value.filter((m) => m.date !== filters.date).length : 0));
+const showFresh = () => {
+  filters.date = null;
+  selectedId.value = fresh.value[0]?.id ?? selectedId.value;
+};
 const rowClass = (m) => (m.id === selectedId.value ? "pf-row-highlight" : "");
 const select = (m) => (selectedId.value = m.id);
 
@@ -178,6 +201,13 @@ const cpaOpen = ref(false);
           </SecondaryButton>
           <SecondaryButton height="control-md" prepend-icon="fas fa-xmark" @click="clearRequest">{{ t.byRequest.clear }}</SecondaryButton>
         </div>
+      </template>
+    </AlertBox>
+
+    <AlertBox v-if="freshHidden" tone="info" icon="fas fa-bell" :title="t.fresh.title(freshHidden)" class="mb-6">
+      {{ t.fresh.body }}
+      <template #aside>
+        <SecondaryButton height="control-md" prepend-icon="far fa-calendar" @click="showFresh">{{ t.fresh.show }}</SecondaryButton>
       </template>
     </AlertBox>
 
@@ -245,6 +275,9 @@ const cpaOpen = ref(false);
           <StatusBadge :tone="item.signature ? 'success' : 'danger'" dot>
             {{ item.signature ? t.signature.pass : t.signature.fail }}
           </StatusBadge>
+        </template>
+        <template #item.route="{ item }">
+          <div class="route py-2">{{ item.route }}</div>
         </template>
         <template #item.status="{ item }">
           <StatusBadge :tone="statusBadge(item).tone" dot>{{ statusBadge(item).label }}</StatusBadge>
@@ -334,6 +367,13 @@ const cpaOpen = ref(false);
   white-space: normal;
   min-width: calc(var(--pf-space-120) + var(--pf-space-40));
   max-width: calc(var(--pf-space-120) + var(--pf-space-64));
+}
+/* ต้นทาง → ปลายทาง ตัดบรรทัดได้ ให้คอลัมน์สถานะ (เช่น "Retry 3 / 5") ไม่ถูกคอลัมน์จัดการที่ sticky บัง */
+.route {
+  white-space: normal;
+  text-wrap: balance;
+  min-width: var(--pf-space-120);
+  max-width: calc(var(--pf-space-120) + var(--pf-space-24));
 }
 .detail {
   border-top: var(--pf-stroke-default) solid rgb(var(--v-theme-border-default));

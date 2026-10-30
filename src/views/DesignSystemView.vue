@@ -332,6 +332,9 @@ function go(id) {
               <div class="d-flex flex-wrap ga-2 mt-3">
                 <StatusBadge v-for="b in demo.demoBadges" :key="b.tone" :tone="b.tone" dot>{{ b.tone }}</StatusBadge>
               </div>
+              <div class="badge-wrap-demo mt-3">
+                <StatusBadge :tone="demo.demoWrapBadge.tone" dot wrap>{{ demo.demoWrapBadge.label }}</StatusBadge>
+              </div>
             </ComponentDemo>
 
             <ComponentDemo v-bind="demoOf['icon-tile']" :props-label="t.propsLabel">
@@ -486,6 +489,9 @@ function go(id) {
 </template>
 
 <style scoped>
+.badge-wrap-demo {
+  width: var(--pf-space-120);
+}
 .toc {
   position: sticky;
   top: calc(var(--pf-size-portal-header) + var(--pf-space-24));

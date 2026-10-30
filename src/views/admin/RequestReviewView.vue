@@ -23,6 +23,7 @@ import UndoApprovalBanner from "@/components/review/UndoApprovalBanner.vue";
 import SecondaryButton from "@/components/SecondaryButton.vue";
 import StatusHistoryTable from "@/components/tracking/StatusHistoryTable.vue";
 import { reviewText as t } from "@/content/review.js";
+import { emailText } from "@/content/notifications.js";
 import { checklistItems, replyMessages, requestDocuments, reviewHistory, sourceXml } from "@/mocks/review.js";
 import { requestStatuses } from "@/mocks/requests.js";
 import { useReviewStore } from "@/stores/review.js";
@@ -139,6 +140,14 @@ onMounted(() => {
   <AdminLayout :breadcrumb="breadcrumb">
     <PageHeader :title="t.title" :description="t.description">
       <template #actions>
+        <!-- ข้อความ ebXML ของคำขอนี้ (B-17) — แสดงตามสิทธิ์เมนู แบบเดียวกับหน้าติดตามสถานะ (backend เป็นผู้ตรวจจริง) -->
+        <SecondaryButton
+          v-if="detail && session.can('ebxml')"
+          prepend-icon="fas fa-server"
+          :to="{ name: 'admin-ebxml', query: { ref: refNo } }"
+        >
+          {{ t.openEbxml }}
+        </SecondaryButton>
         <SecondaryButton
           prepend-icon="fas fa-chevron-left"
           :to="{ name: 'admin-requests' }"
@@ -173,6 +182,10 @@ onMounted(() => {
         class="mb-6"
       >
         {{ t.decided.rejectedNote(decidedReply ? t.reply.item(decidedReply) : decision.note) }}
+        <div v-if="decision.notification" class="mt-1">
+          <v-icon icon="far fa-envelope" size="x-small" class="me-1" />
+          {{ emailText.sentLine(decision.notification.to, formatDateTime(decision.notification.at)) }}
+        </div>
       </AlertBox>
       <AlertBox
         v-else-if="decision?.type === 'invalid'"
@@ -181,6 +194,10 @@ onMounted(() => {
         class="mb-6"
       >
         {{ t.decided.invalidNote(decision.note) }}
+        <div v-if="decision.notification" class="mt-1">
+          <v-icon icon="far fa-envelope" size="x-small" class="me-1" />
+          {{ emailText.sentLine(decision.notification.to, formatDateTime(decision.notification.at)) }}
+        </div>
       </AlertBox>
 
       <v-row>
@@ -221,7 +238,12 @@ onMounted(() => {
 
         <!-- ขวา: Checklist + ข้อความตอบกลับ + ปุ่ม -->
         <v-col cols="12" lg="4" class="d-flex flex-column ga-6 min-w-0">
-          <ApprovalChecklist v-model="checks" :items="checklistItems" :readonly="!!decision || !canDecide" />
+          <ApprovalChecklist
+            v-model="checks"
+            :items="checklistItems"
+            :readonly="!!decision || !canDecide"
+            :readonly-text="decision ? '' : t.checklist.viewOnly"
+          />
           <ReplyMessageForm
             v-model:type="replyType"
             v-model:code="replyCode"

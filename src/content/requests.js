@@ -27,7 +27,7 @@ export const requestsText = {
     { value: "approved", label: "อนุมัติแล้ว", statuses: ["approved", "paid", "issued", "readyToDeliver", "completed"], sort: "updatedDesc" },
     { value: "rejected", label: "ไม่อนุมัติ", statuses: ["rejected"], sort: "updatedDesc" },
     // ชำระไม่สำเร็จต้องติดตามผู้ประกอบการ จึงอยู่บนสุด · คำขอที่เพิ่งอนุมัติ (ยกเลิกได้ภายใน 15 นาที) อยู่ถัดไปตามเวลาอัปเดต
-    { value: "awaitingPayment", label: "รอการชำระเงิน", statuses: ["awaitingPayment", "paymentFailed"], sort: "updatedDesc", pin: ["paymentFailed"] },
+    { value: "awaitingPayment", label: "รอชำระ / ชำระไม่สำเร็จ", statuses: ["awaitingPayment", "paymentFailed"], sort: "updatedDesc", pin: ["paymentFailed"] },
   ],
 
   // key = เวลาที่ใช้เรียง (submittedAt = เวลาที่ยื่น · statusAt = เวลาที่สถานะเปลี่ยนล่าสุด) · dir 1 = เก่า → ใหม่
@@ -60,7 +60,7 @@ export const requestsText = {
   // Snackbar หลังบันทึกผลการพิจารณาแล้วกลับมาหน้ารายการ
   decided: {
     approved: (ref) => `อนุมัติคำขอ ${ref} แล้ว · สร้างคำสั่งชำระเงินแล้ว (รอการชำระเงิน) · ยกเลิกการอนุมัติได้ภายใน 15 นาที`,
-    rejected: (ref) => `ไม่อนุมัติคำขอ ${ref} แล้ว · ส่งข้อความตอบกลับผู้ประกอบการผ่าน NSW`,
+    rejected: (ref) => `ไม่อนุมัติคำขอ ${ref} แล้ว · ส่งข้อความตอบกลับผู้ประกอบการผ่าน NSW และอีเมลแจ้งผู้ยื่นแล้ว`,
     open: "เปิดคำขอ",
   },
   viewAria: (ref) => `ดูคำขอ ${ref}`,

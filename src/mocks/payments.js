@@ -31,7 +31,7 @@ const requestByRef = Object.fromEntries(requests.map((r) => [r.ref, r]));
 export const paymentDayOf = (p) => (p.paidAt ?? p.failedAt ?? p.cancelledAt ?? p.sentAt).slice(0, 10);
 
 // แถวในตาราง B-11 จากคำสั่งชำระของคำขอ — p รูปเดียวกับ decidedDetail().payment (mocks/requests.js)
-//   { orderedAt, bankCode, amount, status, paidAt?, failedAt?, failReason?, cancelledAt?, cancelReason? }
+//   { orderedAt, bankCode, amount, status, paidAt?, failedAt?, failReason?, cancelledAt?, cancelReason?, notification? }
 // seq = ครั้งที่สร้างคำสั่งชำระของคำขอนี้ (ครั้งถัดไปเกิดเมื่ออนุมัติใหม่หลังยกเลิกการอนุมัติ) → Ref.2 และเลขที่อ้างอิงต่อท้าย -2, -3
 // เลขที่อ้างอิงการชำระ = paymentRefOf(ref) (PAY + เลขหลัง PF) เพื่อให้อ่านคู่กับคำขอได้ง่าย
 export function paymentRow(ref, p, seq = 1) {
@@ -52,6 +52,8 @@ export function paymentRow(ref, p, seq = 1) {
     ...(p.failedAt ? { failedAt: p.failedAt } : {}),
     ...(p.failReason ? { failReason: p.failReason } : {}),
     ...(p.cancelledAt ? { cancelledAt: p.cancelledAt, cancelReason: p.cancelReason } : {}),
+    // อีเมลแจ้งผู้ยื่นเมื่อชำระไม่สำเร็จ (G-06 · TOR 7.8.36) — รูปเดียวกับ emailNotice() ใน mocks/requests.js
+    ...(p.notification ? { notification: p.notification } : {}),
   };
 }
 

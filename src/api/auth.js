@@ -6,7 +6,11 @@
 // error ทุกกรณี throw AuthApiError { status, code, data }
 //   INVALID_CREDENTIALS (401, data.attemptsLeft) · ACCOUNT_SUSPENDED (423) · NETWORK (0)
 //   LINK_EXPIRED (410) · LINK_USED (409) · LINK_INVALID (404) · PASSWORD_REUSED (422) · PASSWORD_POLICY (422)
-import { authMock } from "@/mocks/auth.js";
+import { authAccounts, authMock } from "@/mocks/auth.js";
+import { usersText } from "@/content/users-roles.js";
+import { useAuditStore } from "@/stores/audit.js";
+import { useUsersStore } from "@/stores/users.js";
+import { nowThaiIso } from "@/utils/format.js";
 
 export class AuthApiError extends Error {
   constructor(status, code, data = {}) {
@@ -38,8 +42,18 @@ const http = async (method, path, body) => {
 
 // ---------- โหมด mock (จำลองสถานะฝั่ง server ไว้ในหน่วยความจำ รีเฟรชหน้า = เริ่มใหม่) ----------
 // ชั่วคราวจนกว่าจะมี API: การนับครั้งที่ผิด / การระงับบัญชี / นโยบายรหัสผ่าน backend เป็นเจ้าของ (สมมติฐานรอ Q-20)
-const failures = new Map(); // username → จำนวนครั้งที่ผิดติดต่อกัน
+// ตัวนับรหัสผิด / การระงับอยู่ใน authAccounts (mocks/auth.js) ใช้ร่วมกับ B-16 — ปลดล็อกที่ B-16 แล้วเข้าสู่ระบบได้อีก
+// Audit Log (B-19) และประวัติการจัดการผู้ใช้ (B-16) ของเหตุการณ์บัญชี: ระบบจริง backend บันทึกเอง — mock บันทึกแทนที่นี่
 const passwords = new Map(); // username → รหัสผ่านที่ตั้งใหม่ (B-01.5)
+const a = usersText.audit;
+// ผู้กระทำของ Log = บัญชีที่กรอก (ยังไม่ได้เข้าสู่ระบบ) — บัญชีที่ไม่มีในรายชื่อใช้ชื่อผู้ใช้ที่กรอก
+const actorOf = (u) => ({ name: useUsersStore().byUsername(u)?.name ?? u, username: u });
+const audit = (u, action, changes) => useAuditStore().record("login", action, a.account(actorOf(u).name, u), changes, actorOf(u));
+const failuresOf = (u) => authAccounts.failures[u] ?? 0;
+const clearFailures = (u) => {
+  delete authAccounts.failures[u];
+  delete authAccounts.lockedAt[u];
+};
 const delay = (ms = 400) => new Promise((r) => setTimeout(r, ms));
 const key = (username) => username.trim().toLowerCase();
 
@@ -57,15 +71,33 @@ const mock = {
     await delay();
     const u = key(username);
     if (u === authMock.offlineUsername) throw new AuthApiError(0, "NETWORK");
-    const count = failures.get(u) ?? 0;
-    if (count >= authMock.maxAttempts) throw new AuthApiError(423, "ACCOUNT_SUSPENDED");
+    const max = authMock.maxAttempts;
+    const count = failuresOf(u);
+    if (count >= max) {
+      audit(u, "loginFailed", [{ field: a.reason, before: null, after: a.lockedAttempt }]);
+      throw new AuthApiError(423, "ACCOUNT_SUSPENDED");
+    }
     if (password !== (passwords.get(u) ?? authMock.password)) {
-      failures.set(u, count + 1);
-      const attemptsLeft = authMock.maxAttempts - count - 1;
-      if (attemptsLeft <= 0) throw new AuthApiError(423, "ACCOUNT_SUSPENDED");
+      authAccounts.failures[u] = count + 1;
+      audit(u, "loginFailed", [
+        { field: a.reason, before: null, after: a.invalidPassword },
+        { field: a.attempts, before: a.attemptsValue(count, max), after: a.attemptsValue(count + 1, max) },
+      ]);
+      const attemptsLeft = max - count - 1;
+      if (attemptsLeft <= 0) {
+        // ครบ 5 ครั้ง = ระงับบัญชี — แสดงสถานะ "ระงับ" ที่ B-16 พร้อมปุ่มปลดล็อก
+        authAccounts.lockedAt[u] = nowThaiIso();
+        audit(u, "accountLocked", [
+          { field: a.status, before: usersText.status.active.label, after: usersText.status.locked.label },
+          { field: a.reason, before: null, after: a.lockedReason(max) },
+        ]);
+        const user = useUsersStore().byUsername(u);
+        if (user) useUsersStore().addHistory(usersText.log.system, usersText.log.locked, user.name, usersText.log.lockedDetail(max));
+        throw new AuthApiError(423, "ACCOUNT_SUSPENDED");
+      }
       throw new AuthApiError(401, "INVALID_CREDENTIALS", { attemptsLeft });
     }
-    failures.delete(u);
+    clearFailures(u);
     // ระบบจริงคืน challenge สำหรับขั้น PIN (ยังไม่ออก session จนกว่า PIN ถูกต้อง)
     return { username: u, next: "pin" };
   },
@@ -90,7 +122,12 @@ const mock = {
   async activateAccount({ token, password }) {
     await delay();
     linkCheck(token);
-    passwords.set(authMock.verifyAccount.username, password);
+    const u = authMock.verifyAccount.username;
+    passwords.set(u, password);
+    audit(u, "setPassword", [
+      { field: a.password, before: null, after: a.passwordChanged },
+      { field: a.via, before: null, after: a.viaActivate },
+    ]);
     return { username: authMock.verifyAccount.username, status: "active" };
   },
 
@@ -99,7 +136,7 @@ const mock = {
     await delay();
     const u = key(account).split("@")[0];
     if (u === authMock.offlineUsername) throw new AuthApiError(0, "NETWORK");
-    if ((failures.get(u) ?? 0) >= authMock.maxAttempts) throw new AuthApiError(423, "ACCOUNT_SUSPENDED");
+    if (failuresOf(u) >= authMock.maxAttempts) throw new AuthApiError(423, "ACCOUNT_SUSPENDED");
     return { expiresInMinutes: authMock.resetLinkMinutes };
   },
 
@@ -109,7 +146,11 @@ const mock = {
     if (authMock.recentPasswords.includes(password)) throw new AuthApiError(422, "PASSWORD_REUSED");
     const u = key(account).split("@")[0];
     passwords.set(u, password);
-    failures.delete(u);
+    clearFailures(u);
+    audit(u, "resetPassword", [
+      { field: a.password, before: null, after: a.passwordChanged },
+      { field: a.via, before: null, after: a.viaReset },
+    ]);
     return { username: u };
   },
 };

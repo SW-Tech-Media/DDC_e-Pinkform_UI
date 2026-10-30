@@ -179,7 +179,7 @@ export const designSystemText = {
         name: "StatusBadge",
         file: "StatusBadge.vue",
         description: "Badge สถานะ (Figma: Status)",
-        api: "tone: success · warning · danger · info · neutral · accent, dot",
+        api: "tone: success · warning · danger · info · neutral · accent, dot, wrap (ตัดบรรทัดเมื่อข้อความยาว)",
       },
       {
         key: "icon-tile",
